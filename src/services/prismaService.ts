@@ -7,7 +7,7 @@ if (!process.env.DATABASE_URL) {
 
 // Create a single PrismaClient instance that can be shared throughout your app
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+  log: [], // Option 1: No logs, regardless of environment variables
 })
 
 // Handle graceful shutdown

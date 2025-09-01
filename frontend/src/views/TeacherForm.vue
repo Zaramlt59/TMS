@@ -1036,22 +1036,10 @@ const postingVillages = ref<{id: number, name: string}[][]>([])
 
 const loadSchools = async () => {
   try {
-    console.log('Loading schools...')
     const response = await schoolsApi.getAll(1, 1000) // Load all schools
     if (response.data.success) {
-      console.log('School data from API:', response.data.data?.slice(0, 2))
-      
       // Schools are now pre-transformed by the backend
       schools.value = response.data.data || []
-      console.log('Schools loaded:', schools.value.length)
-      console.log('Sample school:', schools.value[0])
-      console.log('Sample school enum fields:', {
-        management: schools.value[0]?.management,
-        block_office: schools.value[0]?.block_office,
-        school_type: schools.value[0]?.school_type,
-        rd_block: schools.value[0]?.rd_block,
-        habitation: schools.value[0]?.habitation
-      })
     }
   } catch (error) {
     console.error('Failed to load schools:', error)
@@ -1085,7 +1073,6 @@ const loadManagementTypes = async () => {
     const response = await managementTypesApi.getActive()
     if (response.data.success) {
       managementTypes.value = response.data.data || []
-      console.log('Loaded management types:', managementTypes.value.map(m => m.name))
     }
   } catch (error) {
     console.error('Failed to load management types:', error)
@@ -1128,9 +1115,6 @@ const loadSchoolTypes = async () => {
 const onSchoolChange = async () => {
   const selectedSchool = schools.value.find(s => s.school_id === selectedSchoolId.value)
   if (selectedSchool) {
-    console.log('School selected:', selectedSchool.school_name)
-    console.log('School management type:', selectedSchool.management)
-    console.log('Available management types:', managementTypes.value.map(m => m.name))
     
     // Auto-fill ALL school-related fields
     form.value.school_id = selectedSchool.school_id
@@ -1140,13 +1124,10 @@ const onSchoolChange = async () => {
     // Set management type, but ensure it's an active one
     if (selectedSchool.management && managementTypes.value.some(m => m.name === selectedSchool.management)) {
       form.value.management = selectedSchool.management
-      console.log(`✅ Using school's management type: ${selectedSchool.management}`)
     } else if (managementTypes.value.length > 0) {
       form.value.management = managementTypes.value[0].name
-      console.log(`⚠️ School management type "${selectedSchool.management}" not available, setting to "${form.value.management}"`)
     } else {
       form.value.management = ''
-      console.log('❌ No active management types available')
     }
     form.value.medium = selectedSchool.medium || 'English'
     form.value.district = selectedSchool.district || 'Aizawl'
@@ -1379,9 +1360,6 @@ const loadTeacher = async (teacherId: number) => {
       
       form.value = formDataWithArrays
       selectedSchoolId.value = teacherData.school_id
-      console.log('Set selectedSchoolId to:', selectedSchoolId.value)
-      console.log('Available schools:', schools.value.length)
-      console.log('Schools data:', schools.value.map(s => ({ id: s.school_id, name: s.school_name })))
 
       
       // Initialize posting_histories if not present
@@ -1519,10 +1497,8 @@ const loadTeacher = async (teacherId: number) => {
       // set it to the first available active management type
       if (managementTypes.value.length > 0) {
         form.value.management = managementTypes.value[0].name
-        console.log(`Management type "${teacherData.management}" not available, setting to "${form.value.management}"`)
       } else {
         form.value.management = ''
-        console.log('No active management types available')
       }
     }
       
@@ -1664,13 +1640,6 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     // Debug: Log what we're sending to the API
-    console.log('=== FORM SUBMISSION DEBUG ===')
-    console.log('Original form data:', form.value)
-    console.log('Cleaned form data:', cleanFormData)
-    console.log('API payload being sent:', apiPayload)
-    console.log('Posting history count:', apiPayload.posting_histories?.length || 0)
-    console.log('Deputation count:', apiPayload.deputations?.length || 0)
-    console.log('Attachment count:', apiPayload.attachments?.length || 0)
     
     let response
     if (isEditing.value) {
@@ -1689,7 +1658,6 @@ const handleSubmit = async () => {
     if (error.response && error.response.data) {
       // Backend returned an error response
       const backendError = error.response.data
-      console.log('Backend error details:', backendError)
       
       if (backendError.message) {
         alert(`Update failed: ${backendError.message}`)
@@ -1742,19 +1710,9 @@ const removePosting = (index: number) => {
 }
 
 const onPostingSchoolChange = async (posting: any) => {
-  console.log('onPostingSchoolChange called with posting:', posting)
-  console.log('Available schools:', schools.value.length)
-  
   const selectedSchool = schools.value.find(s => s.school_name === posting.school_name)
-  console.log('Selected school:', selectedSchool)
   
   if (selectedSchool) {
-    console.log('School data:', {
-      block_office: selectedSchool.block_office,
-      rd_block: selectedSchool.rd_block,
-      habitation: selectedSchool.habitation,
-      district: selectedSchool.district
-    })
     
     // Auto-fill school details
     posting.school_type = selectedSchool.school_type ? selectedSchool.school_type.replace(/_/g, '-') : ''
@@ -1775,12 +1733,7 @@ const onPostingSchoolChange = async (posting: any) => {
     posting.habitation_class = selectedSchool.habitation_class || undefined
     posting.habitation_category = selectedSchool.habitation_category || undefined
     
-    console.log('After populating, posting data:', {
-      block_office: posting.block_office,
-      rd_block: posting.rd_block,
-      habitation: posting.habitation,
-      district: posting.district
-    })
+
     
           // If district is set, load RD blocks and villages
       if (posting.district) {
@@ -1982,8 +1935,6 @@ const onAttachmentRdBlockChange = async (attachment: any) => {
 }
 
 const onPostingDistrictChange = async (posting: any, index: number) => {
-  console.log('onPostingDistrictChange called:', { posting: posting.district, index })
-  
   // Store the current values to preserve them
   const currentRdBlock = posting.rd_block
   const currentHabitation = posting.habitation
@@ -2000,33 +1951,27 @@ const onPostingDistrictChange = async (posting: any, index: number) => {
   postingRdBlocks.value[index] = []
   postingVillages.value[index] = []
   
-  // Load RD blocks for selected district
-  if (posting.district) {
-    try {
-      console.log('Loading RD blocks for district:', posting.district)
-      const districtId = await getDistrictId(posting.district)
-      console.log('District ID:', districtId)
-      
-      const response = await locationsApi.getRdBlocks(districtId)
-      if (response.data.success) {
-        postingRdBlocks.value[index] = response.data.data || []
-        console.log('Loaded RD blocks:', postingRdBlocks.value[index])
+      // Load RD blocks for selected district
+    if (posting.district) {
+      try {
+        const districtId = await getDistrictId(posting.district)
         
-        // Restore the rd_block value if it exists in the loaded options
-        if (currentRdBlock && postingRdBlocks.value[index].some(rb => rb.name === currentRdBlock)) {
-          posting.rd_block = currentRdBlock
-          console.log('Restored rd_block value:', posting.rd_block)
+        const response = await locationsApi.getRdBlocks(districtId)
+        if (response.data.success) {
+          postingRdBlocks.value[index] = response.data.data || []
+          
+          // Restore the rd_block value if it exists in the loaded options
+          if (currentRdBlock && postingRdBlocks.value[index].some(rb => rb.name === currentRdBlock)) {
+            posting.rd_block = currentRdBlock
+          }
         }
+      } catch (error) {
+        console.error('Failed to load RD blocks:', error)
       }
-    } catch (error) {
-      console.error('Failed to load RD blocks:', error)
     }
-  }
 }
 
 const onPostingRdBlockChange = async (posting: any, index: number) => {
-  console.log('onPostingRdBlockChange called:', { posting: posting.rd_block, index })
-  
   // Store the current habitation value to preserve it
   const currentHabitation = posting.habitation
   
@@ -2038,34 +1983,29 @@ const onPostingRdBlockChange = async (posting: any, index: number) => {
   // Clear existing villages
   postingVillages.value[index] = []
   
-  // Load villages for selected RD block
-  if (posting.rd_block) {
-    try {
-      console.log('Loading villages for RD block:', posting.rd_block)
-      const rdBlock = postingRdBlocks.value[index]?.find(rb => rb.name === posting.rd_block)
-      console.log('Found RD block:', rdBlock)
-      
-      if (rdBlock) {
-        const response = await locationsApi.getVillages(rdBlock.id)
-        if (response.data.success) {
-          postingVillages.value[index] = response.data.data || []
-          console.log('Loaded villages:', postingVillages.value[index])
-          
-          // Restore the habitation value if it exists in the loaded options
-          if (currentHabitation && postingVillages.value[index].some(v => v.name === currentHabitation)) {
-            posting.habitation = currentHabitation
-            console.log('Restored habitation value:', posting.habitation)
+      // Load villages for selected RD block
+    if (posting.rd_block) {
+      try {
+        const rdBlock = postingRdBlocks.value[index]?.find(rb => rb.name === posting.rd_block)
+        
+        if (rdBlock) {
+          const response = await locationsApi.getVillages(rdBlock.id)
+          if (response.data.success) {
+            postingVillages.value[index] = response.data.data || []
+            
+            // Restore the habitation value if it exists in the loaded options
+            if (currentHabitation && postingVillages.value[index].some(v => v.name === currentHabitation)) {
+              posting.habitation = currentHabitation
+            }
           }
         }
+      } catch (error) {
+        console.error('Failed to load villages:', error)
       }
-    } catch (error) {
-      console.error('Failed to load villages:', error)
     }
-  }
 }
 
 onMounted(async () => {
-  console.log('TeacherForm mounted, loading data...')
   await Promise.all([
     loadSchools(), 
     loadDistricts(), 
@@ -2075,7 +2015,6 @@ onMounted(async () => {
     loadReligions(),
     loadSchoolTypes()
   ])
-  console.log('All data loaded, management types:', managementTypes.value.map(m => m.name))
   if (isEditing.value) {
     await loadTeacher(parseInt(route.params.id as string))
   }
@@ -2085,7 +2024,6 @@ onMounted(async () => {
 watch(() => route.path, async (newPath, oldPath) => {
   // If user navigated back to this form from Settings, refresh the data
   if (newPath === route.path && oldPath && oldPath.includes('/settings')) {
-    console.log('Refreshing TeacherForm data after returning from Settings...')
     await Promise.all([
       loadSchools(), 
       loadDistricts(), 
@@ -2108,7 +2046,6 @@ onMounted(() => {
   window.addEventListener('focus', async () => {
     // Check if we're on this form and refresh data
     if (document.activeElement && document.activeElement.closest('form')) {
-      console.log('TeacherForm focused, refreshing data...')
       await Promise.all([
         loadSchools(), 
         loadDistricts(), 
