@@ -28,6 +28,8 @@
       <div class="flex-1">
         <div class="relative">
           <input
+            id="school-search"
+            name="school-search"
             v-model="searchQuery"
             type="text"
             placeholder="Search schools by name, ID, or district..."
@@ -86,12 +88,15 @@
                   Management
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Block Office
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="school in schools" :key="school.id" class="hover:bg-gray-50">
+              <tr v-for="school in schools" :key="school.school_id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div>
                     <div class="text-sm font-medium text-gray-900">{{ school.school_name }}</div>
@@ -108,14 +113,18 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div class="text-sm text-gray-900">{{ school.school_type }}</div>
+                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.school_type) }}</div>
                     <div class="text-sm text-gray-500">{{ school.school_level }}</div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div class="text-sm text-gray-900">{{ school.management }}</div>
-                    <div class="text-sm text-gray-500">{{ school.block_office }}</div>
+                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.management) }}</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.block_office) }}</div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -213,6 +222,12 @@ import { schoolsApi } from '../services/api'
 import type { School, SchoolListResponse } from '../types'
 import * as XLSX from 'xlsx'
 
+// Helper function to format underscores to spaces
+const formatDisplayText = (text: string): string => {
+  if (!text) return ''
+  return text.replace(/_/g, ' ')
+}
+
 const schools = ref<School[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
@@ -226,7 +241,7 @@ const pagination = ref({
 })
 
 const visiblePages = computed(() => {
-  const pages = []
+  const pages: number[] = []
   const start = Math.max(1, pagination.value.page - 2)
   const end = Math.min(pagination.value.totalPages, pagination.value.page + 2)
   
@@ -241,9 +256,15 @@ const loadSchools = async (page = 1) => {
   try {
     const response = await schoolsApi.getAll(page, pagination.value.limit)
     if (response.data.success) {
-      const data = response.data.data as SchoolListResponse
-      schools.value = data.schools
-      pagination.value = data.pagination
+      // The API returns a simple array of schools, not a paginated response
+      schools.value = response.data.data || []
+      // Set pagination to simple values since we're not using pagination yet
+      pagination.value = {
+        page: 1,
+        limit: schools.value.length,
+        total: schools.value.length,
+        totalPages: 1
+      }
     }
   } catch (error) {
     console.error('Failed to load schools:', error)
@@ -286,13 +307,15 @@ const changePage = (page: number) => {
   }
 }
 
+
+
 const deleteSchool = async (schoolId: string) => {
   if (!confirm('Are you sure you want to delete this school? This action cannot be undone.')) {
     return
   }
   
   try {
-    const response = await schoolsApi.delete(schoolId)
+    const response = await schoolsApi.deleteBySchoolId(schoolId)
     if (response.data.success) {
       await loadSchools(pagination.value.page)
     }
@@ -313,12 +336,12 @@ const exportToExcel = () => {
       // ===== BASIC SCHOOL INFORMATION =====
       'School ID': school.school_id || '',
       'School Name': school.school_name || '',
-      'School Type': school.school_type || '',
+      'School Type': formatDisplayText(school.school_type || ''),
       
       // ===== ACADEMIC INFORMATION =====
       'School Level': school.school_level || '',
       'Medium of Institution': school.medium || '',
-      'Management Type': school.management || '',
+      'Management Type': formatDisplayText(school.management || ''),
       
       // ===== LOCATION INFORMATION =====
       'District': school.district || '',
@@ -327,7 +350,7 @@ const exportToExcel = () => {
       'Pincode': school.pincode || '',
       'Habitation Class': school.habitation_class || '',
       'Habitation Category': school.habitation_category || '',
-      'Block Office': school.block_office || '',
+      'Block Office': formatDisplayText(school.block_office || ''),
       
       // ===== CONTACT INFORMATION =====
       'School Phone': school.school_phone || '',

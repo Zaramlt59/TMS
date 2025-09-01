@@ -58,7 +58,7 @@ export interface Religion {
 export interface PostingHistory {
   id?: number
   school_name: string
-  school_type: 'Co-educational' | 'Girls'
+  school_type: string
   medium: string
   management: string
   block_office: string
@@ -104,7 +104,7 @@ export interface School {
   id?: number
   school_id: string
   school_name: string
-  school_type: 'Co-educational' | 'Girls'
+  school_type: string
   school_level: string
   management: string
   medium: string
@@ -132,9 +132,9 @@ export interface Teacher {
   religion: string
   gender: string
   aadhaar_number: string
-  area_village: string
-  subjects_taught: string[]
-  classes_taught: string[]
+
+  subjects_taught: string // JSON string from database
+  classes_taught: string // JSON string from database
   school_id: string
   current_school_name: string
   school_name_full?: string

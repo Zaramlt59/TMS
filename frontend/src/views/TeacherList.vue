@@ -121,8 +121,8 @@
                 </td>
                 <td class="px-4 py-4 w-48">
                   <div>
-                    <div class="text-sm text-gray-900">{{ Array.isArray(teacher.subjects_taught) ? teacher.subjects_taught.join(', ') : teacher.subjects_taught }}</div>
-                    <div class="text-sm text-gray-500">{{ Array.isArray(teacher.classes_taught) ? teacher.classes_taught.join(', ') : teacher.classes_taught }}</div>
+                    <div class="text-sm text-gray-900">{{ parseSubjectsTaught(teacher.subjects_taught).join(', ') }}</div>
+                    <div class="text-sm text-gray-500">{{ parseClassesTaught(teacher.classes_taught).join(', ') }}</div>
                   </div>
                 </td>
                 <td class="px-4 py-4 w-48">
@@ -426,10 +426,30 @@ const loadTeachers = async (page = 1) => {
   loading.value = true
   try {
     const response = await teachersApi.getAll(page, pagination.value.limit)
+    console.log('=== TEACHER LIST DEBUG ===')
+    console.log('API Response:', response)
+    console.log('Response data:', response.data)
+    console.log('Teachers array:', response.data.data)
+    
     if (response.data.success) {
-      const data = response.data.data as TeacherListResponse
-      teachers.value = data.teachers
-      pagination.value = data.pagination
+      // The API returns a simple array of teachers, not a paginated response
+      teachers.value = response.data.data || []
+      
+      // Debug individual teacher data
+      if (teachers.value.length > 0) {
+        console.log('First teacher data:', teachers.value[0])
+        console.log('First teacher posting_history:', teachers.value[0].posting_history)
+        console.log('First teacher deputation:', teachers.value[0].deputation)
+        console.log('First teacher attachment:', teachers.value[0].attachment)
+      }
+      
+      // Set pagination to simple values since we're not using pagination yet
+      pagination.value = {
+        page: 1,
+        limit: teachers.value.length,
+        total: teachers.value.length,
+        totalPages: 1
+      }
     }
   } catch (error) {
     console.error('Failed to load teachers:', error)
@@ -492,6 +512,27 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
 }
 
+// Helper functions to parse JSON strings from database
+const parseSubjectsTaught = (subjectsString: string): string[] => {
+  try {
+    if (!subjectsString) return []
+    return JSON.parse(subjectsString)
+  } catch (error) {
+    console.error('Error parsing subjects_taught:', error)
+    return []
+  }
+}
+
+const parseClassesTaught = (classesString: string): string[] => {
+  try {
+    if (!classesString) return []
+    return JSON.parse(classesString)
+  } catch (error) {
+    console.error('Error parsing classes_taught:', error)
+    return []
+  }
+}
+
 const exportToExcel = () => {
   try {
     // Prepare data for export
@@ -510,8 +551,8 @@ const exportToExcel = () => {
       'Email': teacher.email || '',
       
       // ===== ACADEMIC QUALIFICATIONS =====
-      'Subjects Taught': Array.isArray(teacher.subjects_taught) ? teacher.subjects_taught.join(', ') : (teacher.subjects_taught || ''),
-      'Classes Taught': Array.isArray(teacher.classes_taught) ? teacher.classes_taught.join(', ') : (teacher.classes_taught || ''),
+      'Subjects Taught': parseSubjectsTaught(teacher.subjects_taught).join(', '),
+      'Classes Taught': parseClassesTaught(teacher.classes_taught).join(', '),
       
       // ===== CURRENT SCHOOL ASSIGNMENT =====
       'School ID': teacher.school_id || '',

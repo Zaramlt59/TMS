@@ -219,10 +219,12 @@ const loadStats = async () => {
     ])
 
     if (schoolsResponse.data.success) {
-      stats.value.schools = schoolsResponse.data.data?.pagination?.total || 0
+      // The API returns a simple array, so we use the length
+      stats.value.schools = schoolsResponse.data.data?.length || 0
     }
     if (teachersResponse.data.success) {
-      stats.value.teachers = teachersResponse.data.data?.pagination?.total || 0
+      // The API returns a simple array, so we use the length
+      stats.value.teachers = teachersResponse.data.data?.length || 0
     }
     if (statsResponse.data.success) {
       stats.value.districts = statsResponse.data.data?.uniqueDistricts || 0
@@ -240,10 +242,12 @@ const loadRecentActivity = async () => {
     ])
 
     if (schoolsResponse.data.success) {
-      recentSchools.value = schoolsResponse.data.data?.schools || []
+      // The API returns a simple array, slice it to get recent items
+      recentSchools.value = (schoolsResponse.data.data || []).slice(0, 5)
     }
     if (teachersResponse.data.success) {
-      recentTeachers.value = teachersResponse.data.data?.teachers || []
+      // The API returns a simple array, slice it to get recent items
+      recentTeachers.value = (teachersResponse.data.data || []).slice(0, 5)
     }
   } catch (error) {
     console.error('Failed to load recent activity:', error)

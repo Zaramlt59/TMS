@@ -26,6 +26,8 @@
             <div>
               <label class="form-label">Teacher Name *</label>
               <input
+                id="teacher-name"
+                name="teacher-name"
                 v-model="form.teacher_name"
                 type="text"
                 required
@@ -38,6 +40,8 @@
             <div>
               <label class="form-label">Date of Birth *</label>
               <input
+                id="date-of-birth"
+                name="date-of-birth"
                 v-model="form.date_of_birth"
                 type="date"
                 required
@@ -50,6 +54,8 @@
             <div>
               <label class="form-label">Joining Date *</label>
               <input
+                id="joining-date"
+                name="joining-date"
                 v-model="form.joining_date"
                 type="date"
                 required
@@ -60,6 +66,8 @@
             <div>
               <label class="form-label">Phone Number *</label>
               <input
+                id="phone-number"
+                name="phone-number"
                 v-model="form.phone_number"
                 type="tel"
                 required
@@ -71,10 +79,13 @@
                 @input="validatePhoneNumber"
                 @keypress="allowOnlyNumbers"
               />
+
             </div>
             <div>
               <label class="form-label">Email</label>
               <input
+                id="email"
+                name="email"
                 v-model="form.email"
                 type="email"
                 class="form-input"
@@ -117,6 +128,8 @@
             <div>
               <label class="form-label">Aadhaar Number *</label>
               <input
+                id="aadhaar-number"
+                name="aadhaar-number"
                 v-model="form.aadhaar_number"
                 type="text"
                 required
@@ -132,18 +145,7 @@
           </div>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label class="form-label">Area/Village (Permanent Address) *</label>
-              <input
-                v-model="form.area_village"
-                type="text"
-                required
-                class="form-input"
-                placeholder="Enter area or village"
-                @input="validateAreaVillage"
-                @keypress="allowOnlyLetters"
-              />
-            </div>
+
             <div>
               <label class="form-label">School *</label>
               <select v-model="selectedSchoolId" required class="form-select" @change="onSchoolChange()">
@@ -247,8 +249,9 @@
                 <label class="form-label">School Type *</label>
                 <select v-model="posting.school_type" required class="form-select">
                   <option value="">Select school type</option>
-                  <option value="Co-educational">Co-educational</option>
-                  <option value="Girls">Girls</option>
+                  <option v-for="schoolType in schoolTypes" :key="schoolType.id" :value="schoolType.name">
+                    {{ schoolType.name }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -577,7 +580,7 @@
                 <label class="form-label">RD Block *</label>
                 <select v-model="attachment.rd_block" required class="form-select" :disabled="!attachment.district" @change="onAttachmentRdBlockChange(attachment)">
                   <option value="">Select RD Block</option>
-                  <option v-for="rdBlock in attachmentRdBlocks" :key="rdBlock.id" :value="rdBlock.name">
+                  <option v-for="rdBlock in attachmentRdBlocks[index] || []" :key="rdBlock.id" :value="rdBlock.name">
                     {{ rdBlock.name }}
                   </option>
                 </select>
@@ -590,7 +593,7 @@
                 <label class="form-label">Habitation</label>
                 <select v-model="attachment.habitation" class="form-select" :disabled="!attachment.rd_block">
                   <option value="">Select Habitation</option>
-                  <option v-for="village in attachmentVillages" :key="village.id" :value="village.name">
+                  <option v-for="village in attachmentVillages[index] || []" :key="village.id" :value="village.name">
                     {{ village.name }}
                   </option>
                 </select>
@@ -694,7 +697,7 @@
                 class="form-input bg-gray-50"
                 placeholder="Will be auto-filled from selected school"
               />
-              <small class="text-gray-500">Available: {{ managementTypes.map(m => m.name).join(', ') }}</small>
+              
             </div>
             <div>
               <label class="form-label">Medium</label>
@@ -829,8 +832,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { teachersApi, schoolsApi, districtsApi, mediumsApi, managementTypesApi, blockOfficesApi, subjectsApi } from '../services/api'
-import type { Teacher, School, District, Medium, ManagementType, BlockOffice, Subject } from '../types'
+import { teachersApi, schoolsApi, districtsApi, mediumsApi, managementTypesApi, blockOfficesApi, subjectsApi, locationsApi, schoolTypesApi } from '../services/api'
+import type { Teacher, School, District, Medium, ManagementType, BlockOffice, Subject, SchoolType } from '../types'
 import { CLASSES, SOCIAL_GROUPS, GENDERS } from '../constants'
 import { religionsApi } from '../services/api'
 
@@ -844,7 +847,13 @@ const selectedSchoolId = ref('')
 const availableSubjects = ref<Subject[]>([])
 const religions = ref<string[]>([])
 
-const form = ref<Teacher>({
+// Create a local interface that extends Teacher for form handling
+interface TeacherFormData extends Omit<Teacher, 'subjects_taught' | 'classes_taught'> {
+  subjects_taught: string[] // Use array for form checkboxes
+  classes_taught: string[] // Use array for form checkboxes
+}
+
+const form = ref<TeacherFormData>({
   teacher_name: '',
   date_of_birth: '',
   joining_date: '', // Empty initially to show placeholder
@@ -854,7 +863,7 @@ const form = ref<Teacher>({
   religion: '', // Empty initially, no pre-selection
   gender: '', // Empty initially, no pre-selection
   aadhaar_number: '',
-  area_village: '',
+  
   subjects_taught: [],
   classes_taught: [],
   school_id: '',
@@ -906,7 +915,7 @@ const validateAreaVillage = (event: Event) => {
   const letterOnlyValue = value.replace(/[^a-zA-Z\s]/g, '')
   
   // Update the form value with only letters and spaces
-  form.value.area_village = letterOnlyValue
+  
 }
 
 // Validate department name to ensure it only contains letters and spaces
@@ -957,7 +966,7 @@ const validateAttachmentDesignation = (event: Event) => {
   form.value.attachment[0].designation = letterOnlyValue
 }
 
-// Validate phone number to ensure it only contains numbers
+// Validate phone number to ensure it only contains numbers and is exactly 10 digits
 const validatePhoneNumber = (event: Event) => {
   const target = event.target as HTMLInputElement
   const value = target.value
@@ -965,8 +974,14 @@ const validatePhoneNumber = (event: Event) => {
   // Remove any non-numeric characters
   const numericValue = value.replace(/[^0-9]/g, '')
   
-  // Update the form value with only numbers
-  form.value.phone_number = numericValue
+  // Limit to exactly 10 digits
+  const limitedValue = numericValue.slice(0, 10)
+  
+  // Update the form value with only numbers (max 10 digits)
+  form.value.phone_number = limitedValue
+  
+  // Update the input field value to show the limited result
+  target.value = limitedValue
 }
 
 // Validate Aadhaar number to ensure it only contains numbers
@@ -1013,16 +1028,30 @@ const districts = ref<District[]>([])
 const mediums = ref<Medium[]>([])
 const managementTypes = ref<ManagementType[]>([])
 const blockOffices = ref<BlockOffice[]>([])
-const attachmentRdBlocks = ref<{id: number, name: string}[]>([])
-const attachmentVillages = ref<{id: number, name: string}[]>([])
+const schoolTypes = ref<SchoolType[]>([])
+const attachmentRdBlocks = ref<{id: number, name: string}[][]>([])
+const attachmentVillages = ref<{id: number, name: string}[][]>([])
 const postingRdBlocks = ref<{id: number, name: string}[][]>([])
 const postingVillages = ref<{id: number, name: string}[][]>([])
 
 const loadSchools = async () => {
   try {
+    console.log('Loading schools...')
     const response = await schoolsApi.getAll(1, 1000) // Load all schools
     if (response.data.success) {
-      schools.value = response.data.data?.schools || []
+      console.log('School data from API:', response.data.data?.slice(0, 2))
+      
+      // Schools are now pre-transformed by the backend
+      schools.value = response.data.data || []
+      console.log('Schools loaded:', schools.value.length)
+      console.log('Sample school:', schools.value[0])
+      console.log('Sample school enum fields:', {
+        management: schools.value[0]?.management,
+        block_office: schools.value[0]?.block_office,
+        school_type: schools.value[0]?.school_type,
+        rd_block: schools.value[0]?.rd_block,
+        habitation: schools.value[0]?.habitation
+      })
     }
   } catch (error) {
     console.error('Failed to load schools:', error)
@@ -1085,6 +1114,17 @@ const loadReligions = async () => {
   }
 }
 
+const loadSchoolTypes = async () => {
+  try {
+    const response = await schoolTypesApi.getActive()
+    if (response.data.success) {
+      schoolTypes.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Failed to load school types:', error)
+  }
+}
+
 const onSchoolChange = async () => {
   const selectedSchool = schools.value.find(s => s.school_id === selectedSchoolId.value)
   if (selectedSchool) {
@@ -1122,22 +1162,16 @@ const onSchoolChange = async () => {
     if (selectedSchool.rd_block) {
       try {
         // First get the district ID from the district name
-        const districtResponse = await fetch(`http://localhost:5000/api/locations/districts`)
-        if (districtResponse.ok) {
-          const districtData = await districtResponse.json()
-          if (districtData.success && districtData.data) {
-            const district = districtData.data.find((d: any) => d.name === selectedSchool.district)
-            if (district) {
-              // Now get RD Blocks for this district
-              const rdBlockResponse = await fetch(`http://localhost:5000/api/locations/rd-blocks/${district.id}`)
-              if (rdBlockResponse.ok) {
-                const rdBlockData = await rdBlockResponse.json()
-                if (rdBlockData.success && rdBlockData.data) {
-                  const rdBlock = rdBlockData.data.find((rb: any) => rb.id.toString() === selectedSchool.rd_block)
-                  if (rdBlock) {
-                    form.value.rd_block = rdBlock.name
-                  }
-                }
+        const districtResponse = await locationsApi.getDistricts()
+        if (districtResponse.data.success && districtResponse.data.data) {
+          const district = districtResponse.data.data.find((d: any) => d.name === selectedSchool.district)
+          if (district) {
+            // Now get RD Blocks for this district
+            const rdBlockResponse = await locationsApi.getRdBlocks(district.id)
+            if (rdBlockResponse.data.success && rdBlockResponse.data.data) {
+              const rdBlock = rdBlockResponse.data.data.find((rb: any) => rb.id.toString() === selectedSchool.rd_block)
+              if (rdBlock) {
+                form.value.rd_block = rdBlock.name
               }
             }
           }
@@ -1150,14 +1184,11 @@ const onSchoolChange = async () => {
     if (selectedSchool.habitation && selectedSchool.rd_block) {
       try {
         // Get villages for the RD Block
-        const habitationResponse = await fetch(`http://localhost:5000/api/locations/villages/${selectedSchool.rd_block}`)
-        if (habitationResponse.ok) {
-          const habitationData = await habitationResponse.json()
-          if (habitationData.success && habitationData.data) {
-            const habitation = habitationData.data.find((h: any) => h.id.toString() === selectedSchool.habitation)
-            if (habitation) {
-              form.value.habitation = habitation.name
-            }
+        const habitationResponse = await locationsApi.getVillages(parseInt(selectedSchool.rd_block))
+        if (habitationResponse.data.success && habitationResponse.data.data) {
+          const habitation = habitationResponse.data.data.find((h: any) => h.id.toString() === selectedSchool.habitation)
+          if (habitation) {
+            form.value.habitation = habitation.name
           }
         }
       } catch (error) {
@@ -1232,6 +1263,11 @@ const loadTeacher = async (teacherId: number) => {
               posting.to_date = ''
             }
           }
+          
+          // Fix school type format (replace underscores with hyphens)
+          if (posting.school_type) {
+            posting.school_type = posting.school_type.replace(/_/g, '-')
+          }
         })
       }
       
@@ -1293,20 +1329,85 @@ const loadTeacher = async (teacherId: number) => {
       
       // Use nextTick to ensure DOM is ready before setting form values
       await nextTick()
-      form.value = teacherData
+      
+      // Parse JSON strings to arrays for subjects_taught and classes_taught
+      const parsedTeacherData = {
+        ...teacherData,
+        subjects_taught: (() => {
+          try {
+            if (typeof teacherData.subjects_taught === 'string' && teacherData.subjects_taught) {
+              return JSON.parse(teacherData.subjects_taught)
+            }
+            return []
+          } catch (error) {
+            console.error('Error parsing subjects_taught:', error)
+            return []
+          }
+        })(),
+        classes_taught: (() => {
+          try {
+            if (typeof teacherData.classes_taught === 'string' && teacherData.classes_taught) {
+              return JSON.parse(teacherData.classes_taught)
+            }
+            return []
+          } catch (error) {
+            console.error('Error parsing classes_taught:', error)
+            return []
+          }
+        })()
+      }
+      
+      form.value = parsedTeacherData
       selectedSchoolId.value = teacherData.school_id
+      console.log('Set selectedSchoolId to:', selectedSchoolId.value)
+      console.log('Available schools:', schools.value.length)
+      console.log('Schools data:', schools.value.map(s => ({ id: s.school_id, name: s.school_name })))
+
       
       // Initialize posting_history if not present
       if (!form.value.posting_history) {
         form.value.posting_history = []
       }
       
-      // Ensure all posting history records have a status field
+      // Ensure all posting history records have a status field and load RD blocks/villages
       if (form.value.posting_history && form.value.posting_history.length > 0) {
-        form.value.posting_history.forEach(posting => {
+        form.value.posting_history.forEach(async (posting, index) => {
           if (!posting.status) {
             // If no status, set based on to_date
             posting.status = posting.to_date ? 'Completed' : 'Active'
+          }
+          
+          // Load RD blocks and villages for existing posting history items
+          if (posting.district) {
+            // Initialize arrays for this posting index
+            if (!postingRdBlocks.value[index]) {
+              postingRdBlocks.value[index] = []
+            }
+            if (!postingVillages.value[index]) {
+              postingVillages.value[index] = []
+            }
+            
+            // Load RD blocks for this district
+            try {
+              const districtId = await getDistrictId(posting.district)
+              const response = await locationsApi.getRdBlocks(districtId)
+              if (response.data.success) {
+                postingRdBlocks.value[index] = response.data.data || []
+                
+                // If RD block is set, also load villages
+                if (posting.rd_block) {
+                  const rdBlock = postingRdBlocks.value[index]?.find(rb => rb.name === posting.rd_block)
+                  if (rdBlock) {
+                    const villageResponse = await locationsApi.getVillages(rdBlock.id)
+                    if (villageResponse.data.success) {
+                      postingVillages.value[index] = villageResponse.data.data || []
+                    }
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Failed to load RD blocks for posting history:', error)
+            }
           }
         })
       }
@@ -1331,12 +1432,45 @@ const loadTeacher = async (teacherId: number) => {
         form.value.attachment = []
       }
       
-      // Ensure all attachment records have a status field
+      // Ensure all attachment records have a status field and load RD blocks/villages
       if (form.value.attachment && form.value.attachment.length > 0) {
-        form.value.attachment.forEach(attachment => {
+        form.value.attachment.forEach(async (attachment, index) => {
           if (!attachment.status) {
             // If no status, set based on end_date
             attachment.status = attachment.end_date ? 'Completed' : 'Active'
+          }
+          
+          // Load RD blocks and villages for existing attachment items
+          if (attachment.district) {
+            // Initialize arrays for this attachment index
+            if (!attachmentRdBlocks.value[index]) {
+              attachmentRdBlocks.value[index] = []
+            }
+            if (!attachmentVillages.value[index]) {
+              attachmentVillages.value[index] = []
+            }
+            
+            // Load RD blocks for this district
+            try {
+              const districtId = await getDistrictId(attachment.district)
+              const response = await locationsApi.getRdBlocks(districtId)
+              if (response.data.success) {
+                attachmentRdBlocks.value[index] = response.data.data || []
+                
+                // If RD block is set, also load villages
+                if (attachment.rd_block) {
+                  const rdBlock = attachmentRdBlocks.value[index]?.find(rb => rb.name === attachment.rd_block)
+                  if (rdBlock) {
+                    const villageResponse = await locationsApi.getVillages(rdBlock.id)
+                    if (villageResponse.data.success) {
+                      attachmentVillages.value[index] = villageResponse.data.data || []
+                    }
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Failed to load RD blocks for attachment:', error)
+            }
           }
         })
       }
@@ -1425,10 +1559,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!form.value.area_village) {
-    alert('Area/Village (Permanent Address) is required')
-    return
-  }
+
 
   // Validate phone number format (10 digits)
   if (!/^[0-9]{10}$/.test(form.value.phone_number)) {
@@ -1452,7 +1583,7 @@ const handleSubmit = async () => {
     'Religion': form.value.religion,
     'Gender': form.value.gender,
     'Aadhaar Number': form.value.aadhaar_number,
-    'Area/Village (Permanent Address)': form.value.area_village,
+
     'Subjects Taught': form.value.subjects_taught,
     'Classes Taught': form.value.classes_taught,
     'School': selectedSchoolId.value
@@ -1469,6 +1600,17 @@ const handleSubmit = async () => {
 
   // Clean up form data before sending (remove undefined/null values)
   const cleanFormData = { ...form.value }
+  
+  // Convert arrays back to JSON strings for API compatibility
+  const subjectsString = JSON.stringify(cleanFormData.subjects_taught)
+  const classesString = JSON.stringify(cleanFormData.classes_taught)
+  
+  // Create API payload that matches Teacher interface
+  const apiPayload: Teacher = {
+    ...cleanFormData,
+    subjects_taught: subjectsString,
+    classes_taught: classesString
+  }
   
   // Remove undefined/null values from nested arrays
   if (cleanFormData.posting_history) {
@@ -1501,45 +1643,13 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    console.log('=== FORM SUBMISSION DEBUG ===')
-    console.log('Original form data:', form.value)
-    console.log('Cleaned form data:', cleanFormData)
-    console.log('Form data keys:', Object.keys(cleanFormData))
-    console.log('Form data JSON:', JSON.stringify(cleanFormData, null, 2))
-    
-    // Check specific fields that might be causing issues
-    console.log('Deputation data:', form.value.deputation)
-    console.log('Deputation data details:', form.value.deputation?.map(d => ({
-      department_name: d.department_name,
-      designation: d.designation,
-      joining_date: d.joining_date,
-      end_date: d.end_date,
-      status: d.status,
-      hasStatus: 'status' in d,
-      statusType: typeof d.status
-    })))
-    
-    console.log('Posting history data:', form.value.posting_history)
-    console.log('Posting history details:', form.value.posting_history?.map(p => ({
-      school_name: p.school_name,
-      from_date: p.from_date,
-      to_date: p.to_date,
-      status: p.status,
-      hasStatus: 'status' in p,
-      statusType: typeof p.status
-    })))
-    
-    console.log('Attachment data:', form.value.attachment)
-    console.log('Selected school ID:', selectedSchoolId.value)
-    console.log('=== END FORM DEBUG ===')
+
     
     let response
     if (isEditing.value) {
-      console.log('Sending UPDATE request to:', `/teachers/${route.params.id}`)
-      response = await teachersApi.update(parseInt(route.params.id as string), cleanFormData)
+      response = await teachersApi.update(parseInt(route.params.id as string), apiPayload)
     } else {
-      console.log('Sending CREATE request to:', '/teachers')
-      response = await teachersApi.create(cleanFormData)
+      response = await teachersApi.create(apiPayload)
     }
 
     if (response.data.success) {
@@ -1576,7 +1686,7 @@ const addNewPosting = () => {
   const newIndex = form.value.posting_history.length
   form.value.posting_history.push({
     school_name: '',
-    school_type: 'Co-educational' as 'Co-educational' | 'Girls',
+    school_type: schoolTypes.value.length > 0 ? schoolTypes.value[0].name : '',
     medium: '',
     management: '',
     block_office: '',
@@ -1604,27 +1714,55 @@ const removePosting = (index: number) => {
   postingVillages.value.splice(index, 1)
 }
 
-const onPostingSchoolChange = (posting: any) => {
+const onPostingSchoolChange = async (posting: any) => {
+  console.log('onPostingSchoolChange called with posting:', posting)
+  console.log('Available schools:', schools.value.length)
+  
   const selectedSchool = schools.value.find(s => s.school_name === posting.school_name)
+  console.log('Selected school:', selectedSchool)
+  
   if (selectedSchool) {
+    console.log('School data:', {
+      block_office: selectedSchool.block_office,
+      rd_block: selectedSchool.rd_block,
+      habitation: selectedSchool.habitation,
+      district: selectedSchool.district
+    })
+    
     // Auto-fill school details
-    posting.school_type = selectedSchool.school_type
+    posting.school_type = selectedSchool.school_type ? selectedSchool.school_type.replace(/_/g, '-') : ''
     posting.medium = selectedSchool.medium
-            // Ensure the management type is active
-        if (selectedSchool.management && managementTypes.value.some(m => m.name === selectedSchool.management)) {
-          posting.management = selectedSchool.management
-        } else if (managementTypes.value.length > 0) {
-          posting.management = managementTypes.value[0].name
-        } else {
-          posting.management = ''
-        }
+    // Ensure the management type is active
+    if (selectedSchool.management && managementTypes.value.some(m => m.name === selectedSchool.management)) {
+      posting.management = selectedSchool.management
+    } else if (managementTypes.value.length > 0) {
+      posting.management = managementTypes.value[0].name
+    } else {
+      posting.management = ''
+    }
     posting.block_office = selectedSchool.block_office
     posting.district = selectedSchool.district || ''
     posting.rd_block = selectedSchool.rd_block || ''
-    posting.pincode = selectedSchool.pincode || ''
     posting.habitation = selectedSchool.habitation || ''
+    posting.pincode = selectedSchool.pincode || ''
     posting.habitation_class = selectedSchool.habitation_class || undefined
     posting.habitation_category = selectedSchool.habitation_category || undefined
+    
+    console.log('After populating, posting data:', {
+      block_office: posting.block_office,
+      rd_block: posting.rd_block,
+      habitation: posting.habitation,
+      district: posting.district
+    })
+    
+    // If district is set, load RD blocks and villages
+    if (posting.district) {
+      // Find the posting index to load RD blocks
+      const postingIndex = form.value.posting_history.findIndex(p => p === posting)
+      if (postingIndex !== -1) {
+        await onPostingDistrictChange(posting, postingIndex)
+      }
+    }
   }
 }
 
@@ -1659,6 +1797,7 @@ const onDeputationEndDateChange = (deputation: any) => {
 }
 
 const addNewAttachment = () => {
+  const newIndex = form.value.attachment.length
   form.value.attachment.push({
     department_name: '',
     designation: '',
@@ -1669,10 +1808,18 @@ const addNewAttachment = () => {
     end_date: '',
     status: 'Active' as 'Active' | 'Completed'
   })
+  
+  // Initialize arrays for the new attachment
+  attachmentRdBlocks.value[newIndex] = []
+  attachmentVillages.value[newIndex] = []
 }
 
 const removeAttachment = (index: number) => {
   form.value.attachment.splice(index, 1)
+  
+  // Remove arrays for the deleted attachment
+  attachmentRdBlocks.value.splice(index, 1)
+  attachmentVillages.value.splice(index, 1)
 }
 
 const onAttachmentEndDateChange = (attachment: any) => {
@@ -1684,21 +1831,33 @@ const onAttachmentEndDateChange = (attachment: any) => {
 }
 
 const onAttachmentDistrictChange = async (attachment: any) => {
+  // Find the attachment index
+  const attachmentIndex = form.value.attachment.findIndex(a => a === attachment)
+  if (attachmentIndex === -1) return
+  
   // Reset RD block and village selections
   attachment.rd_block = ''
   attachment.habitation = ''
-  attachmentRdBlocks.value = []
-  attachmentVillages.value = []
+  
+  // Initialize arrays if they don't exist
+  if (!attachmentRdBlocks.value[attachmentIndex]) {
+    attachmentRdBlocks.value[attachmentIndex] = []
+  }
+  if (!attachmentVillages.value[attachmentIndex]) {
+    attachmentVillages.value[attachmentIndex] = []
+  }
+  
+  // Clear existing data
+  attachmentRdBlocks.value[attachmentIndex] = []
+  attachmentVillages.value[attachmentIndex] = []
   
   // Load RD blocks for selected district
   if (attachment.district) {
     try {
-      const response = await fetch(`http://localhost:5000/api/locations/rd-blocks/${getDistrictId(attachment.district)}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          attachmentRdBlocks.value = data.data || []
-        }
+      const districtId = await getDistrictId(attachment.district)
+      const response = await locationsApi.getRdBlocks(districtId)
+      if (response.data.success) {
+        attachmentRdBlocks.value[attachmentIndex] = response.data.data || []
       }
     } catch (error) {
       console.error('Failed to load RD blocks:', error)
@@ -1706,9 +1865,29 @@ const onAttachmentDistrictChange = async (attachment: any) => {
   }
 }
 
-const getDistrictId = (districtName: string): number => {
-  const district = districts.value.find(d => d.name === districtName)
-  return district?.id || 1
+const getDistrictId = async (districtName: string): Promise<number> => {
+  try {
+    // First try to find in the loaded districts
+    const district = districts.value.find(d => d.name === districtName)
+    if (district && district.id) {
+      return district.id
+    }
+    
+    // If not found, fetch from locations API
+    const response = await locationsApi.getDistricts()
+    if (response.data.success && response.data.data) {
+      const locationDistrict = response.data.data.find((d: any) => d.name === districtName)
+      if (locationDistrict) {
+        return locationDistrict.id
+      }
+    }
+    
+    // Default fallback
+    return 1
+  } catch (error) {
+    console.error('Failed to get district ID:', error)
+    return 1
+  }
 }
 
 // Watch for changes in classes_taught to filter subjects
@@ -1741,22 +1920,32 @@ watch(() => form.value.classes_taught, async (newClasses) => {
   }
 }, { immediate: true })
 
+
+
 const onAttachmentRdBlockChange = async (attachment: any) => {
+  // Find the attachment index
+  const attachmentIndex = form.value.attachment.findIndex(a => a === attachment)
+  if (attachmentIndex === -1) return
+  
   // Reset village selection
   attachment.habitation = ''
-  attachmentVillages.value = []
+  
+  // Initialize villages array if it doesn't exist
+  if (!attachmentVillages.value[attachmentIndex]) {
+    attachmentVillages.value[attachmentIndex] = []
+  }
+  
+  // Clear existing villages
+  attachmentVillages.value[attachmentIndex] = []
   
   // Load villages for selected RD block
   if (attachment.rd_block) {
     try {
-      const rdBlock = attachmentRdBlocks.value.find(rb => rb.name === attachment.rd_block)
+      const rdBlock = attachmentRdBlocks.value[attachmentIndex]?.find(rb => rb.name === attachment.rd_block)
       if (rdBlock) {
-        const response = await fetch(`http://localhost:5000/api/locations/villages/${rdBlock.id}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success) {
-            attachmentVillages.value = data.data || []
-          }
+        const response = await locationsApi.getVillages(rdBlock.id)
+        if (response.data.success) {
+          attachmentVillages.value[attachmentIndex] = response.data.data || []
         }
       }
     } catch (error) {
@@ -1766,9 +1955,11 @@ const onAttachmentRdBlockChange = async (attachment: any) => {
 }
 
 const onPostingDistrictChange = async (posting: any, index: number) => {
-  // Reset RD block and habitation selections
-  posting.rd_block = ''
-  posting.habitation = ''
+  console.log('onPostingDistrictChange called:', { posting: posting.district, index })
+  
+  // Store the current values to preserve them
+  const currentRdBlock = posting.rd_block
+  const currentHabitation = posting.habitation
   
   // Initialize arrays if they don't exist
   if (!postingRdBlocks.value[index]) {
@@ -1785,11 +1976,19 @@ const onPostingDistrictChange = async (posting: any, index: number) => {
   // Load RD blocks for selected district
   if (posting.district) {
     try {
-      const response = await fetch(`http://localhost:5000/api/locations/rd-blocks/${getDistrictId(posting.district)}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          postingRdBlocks.value[index] = data.data || []
+      console.log('Loading RD blocks for district:', posting.district)
+      const districtId = await getDistrictId(posting.district)
+      console.log('District ID:', districtId)
+      
+      const response = await locationsApi.getRdBlocks(districtId)
+      if (response.data.success) {
+        postingRdBlocks.value[index] = response.data.data || []
+        console.log('Loaded RD blocks:', postingRdBlocks.value[index])
+        
+        // Restore the rd_block value if it exists in the loaded options
+        if (currentRdBlock && postingRdBlocks.value[index].some(rb => rb.name === currentRdBlock)) {
+          posting.rd_block = currentRdBlock
+          console.log('Restored rd_block value:', posting.rd_block)
         }
       }
     } catch (error) {
@@ -1799,8 +1998,10 @@ const onPostingDistrictChange = async (posting: any, index: number) => {
 }
 
 const onPostingRdBlockChange = async (posting: any, index: number) => {
-  // Reset habitation selection
-  posting.habitation = ''
+  console.log('onPostingRdBlockChange called:', { posting: posting.rd_block, index })
+  
+  // Store the current habitation value to preserve it
+  const currentHabitation = posting.habitation
   
   // Initialize villages array if it doesn't exist
   if (!postingVillages.value[index]) {
@@ -1813,13 +2014,20 @@ const onPostingRdBlockChange = async (posting: any, index: number) => {
   // Load villages for selected RD block
   if (posting.rd_block) {
     try {
+      console.log('Loading villages for RD block:', posting.rd_block)
       const rdBlock = postingRdBlocks.value[index]?.find(rb => rb.name === posting.rd_block)
+      console.log('Found RD block:', rdBlock)
+      
       if (rdBlock) {
-        const response = await fetch(`http://localhost:5000/api/locations/villages/${rdBlock.id}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success) {
-            postingVillages.value[index] = data.data || []
+        const response = await locationsApi.getVillages(rdBlock.id)
+        if (response.data.success) {
+          postingVillages.value[index] = response.data.data || []
+          console.log('Loaded villages:', postingVillages.value[index])
+          
+          // Restore the habitation value if it exists in the loaded options
+          if (currentHabitation && postingVillages.value[index].some(v => v.name === currentHabitation)) {
+            posting.habitation = currentHabitation
+            console.log('Restored habitation value:', posting.habitation)
           }
         }
       }
@@ -1837,7 +2045,8 @@ onMounted(async () => {
     loadMediums(), 
     loadManagementTypes(), 
     loadBlockOffices(),
-    loadReligions()
+    loadReligions(),
+    loadSchoolTypes()
   ])
   console.log('All data loaded, management types:', managementTypes.value.map(m => m.name))
   if (isEditing.value) {
@@ -1856,7 +2065,8 @@ watch(() => route.path, async (newPath, oldPath) => {
       loadMediums(), 
       loadManagementTypes(), 
       loadBlockOffices(),
-      loadReligions()
+      loadReligions(),
+      loadSchoolTypes()
     ])
     
     // Re-validate form data after refresh
@@ -1878,7 +2088,8 @@ onMounted(() => {
         loadMediums(), 
         loadManagementTypes(), 
         loadBlockOffices(),
-        loadReligions()
+        loadReligions(),
+        loadSchoolTypes()
       ])
       
       // Re-validate form data after refresh

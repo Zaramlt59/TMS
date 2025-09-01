@@ -26,6 +26,8 @@
             <div>
               <label class="form-label">School ID *</label>
               <input
+                id="school-id"
+                name="school-id"
                 v-model="form.school_id"
                 type="text"
                 required
@@ -39,6 +41,8 @@
             <div>
               <label class="form-label">School Name *</label>
               <input
+                id="school-name"
+                name="school-name"
                 v-model="form.school_name"
                 type="text"
                 required
@@ -74,6 +78,8 @@
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <label v-for="level in SCHOOL_LEVELS" :key="level" class="flex items-center">
                 <input
+                  :id="`school-level-${level}`"
+                  :name="`school-level-${level}`"
                   type="checkbox"
                   :value="level"
                   v-model="form.school_level"
@@ -102,6 +108,9 @@
                   {{ office }}
                 </option>
               </select>
+              <p v-if="isEditing && form.block_office && !BLOCK_OFFICES.includes(form.block_office as any)" class="text-sm text-orange-600 mt-1">
+                Note: Current value "{{ form.block_office }}" is not in the standard list. You may need to update it.
+              </p>
             </div>
           </div>
         </div>
@@ -126,6 +135,8 @@
                                      <div>
               <label class="form-label">Pincode</label>
               <input
+                id="pincode"
+                name="pincode"
                 v-model="form.pincode"
                 type="text"
                 class="form-input"
@@ -168,6 +179,8 @@
                          <div>
                <label class="form-label">School Phone</label>
                <input
+                 id="school-phone"
+                 name="school-phone"
                  v-model="form.school_phone"
                  type="tel"
                  class="form-input"
@@ -180,6 +193,8 @@
             <div>
               <label class="form-label">School Email</label>
               <input
+                id="school-email"
+                name="school-email"
                 v-model="form.school_email"
                 type="email"
                 class="form-input"
@@ -215,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { schoolsApi, districtsApi, mediumsApi, managementTypesApi, schoolTypesApi, locationsApi } from '../services/api'
 import type { School, District, Medium, ManagementType, SchoolType } from '../types'
@@ -227,11 +242,29 @@ import {
 } from '../constants'
 import LocationDropdowns from '../components/LocationDropdowns.vue'
 
+// Helper function to format underscores to spaces
+const formatDisplayText = (text: string): string => {
+  if (!text) return ''
+  return text.replace(/_/g, ' ')
+}
+
+// Helper function to extract school ID from route
+const extractSchoolId = (route: any): string | undefined => {
+  // Since we're now using school_id consistently, just return the route parameter
+  if (route.params.id && route.params.id !== 'undefined' && route.params.id !== 'null') {
+    return route.params.id as string
+  }
+  return undefined
+}
+
 const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
-const isEditing = computed(() => !!route.params.id)
+const isEditing = computed(() => {
+  const id = route.params.id
+  return !!(id && id !== 'undefined' && id !== 'null')
+})
 
 const districts = ref<District[]>([])
 const mediums = ref<Medium[]>([])
@@ -414,10 +447,27 @@ const setDefaultLocationSelection = () => {
 }
 
 const loadSchool = async (schoolId: string) => {
+  // Validate school ID before making API call
+  if (!schoolId || schoolId === 'undefined' || schoolId === 'null') {
+    console.error('Invalid school ID provided:', schoolId)
+    return
+  }
+  
   try {
-    const response = await schoolsApi.getById(schoolId)
+    console.log('=== LOAD SCHOOL DEBUG ===')
+    console.log('Loading school with ID:', schoolId)
+    console.log('Route params:', route.params)
+    console.log('Is editing:', isEditing.value)
+    
+    // Get the school by school_id (business identifier)
+    const response = await schoolsApi.getBySchoolId(schoolId)
+    console.log('API response:', response)
+    
     if (response.data.success && response.data.data) {
       const schoolData = response.data.data as School
+      console.log('School data received:', schoolData)
+      console.log('School data type:', typeof schoolData)
+      console.log('School data keys:', Object.keys(schoolData))
       
       // Convert School type to SchoolFormData type
       form.value = {
@@ -427,29 +477,62 @@ const loadSchool = async (schoolId: string) => {
           : []
       }
       
-      // Ensure district has a valid value
-      if (!form.value.district || !districts.value.some(d => d.name === form.value.district)) {
-        form.value.district = 'Aizawl'
-      }
-      if (!form.value.medium || !mediums.value.some(m => m.name === form.value.medium)) {
-        form.value.medium = 'English'
-      }
-      if (!form.value.management || form.value.management === 'Select management type' || !managementTypes.value.some(m => m.name === form.value.management)) {
-        // Set to first available active management type
-        if (managementTypes.value.length > 0) {
-          form.value.management = managementTypes.value[0].name
-        } else {
-          form.value.management = 'Select management type'
-        }
+      console.log('Form populated with:', form.value)
+      console.log('Form values after population:')
+      console.log('- school_id:', form.value.school_id)
+      console.log('- school_name:', form.value.school_name)
+      console.log('- school_type:', form.value.school_type)
+      console.log('- management:', form.value.management)
+      console.log('- medium:', form.value.medium)
+      console.log('- block_office:', form.value.block_office)
+      console.log('- district:', form.value.district)
+      console.log('- rd_block:', form.value.rd_block)
+      console.log('- habitation:', form.value.habitation)
+      console.log('- pincode:', form.value.pincode)
+      console.log('- school_phone:', form.value.school_phone)
+      console.log('- school_email:', form.value.school_email)
+      console.log('- habitation_class:', form.value.habitation_class)
+      console.log('- habitation_category:', form.value.habitation_category)
+      
+      // Ensure block_office is properly set and formatted
+      if (schoolData.block_office) {
+        form.value.block_office = formatDisplayText(schoolData.block_office)
+        console.log('Setting formatted block_office to:', form.value.block_office)
       }
       
-      if (!form.value.school_type || !schoolTypes.value.some(t => t.name === form.value.school_type)) {
-        // Set to first available active school type
-        if (schoolTypes.value.length > 0) {
-          form.value.school_type = schoolTypes.value[0].name as 'Co-educational' | 'Girls'
-        } else {
-          form.value.school_type = 'Co-educational' // Default value
-        }
+      // Ensure all required fields have values from the database
+      if (schoolData.school_type) {
+        form.value.school_type = schoolData.school_type
+      }
+      if (schoolData.management) {
+        form.value.management = schoolData.management
+      }
+      if (schoolData.medium) {
+        form.value.medium = schoolData.medium
+      }
+      if (schoolData.district) {
+        form.value.district = schoolData.district
+      }
+      if (schoolData.rd_block) {
+        form.value.rd_block = schoolData.rd_block
+      }
+      if (schoolData.habitation) {
+        form.value.habitation = schoolData.habitation
+      }
+      if (schoolData.pincode) {
+        form.value.pincode = schoolData.pincode
+      }
+      if (schoolData.school_phone) {
+        form.value.school_phone = schoolData.school_phone
+      }
+      if (schoolData.school_email) {
+        form.value.school_email = schoolData.school_email
+      }
+      if (schoolData.habitation_class) {
+        form.value.habitation_class = schoolData.habitation_class
+      }
+      if (schoolData.habitation_category) {
+        form.value.habitation_category = schoolData.habitation_category
       }
 
       // Set location selection based on form values
@@ -457,6 +540,7 @@ const loadSchool = async (schoolId: string) => {
         const district = districts.value.find(d => d.name === form.value.district)
         if (district && district.id) {
           locationSelection.value.districtId = district.id
+          console.log('Setting district ID:', district.id)
           // Load RD blocks for this district
           await loadRdBlocksForDistrict(district.id)
           
@@ -465,6 +549,7 @@ const loadSchool = async (schoolId: string) => {
             const rdBlock = rdBlocks.value.find(rb => rb.name === form.value.rd_block)
             if (rdBlock && rdBlock.id) {
               locationSelection.value.rdBlockId = rdBlock.id
+              console.log('Setting RD block ID:', rdBlock.id)
               // Load villages for this RD block
               await loadVillagesForRdBlock(rdBlock.id)
               
@@ -473,15 +558,23 @@ const loadSchool = async (schoolId: string) => {
                 const village = villages.value.find(v => v.name === form.value.habitation)
                 if (village && village.id) {
                   locationSelection.value.villageId = village.id
+                  console.log('Setting village ID:', village.id)
                 }
               }
             }
           }
         }
       }
+      
+      console.log('=== SCHOOL LOADING COMPLETED ===')
+      console.log('Final form values:', form.value)
+    } else {
+      console.error('Failed to load school: API response not successful')
+      console.error('Response data:', response.data)
     }
   } catch (error) {
     console.error('Failed to load school:', error)
+    console.error('Error details:', error)
   }
 }
 
@@ -507,7 +600,8 @@ const handleSubmit = async () => {
 
     let response
     if (isEditing.value) {
-      response = await schoolsApi.update(route.params.id as string, schoolData)
+      // For updates, use the school_id (business identifier) since that's what we're using for navigation
+      response = await schoolsApi.updateBySchoolId(form.value.school_id, schoolData)
     } else {
       response = await schoolsApi.create(schoolData)
     }
@@ -526,7 +620,22 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
+  console.log('=== SCHOOL FORM MOUNTED ===')
+  console.log('SchoolForm mounted, isEditing:', isEditing.value)
+  console.log('Route params on mount:', route.params)
+  console.log('Route path:', route.path)
+  console.log('Route name:', route.name)
+  console.log('Full route object:', route)
+  console.log('Route fullPath:', route.fullPath)
+  console.log('Route hash:', route.hash)
+  console.log('Route query:', route.query)
+  console.log('Route matched:', route.matched)
+  console.log('Route meta:', route.meta)
+  console.log('Route redirectedFrom:', route.redirectedFrom)
+  
+  // First, load all dropdown data
   await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes()])
+  console.log('All dropdown data loaded')
   
   // Set default location selection after districts are loaded
   setDefaultLocationSelection()
@@ -541,24 +650,45 @@ onMounted(async () => {
     form.value.school_type = schoolTypes.value[0].name as 'Co-educational' | 'Girls'
   }
   
+  // If editing, load the school data
   if (isEditing.value) {
-    await loadSchool(route.params.id as string)
+    console.log('Editing mode detected, loading school data...')
+    
+    // Check if we have a valid ID first
+    if (route.params.id === 'undefined' || route.params.id === 'null') {
+      console.error('Invalid route parameter detected:', route.params.id)
+      console.log('Redirecting to schools list...')
+      router.push('/schools')
+      return
+    }
+    
+    // Use the helper function to extract school ID
+    const schoolId = extractSchoolId(route)
+    
+    // If we have a school ID, load the data
+    if (schoolId) {
+      console.log('School ID resolved:', schoolId, 'loading school data...')
+      await loadSchool(schoolId)
+    } else {
+      console.error('Could not resolve school ID from route')
+      router.push('/schools')
+    }
+  } else {
+    console.log('Not editing - this is a new school form')
   }
+  
+  console.log('=== MOUNT COMPLETED ===')
 })
 
-// Watch for route changes to refresh data when user navigates back from Settings
-watch(() => route.path, async (newPath, oldPath) => {
-  // If user navigated back to this form from Settings, refresh the data
-  if (newPath === route.path && oldPath && oldPath.includes('/settings')) {
-    console.log('Refreshing form data after returning from Settings...')
-    await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes()])
-    
-    // Re-validate form data after refresh
-    if (isEditing.value) {
-      await loadSchool(route.params.id as string)
-    }
+// Watch for route parameter changes to handle navigation
+watch(() => route.params.id, async (newId, oldId) => {
+  console.log('Route params changed:', { newId, oldId, isEditing: isEditing.value })
+  
+  if (isEditing.value && newId && newId !== oldId && newId !== 'undefined' && newId !== 'null') {
+    console.log('Route ID changed, loading school data for new ID:', newId)
+    await loadSchool(newId as string)
   }
-})
+}, { immediate: true })
 
 // Add focus event listener to refresh data when user returns to the form
 onMounted(() => {
@@ -569,7 +699,7 @@ onMounted(() => {
       await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes()])
       
       // Re-validate form data after refresh
-      if (isEditing.value) {
+      if (isEditing.value && route.params.id && route.params.id !== 'undefined' && route.params.id !== 'null') {
         await loadSchool(route.params.id as string)
       }
     }

@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { School, Teacher, District, Medium, ManagementType, BlockOffice, Subject, SchoolType, Religion, ApiResponse } from '../types'
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,14 +16,23 @@ export const schoolsApi = {
   getById: (id: string) => 
     api.get<ApiResponse<School>>(`/schools/${id}`),
   
+  getBySchoolId: (schoolId: string) => 
+    api.get<ApiResponse<School>>(`/schools/school-id/${schoolId}`),
+  
   create: (data: School) => 
     api.post<ApiResponse<School>>('/schools', data),
   
   update: (id: string, data: Partial<School>) => 
     api.put<ApiResponse<School>>(`/schools/${id}`, data),
   
+  updateBySchoolId: (schoolId: string, data: Partial<School>) => 
+    api.put<ApiResponse<School>>(`/schools/school-id/${schoolId}`, data),
+  
   delete: (id: string) => 
     api.delete<ApiResponse>(`/schools/${id}`),
+  
+  deleteBySchoolId: (schoolId: string) => 
+    api.delete<ApiResponse>(`/schools/school-id/${schoolId}`),
   
   search: (query: string) => 
     api.get<ApiResponse<School[]>>(`/schools/search?q=${encodeURIComponent(query)}`),

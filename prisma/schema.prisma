@@ -1,0 +1,408 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model attachments {
+  id              Int                @id @default(autoincrement())
+  teacher_id      Int
+  department_name String             @db.VarChar(255)
+  designation     String             @db.VarChar(255)
+  district        String             @db.VarChar(100)
+  rd_block        String?            @db.VarChar(100)
+  habitation      String?            @db.VarChar(255)
+  joining_date    DateTime           @db.Date
+  end_date        DateTime?          @db.Date
+  status          attachments_status @default(Active)
+  created_at      DateTime           @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?          @db.DateTime(0)
+  teachers        teachers           @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "attachments_ibfk_1")
+
+  @@index([teacher_id], map: "teacher_id")
+}
+
+model block_offices {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean?  @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model deputations {
+  id              Int                @id @default(autoincrement())
+  teacher_id      Int
+  department_name String             @db.VarChar(255)
+  designation     String             @db.VarChar(255)
+  joining_date    DateTime           @db.Date
+  end_date        DateTime?          @db.Date
+  status          deputations_status @default(Active)
+  created_at      DateTime           @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?          @db.DateTime(0)
+  teachers        teachers           @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "deputations_ibfk_1")
+
+  @@index([teacher_id], map: "teacher_id")
+}
+
+model districts {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean?    @default(true)
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+  updated_at DateTime    @default(now()) @db.Timestamp(0)
+  rd_blocks  rd_blocks[]
+
+  @@index([name], map: "idx_districts_name")
+}
+
+model management_types {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean?  @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model mediums {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean?  @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model posting_histories {
+  id                  Int                                    @id @default(autoincrement())
+  teacher_id          Int
+  school_name         String                                 @db.VarChar(255)
+  school_type         posting_histories_school_type
+  medium              String                                 @db.VarChar(100)
+  management          String                                 @db.VarChar(100)
+  block_office        String                                 @db.VarChar(255)
+  district            String                                 @db.VarChar(100)
+  rd_block            String?                                @db.VarChar(100)
+  pincode             String?                                @db.VarChar(10)
+  habitation          String?                                @db.VarChar(255)
+  habitation_class    posting_histories_habitation_class?
+  habitation_category posting_histories_habitation_category?
+  from_date           DateTime                               @db.Date
+  to_date             DateTime?                              @db.Date
+  status              posting_histories_status?              @default(Active)
+  created_at          DateTime                               @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?                              @db.DateTime(0)
+  teachers            teachers                               @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "posting_histories_ibfk_1")
+
+  @@index([teacher_id], map: "teacher_id")
+}
+
+model rd_blocks {
+  id          Int        @id @default(autoincrement())
+  district_id Int
+  name        String     @db.VarChar(100)
+  is_active   Boolean?   @default(true)
+  created_at  DateTime   @default(now()) @db.Timestamp(0)
+  updated_at  DateTime   @default(now()) @db.Timestamp(0)
+  districts   districts  @relation(fields: [district_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "rd_blocks_ibfk_1")
+  villages    villages[]
+
+  @@unique([district_id, name], map: "unique_rd_block_per_district")
+  @@index([district_id], map: "idx_rd_blocks_district_id")
+}
+
+model religions {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean? @default(true)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model school_types {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean? @default(true)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model schools {
+  id                  Int                          @id @default(autoincrement())
+  school_id           String                       @unique(map: "school_id") @db.VarChar(50)
+  school_name         String                       @db.VarChar(255)
+  school_type         schools_school_type
+  school_level        String                       @db.Text
+  management          schools_management
+  medium              schools_medium
+  pincode             String?                      @db.VarChar(10)
+  district            String?                      @db.VarChar(100)
+  rd_block            String?                      @db.VarChar(100)
+  school_phone        String?                      @db.VarChar(20)
+  school_email        String?                      @db.VarChar(255)
+  habitation          String?                      @db.VarChar(255)
+  habitation_class    schools_habitation_class?
+  habitation_category schools_habitation_category?
+  block_office        schools_block_office
+  created_at          DateTime                     @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?                    @db.DateTime(0)
+  teachers            teachers[]
+
+  @@index([district], map: "idx_schools_district")
+  @@index([school_id], map: "idx_schools_school_id")
+}
+
+model subjects {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique(map: "name") @db.VarChar(100)
+  code       String?  @db.VarChar(20)
+  classes    String?  @db.VarChar(500)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model teachers {
+  id                  Int                           @id @default(autoincrement())
+  teacher_name        String                        @db.VarChar(255)
+  date_of_birth       DateTime                      @db.Date
+  joining_date        DateTime                      @db.Date
+  phone_number        String?                       @db.VarChar(20)
+  email               String?                       @db.VarChar(255)
+  social_group        teachers_social_group
+  religion            teachers_religion
+  gender              teachers_gender
+  aadhaar_number      String?                       @db.VarChar(12)
+  area_village        String?                       @db.VarChar(255)
+  subjects_taught     String                        @db.Text
+  classes_taught      String                        @db.Text
+  school_id           String                        @db.VarChar(50)
+  current_school_name String                        @db.VarChar(255)
+  school_level        String                        @db.Text
+  management          teachers_management
+  medium              teachers_medium
+  habitation          String?                       @db.VarChar(255)
+  pincode             String?                       @db.VarChar(10)
+  district            String?                       @db.VarChar(100)
+  rd_block            String?                       @db.VarChar(100)
+  school_phone        String?                       @db.VarChar(20)
+  habitation_class    teachers_habitation_class?
+  habitation_category teachers_habitation_category?
+  block_office        teachers_block_office
+  created_at          DateTime                      @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?                     @db.DateTime(0)
+  attachments         attachments[]
+  deputations         deputations[]
+  posting_histories   posting_histories[]
+  schools             schools                       @relation(fields: [school_id], references: [school_id], onDelete: Cascade, onUpdate: Restrict, map: "teachers_ibfk_1")
+
+  @@index([district], map: "idx_teachers_district")
+  @@index([school_id], map: "idx_teachers_school_id")
+}
+
+model villages {
+  id          Int       @id @default(autoincrement())
+  rd_block_id Int
+  name        String    @db.VarChar(100)
+  is_active   Boolean?  @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @db.Timestamp(0)
+  rd_blocks   rd_blocks @relation(fields: [rd_block_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "villages_ibfk_1")
+
+  @@unique([rd_block_id, name], map: "unique_village_per_rd_block")
+  @@index([rd_block_id], map: "idx_villages_rd_block_id")
+}
+
+enum posting_histories_school_type {
+  Co_educational @map("Co-educational")
+  Girls
+}
+
+enum schools_school_type {
+  Co_educational @map("Co-educational")
+  Girls
+}
+
+enum schools_management {
+  Adhoc_Aided     @map("Adhoc Aided")
+  Central
+  Council_Aided   @map("Council Aided")
+  Deficit
+  Deficit_Mission @map("Deficit Mission")
+  Government
+  Local_Body      @map("Local Body")
+  Lumpsum_Aided   @map("Lumpsum Aided")
+  Private
+  Samagra
+}
+
+enum deputations_status {
+  Active
+  Completed
+}
+
+enum schools_medium {
+  Bengali
+  Chakma
+  English
+  Hindi
+  Mizo
+  Nepali
+}
+
+enum teachers_social_group {
+  ST
+  SC
+  OBC
+  General
+}
+
+enum teachers_religion {
+  Hindu
+  Islam
+  Christian
+  Sikh
+  Buddhist
+  Jain
+}
+
+enum teachers_gender {
+  Male
+  Female
+  Others
+}
+
+enum attachments_status {
+  Active
+  Completed
+}
+
+enum posting_histories_habitation_class {
+  Rural
+  Urban
+}
+
+enum posting_histories_habitation_category {
+  City
+  Town
+  Village
+}
+
+enum schools_habitation_class {
+  Rural
+  Urban
+}
+
+enum schools_habitation_category {
+  City
+  Town
+  Village
+}
+
+enum posting_histories_status {
+  Active
+  Completed
+}
+
+enum schools_block_office {
+  DEO_Aizawl              @map("DEO Aizawl")
+  DEO_Champhai            @map("DEO Champhai")
+  DEO_Hnahthial           @map("DEO Hnahthial")
+  DEO_Khawzawl            @map("DEO Khawzawl")
+  DEO_Kolasib             @map("DEO Kolasib")
+  DEO_Lawngtlai           @map("DEO Lawngtlai")
+  DEO_Lunglei             @map("DEO Lunglei")
+  DEO_Mamit               @map("DEO Mamit")
+  DEO_Saitual             @map("DEO Saitual")
+  DEO_Serchhip            @map("DEO Serchhip")
+  DEO_Siaha               @map("DEO Siaha")
+  Education_Office_CADC_  @map("Education Office(CADC)")
+  Education_Office__LADC_ @map("Education Office (LADC)")
+  Education_Office__MADC_ @map("Education Office (MADC)")
+  SDEO_Aizawl_East        @map("SDEO Aizawl East")
+  SDEO_Aizawl_South       @map("SDEO Aizawl South")
+  SDEO_Aizawl_West        @map("SDEO Aizawl West")
+  SDEO_Champhai           @map("SDEO Champhai")
+  SDEO_Darlawn            @map("SDEO Darlawn")
+  SDEO_Hnahthial          @map("SDEO Hnahthial")
+  SDEO_Kawnpui            @map("SDEO Kawnpui")
+  SDEO_Kawrthah           @map("SDEO Kawrthah")
+  SDEO_Khawzawl           @map("SDEO Khawzawl")
+  SDEO_Kolasib            @map("SDEO Kolasib")
+  SDEO_Lunglei_North      @map("SDEO Lunglei North")
+  SDEO_Lunglei_South      @map("SDEO Lunglei South")
+  SDEO_Lungsen            @map("SDEO Lungsen")
+  SDEO_Mamit              @map("SDEO Mamit")
+  SDEO_North_Vanlaiphai   @map("SDEO North Vanlaiphai")
+  SDEO_Saitual            @map("SDEO Saitual")
+  SDEO_Serchhip           @map("SDEO Serchhip")
+  SDEO_Thenzawl           @map("SDEO Thenzawl")
+  SDEO_West_Phaileng      @map("SDEO West Phaileng")
+}
+
+enum teachers_management {
+  Adhoc_Aided     @map("Adhoc Aided")
+  Central
+  Council_Aided   @map("Council Aided")
+  Deficit
+  Deficit_Mission @map("Deficit Mission")
+  Government
+  Local_Body      @map("Local Body")
+  Lumpsum_Aided   @map("Lumpsum Aided")
+  Private
+  Samagra
+}
+
+enum teachers_medium {
+  Bengali
+  Chakma
+  English
+  Hindi
+  Mizo
+  Nepali
+}
+
+enum teachers_habitation_class {
+  Rural
+  Urban
+}
+
+enum teachers_habitation_category {
+  City
+  Town
+  Village
+}
+
+enum teachers_block_office {
+  DEO_Aizawl              @map("DEO Aizawl")
+  DEO_Champhai            @map("DEO Champhai")
+  DEO_Hnahthial           @map("DEO Hnahthial")
+  DEO_Khawzawl            @map("DEO Khawzawl")
+  DEO_Kolasib             @map("DEO Kolasib")
+  DEO_Lawngtlai           @map("DEO Lawngtlai")
+  DEO_Lunglei             @map("DEO Lunglei")
+  DEO_Mamit               @map("DEO Mamit")
+  DEO_Saitual             @map("DEO Saitual")
+  DEO_Serchhip            @map("DEO Serchhip")
+  DEO_Siaha               @map("DEO Siaha")
+  Education_Office_CADC_  @map("Education Office(CADC)")
+  Education_Office__LADC_ @map("Education Office (LADC)")
+  Education_Office__MADC_ @map("Education Office (MADC)")
+  SDEO_Aizawl_East        @map("SDEO Aizawl East")
+  SDEO_Aizawl_South       @map("SDEO Aizawl South")
+  SDEO_Aizawl_West        @map("SDEO Aizawl West")
+  SDEO_Champhai           @map("SDEO Champhai")
+  SDEO_Darlawn            @map("SDEO Darlawn")
+  SDEO_Hnahthial          @map("SDEO Hnahthial")
+  SDEO_Kawnpui            @map("SDEO Kawnpui")
+  SDEO_Kawrthah           @map("SDEO Kawrthah")
+  SDEO_Khawzawl           @map("SDEO Khawzawl")
+  SDEO_Kolasib            @map("SDEO Kolasib")
+  SDEO_Lunglei_North      @map("SDEO Lunglei North")
+  SDEO_Lunglei_South      @map("SDEO Lunglei South")
+  SDEO_Lungsen            @map("SDEO Lungsen")
+  SDEO_Mamit              @map("SDEO Mamit")
+  SDEO_North_Vanlaiphai   @map("SDEO North Vanlaiphai")
+  SDEO_Saitual            @map("SDEO Saitual")
+  SDEO_Serchhip           @map("SDEO Serchhip")
+  SDEO_Thenzawl           @map("SDEO Thenzawl")
+  SDEO_West_Phaileng      @map("SDEO West Phaileng")
+}

@@ -206,7 +206,7 @@
           </div>
           <div>
             <label class="form-label">RD Block Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter RD block name" />
+            <input id="rd-block-name" name="rd-block-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter RD block name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -238,7 +238,7 @@
           </div>
           <div>
             <label class="form-label">Habitation Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter habitation name" />
+            <input id="habitation-name" name="habitation-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter habitation name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -252,11 +252,11 @@
         <div v-else-if="activeTab === 'subjects'" class="space-y-4">
           <div>
             <label class="form-label">Subject Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter subject name" />
+            <input id="subject-name" name="subject-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter subject name" />
           </div>
           <div>
             <label class="form-label">Subject Code</label>
-            <input v-model="formData.code" type="text" class="form-input" placeholder="Enter subject code" />
+            <input id="subject-code" name="subject-code" v-model="formData.code" type="text" class="form-input" placeholder="Enter subject code" />
           </div>
           <div>
             <label class="form-label">Classes Taught *</label>
@@ -277,7 +277,7 @@
         <div v-else-if="activeTab === 'mediums'" class="space-y-4">
           <div>
             <label class="form-label">Medium Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter medium name" />
+            <input id="medium-name" name="medium-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter medium name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -291,7 +291,7 @@
         <div v-else-if="activeTab === 'schoolTypes'" class="space-y-4">
           <div>
             <label class="form-label">School Type *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter school type" />
+            <input id="school-type-name" name="school-type-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter school type" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -305,7 +305,7 @@
         <div v-else-if="activeTab === 'managementTypes'" class="space-y-4">
           <div>
             <label class="form-label">Management Type *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter management type" />
+            <input id="management-type-name" name="management-type-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter management type" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -319,7 +319,7 @@
         <div v-else-if="activeTab === 'religions'" class="space-y-4">
           <div>
             <label class="form-label">Religion Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter religion name" />
+            <input id="religion-name" name="religion-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter religion name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -333,7 +333,7 @@
         <div v-else-if="activeTab === 'blockOffices'" class="space-y-4">
           <div>
             <label class="form-label">Block Office Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter block office name" />
+            <input id="block-office-name" name="block-office-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter block office name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -347,7 +347,7 @@
         <div v-else-if="activeTab === 'districts'" class="space-y-4">
           <div>
             <label class="form-label">District Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter district name" />
+            <input id="district-name" name="district-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter district name" />
           </div>
           <div>
             <label class="form-label">Status</label>
@@ -361,7 +361,7 @@
         <div v-else class="space-y-4">
           <div>
             <label class="form-label">Name *</label>
-            <input v-model="formData.name" type="text" required class="form-input" placeholder="Enter name" />
+            <input id="generic-name" name="generic-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter name" />
           </div>
         </div>
       </div>
@@ -773,13 +773,21 @@ const closeModal = () => {
 
 const editItem = (type: string, item: any) => {
   editingItem.value = item
+  console.log('🔍 Editing item:', type, item)
+  
   if (type === 'subjects' && item.classes) {
     // Convert classes string to array for the form checkboxes
     const subjectData = { ...item }
+    console.log('🔍 Original classes:', item.classes)
+    console.log('🔍 Classes type:', typeof item.classes)
+    
     if (typeof subjectData.classes === 'string') {
       subjectData.classes = subjectData.classes.split(',').map((cls: string) => cls.trim()).filter((cls: string) => cls)
+      console.log('🔍 Converted classes array:', subjectData.classes)
     }
+    
     formData.value = subjectData
+    console.log('🔍 Final form data for subjects:', formData.value)
   } else {
     formData.value = { ...item }
   }
