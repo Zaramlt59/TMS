@@ -223,7 +223,7 @@
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Posting History Items -->
-          <div v-for="(posting, index) in form.posting_history" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(posting, index) in form.posting_histories" :key="index" class="border rounded-lg p-4 bg-gray-50">
             <div class="flex justify-between items-center mb-4">
               <h4 class="text-md font-medium text-gray-900">Previous Posting #{{ index + 1 }}</h4>
               <button 
@@ -423,7 +423,7 @@
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Deputation Items -->
-          <div v-for="(deputation, index) in form.deputation" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(deputation, index) in form.deputations" :key="index" class="border rounded-lg p-4 bg-gray-50">
             <div class="flex justify-between items-center mb-4">
               <h4 class="text-md font-medium text-gray-900">Deputation #{{ index + 1 }}</h4>
               <button 
@@ -527,7 +527,7 @@
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Attachment Items -->
-          <div v-for="(attachment, index) in form.attachment" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(attachment, index) in form.attachments" :key="index" class="border rounded-lg p-4 bg-gray-50">
             <div class="flex justify-between items-center mb-4">
               <h4 class="text-md font-medium text-gray-900">Attachment #{{ index + 1 }}</h4>
               <button 
@@ -879,9 +879,9 @@ const form = ref<TeacherFormData>({
   habitation_class: undefined, // Empty initially to show placeholder
   habitation_category: undefined, // Empty initially to show placeholder
   block_office: '', // Empty initially to show placeholder
-  posting_history: [], // Empty array initially
-  deputation: [], // Empty array initially
-  attachment: [] // Empty array initially
+  posting_histories: [], // Empty array initially
+  deputations: [], // Empty array initially
+  attachments: [] // Empty array initially
 })
 
 // Validate teacher name to ensure it only contains letters and spaces
@@ -927,7 +927,7 @@ const validateDepartmentName = (event: Event) => {
   const letterOnlyValue = value.replace(/[^a-zA-Z\s]/g, '')
   
   // Update the form value with only letters and spaces
-  form.value.deputation[0].department_name = letterOnlyValue
+  form.value.deputations[0].department_name = letterOnlyValue
 }
 
 // Validate designation to ensure it only contains letters and spaces
@@ -939,7 +939,7 @@ const validateDesignation = (event: Event) => {
   const letterOnlyValue = value.replace(/[^a-zA-Z\s]/g, '')
   
   // Update the form value with only letters and spaces
-  form.value.deputation[0].designation = letterOnlyValue
+  form.value.deputations[0].designation = letterOnlyValue
 }
 
 // Validate attachment department name to ensure it only contains letters and spaces
@@ -951,7 +951,7 @@ const validateAttachmentDepartmentName = (event: Event) => {
   const letterOnlyValue = value.replace(/[^a-zA-Z\s]/g, '')
   
   // Update the form value with only letters and spaces
-  form.value.attachment[0].department_name = letterOnlyValue
+  form.value.attachments[0].department_name = letterOnlyValue
 }
 
 // Validate attachment designation to ensure it only contains letters and spaces
@@ -963,7 +963,7 @@ const validateAttachmentDesignation = (event: Event) => {
   const letterOnlyValue = value.replace(/[^a-zA-Z\s]/g, '')
   
   // Update the form value with only letters and spaces
-  form.value.attachment[0].designation = letterOnlyValue
+  form.value.attachments[0].designation = letterOnlyValue
 }
 
 // Validate phone number to ensure it only contains numbers and is exactly 10 digits
@@ -1019,9 +1019,9 @@ const validatePostingPincode = (event: Event) => {
   const postingIndex = Array.from(target.closest('.border')?.parentElement?.children || []).findIndex(child => 
     child.contains(target)
   )
-  if (postingIndex >= 0 && form.value.posting_history[postingIndex]) {
-    form.value.posting_history[postingIndex].pincode = numericValue
-  }
+      if (postingIndex >= 0 && form.value.posting_histories[postingIndex]) {
+      form.value.posting_histories[postingIndex].pincode = numericValue
+    }
 }
 
 const districts = ref<District[]>([])
@@ -1239,8 +1239,8 @@ const loadTeacher = async (teacherId: number) => {
       }
       
       // Format dates for posting history
-      if (teacherData.posting_history && teacherData.posting_history.length > 0) {
-        teacherData.posting_history.forEach(posting => {
+          if (teacherData.posting_histories && teacherData.posting_histories.length > 0) {
+      teacherData.posting_histories.forEach(posting => {
           if (posting.from_date) {
             try {
               const date = new Date(posting.from_date)
@@ -1272,8 +1272,8 @@ const loadTeacher = async (teacherId: number) => {
       }
       
       // Format dates for deputation
-      if (teacherData.deputation && teacherData.deputation.length > 0) {
-        teacherData.deputation.forEach(deputation => {
+      if (teacherData.deputations && teacherData.deputations.length > 0) {
+        teacherData.deputations.forEach(deputation => {
           if (deputation.joining_date) {
             try {
               const date = new Date(deputation.joining_date)
@@ -1300,8 +1300,8 @@ const loadTeacher = async (teacherId: number) => {
       }
       
       // Format dates for attachment
-      if (teacherData.attachment && teacherData.attachment.length > 0) {
-        teacherData.attachment.forEach(attachment => {
+      if (teacherData.attachments && teacherData.attachments.length > 0) {
+        teacherData.attachments.forEach(attachment => {
           if (attachment.joining_date) {
             try {
               const date = new Date(attachment.joining_date)
@@ -1336,42 +1336,62 @@ const loadTeacher = async (teacherId: number) => {
         subjects_taught: (() => {
           try {
             if (typeof teacherData.subjects_taught === 'string' && teacherData.subjects_taught) {
-              return JSON.parse(teacherData.subjects_taught)
+              // Try to parse as JSON first
+              if (teacherData.subjects_taught.startsWith('[') && teacherData.subjects_taught.endsWith(']')) {
+                return JSON.parse(teacherData.subjects_taught)
+              }
+              // If not JSON, split by comma and trim
+              return teacherData.subjects_taught.split(',').map(s => s.trim()).filter(s => s.length > 0)
             }
             return []
           } catch (error) {
             console.error('Error parsing subjects_taught:', error)
-            return []
+            // Fallback: split by comma
+            return teacherData.subjects_taught.split(',').map(s => s.trim()).filter(s => s.length > 0)
           }
         })(),
         classes_taught: (() => {
           try {
             if (typeof teacherData.classes_taught === 'string' && teacherData.classes_taught) {
-              return JSON.parse(teacherData.classes_taught)
+              // Try to parse as JSON first
+              if (teacherData.classes_taught.startsWith('[') && teacherData.classes_taught.endsWith(']')) {
+                return JSON.parse(teacherData.classes_taught)
+              }
+              // If not JSON, split by comma and trim
+              return teacherData.classes_taught.split(',').map(s => s.trim()).filter(s => s.length > 0)
             }
             return []
           } catch (error) {
             console.error('Error parsing classes_taught:', error)
-            return []
+            // Fallback: split by comma
+            return teacherData.classes_taught.split(',').map(s => s.trim()).filter(s => s.length > 0)
           }
         })()
       }
       
-      form.value = parsedTeacherData
+      // Ensure the arrays are preserved when setting form data
+      const formDataWithArrays = {
+        ...parsedTeacherData,
+        posting_histories: parsedTeacherData.posting_histories || [],
+        deputations: parsedTeacherData.deputations || [],
+        attachments: parsedTeacherData.attachments || []
+      }
+      
+      form.value = formDataWithArrays
       selectedSchoolId.value = teacherData.school_id
       console.log('Set selectedSchoolId to:', selectedSchoolId.value)
       console.log('Available schools:', schools.value.length)
       console.log('Schools data:', schools.value.map(s => ({ id: s.school_id, name: s.school_name })))
 
       
-      // Initialize posting_history if not present
-      if (!form.value.posting_history) {
-        form.value.posting_history = []
+      // Initialize posting_histories if not present
+      if (!form.value.posting_histories) {
+        form.value.posting_histories = []
       }
       
       // Ensure all posting history records have a status field and load RD blocks/villages
-      if (form.value.posting_history && form.value.posting_history.length > 0) {
-        form.value.posting_history.forEach(async (posting, index) => {
+      if (form.value.posting_histories && form.value.posting_histories.length > 0) {
+        form.value.posting_histories.forEach(async (posting, index) => {
           if (!posting.status) {
             // If no status, set based on to_date
             posting.status = posting.to_date ? 'Completed' : 'Active'
@@ -1412,14 +1432,14 @@ const loadTeacher = async (teacherId: number) => {
         })
       }
       
-      // Initialize deputation if not present
-      if (!form.value.deputation) {
-        form.value.deputation = []
+      // Initialize deputations if not present
+      if (!form.value.deputations) {
+        form.value.deputations = []
       }
       
       // Ensure all deputation records have a status field
-      if (form.value.deputation && form.value.deputation.length > 0) {
-        form.value.deputation.forEach(deputation => {
+      if (form.value.deputations && form.value.deputations.length > 0) {
+        form.value.deputations.forEach(deputation => {
           if (!deputation.status) {
             // If no status, set based on end_date
             deputation.status = deputation.end_date ? 'Completed' : 'Active'
@@ -1427,14 +1447,14 @@ const loadTeacher = async (teacherId: number) => {
         })
       }
 
-      // Initialize attachment if not present
-      if (!form.value.attachment) {
-        form.value.attachment = []
+      // Initialize attachments if not present
+      if (!form.value.attachments) {
+        form.value.attachments = []
       }
       
       // Ensure all attachment records have a status field and load RD blocks/villages
-      if (form.value.attachment && form.value.attachment.length > 0) {
-        form.value.attachment.forEach(async (attachment, index) => {
+      if (form.value.attachments && form.value.attachments.length > 0) {
+        form.value.attachments.forEach(async (attachment, index) => {
           if (!attachment.status) {
             // If no status, set based on end_date
             attachment.status = attachment.end_date ? 'Completed' : 'Active'
@@ -1605,16 +1625,9 @@ const handleSubmit = async () => {
   const subjectsString = JSON.stringify(cleanFormData.subjects_taught)
   const classesString = JSON.stringify(cleanFormData.classes_taught)
   
-  // Create API payload that matches Teacher interface
-  const apiPayload: Teacher = {
-    ...cleanFormData,
-    subjects_taught: subjectsString,
-    classes_taught: classesString
-  }
-  
   // Remove undefined/null values from nested arrays
-  if (cleanFormData.posting_history) {
-    cleanFormData.posting_history = cleanFormData.posting_history.filter(posting => 
+  if (cleanFormData.posting_histories) {
+    cleanFormData.posting_histories = cleanFormData.posting_histories.filter(posting => 
       posting.school_name && posting.from_date
     ).map(posting => ({
       ...posting,
@@ -1622,8 +1635,8 @@ const handleSubmit = async () => {
     }))
   }
   
-  if (cleanFormData.deputation) {
-    cleanFormData.deputation = cleanFormData.deputation.filter(deputation => 
+  if (cleanFormData.deputations) {
+    cleanFormData.deputations = cleanFormData.deputations.filter(deputation => 
       deputation.department_name && deputation.designation && deputation.joining_date
     ).map(deputation => ({
       ...deputation,
@@ -1631,8 +1644,8 @@ const handleSubmit = async () => {
     }))
   }
   
-  if (cleanFormData.attachment) {
-    cleanFormData.attachment = cleanFormData.attachment.filter(attachment => 
+  if (cleanFormData.attachments) {
+    cleanFormData.attachments = cleanFormData.attachments.filter(attachment => 
       attachment.department_name && attachment.designation && attachment.district && 
       attachment.joining_date
     ).map(attachment => ({
@@ -1640,10 +1653,24 @@ const handleSubmit = async () => {
       status: attachment.status || (attachment.end_date ? 'Completed' : 'Active')
     }))
   }
+  
+  // Create API payload that matches Teacher interface AFTER cleaning the arrays
+  const apiPayload: Teacher = {
+    ...cleanFormData,
+    subjects_taught: subjectsString,
+    classes_taught: classesString
+  }
 
   loading.value = true
   try {
-
+    // Debug: Log what we're sending to the API
+    console.log('=== FORM SUBMISSION DEBUG ===')
+    console.log('Original form data:', form.value)
+    console.log('Cleaned form data:', cleanFormData)
+    console.log('API payload being sent:', apiPayload)
+    console.log('Posting history count:', apiPayload.posting_histories?.length || 0)
+    console.log('Deputation count:', apiPayload.deputations?.length || 0)
+    console.log('Attachment count:', apiPayload.attachments?.length || 0)
     
     let response
     if (isEditing.value) {
@@ -1683,8 +1710,8 @@ const handleSubmit = async () => {
 }
 
 const addNewPosting = () => {
-  const newIndex = form.value.posting_history.length
-  form.value.posting_history.push({
+  const newIndex = form.value.posting_histories.length
+  form.value.posting_histories.push({
     school_name: '',
     school_type: schoolTypes.value.length > 0 ? schoolTypes.value[0].name : '',
     medium: '',
@@ -1707,7 +1734,7 @@ const addNewPosting = () => {
 }
 
 const removePosting = (index: number) => {
-  form.value.posting_history.splice(index, 1)
+  form.value.posting_histories.splice(index, 1)
   
   // Remove arrays for the deleted posting
   postingRdBlocks.value.splice(index, 1)
@@ -1755,14 +1782,14 @@ const onPostingSchoolChange = async (posting: any) => {
       district: posting.district
     })
     
-    // If district is set, load RD blocks and villages
-    if (posting.district) {
-      // Find the posting index to load RD blocks
-      const postingIndex = form.value.posting_history.findIndex(p => p === posting)
-      if (postingIndex !== -1) {
-        await onPostingDistrictChange(posting, postingIndex)
+          // If district is set, load RD blocks and villages
+      if (posting.district) {
+        // Find the posting index to load RD blocks
+        const postingIndex = form.value.posting_histories.findIndex(p => p === posting)
+        if (postingIndex !== -1) {
+          await onPostingDistrictChange(posting, postingIndex)
+        }
       }
-    }
   }
 }
 
@@ -1775,7 +1802,7 @@ const onPostingEndDateChange = (posting: any) => {
 }
 
 const addNewDeputation = () => {
-  form.value.deputation.push({
+  form.value.deputations.push({
     department_name: '',
     designation: '',
     joining_date: '',
@@ -1785,7 +1812,7 @@ const addNewDeputation = () => {
 }
 
 const removeDeputation = (index: number) => {
-  form.value.deputation.splice(index, 1)
+  form.value.deputations.splice(index, 1)
 }
 
 const onDeputationEndDateChange = (deputation: any) => {
@@ -1797,8 +1824,8 @@ const onDeputationEndDateChange = (deputation: any) => {
 }
 
 const addNewAttachment = () => {
-  const newIndex = form.value.attachment.length
-  form.value.attachment.push({
+  const newIndex = form.value.attachments.length
+  form.value.attachments.push({
     department_name: '',
     designation: '',
     district: '',
@@ -1815,7 +1842,7 @@ const addNewAttachment = () => {
 }
 
 const removeAttachment = (index: number) => {
-  form.value.attachment.splice(index, 1)
+  form.value.attachments.splice(index, 1)
   
   // Remove arrays for the deleted attachment
   attachmentRdBlocks.value.splice(index, 1)
@@ -1832,7 +1859,7 @@ const onAttachmentEndDateChange = (attachment: any) => {
 
 const onAttachmentDistrictChange = async (attachment: any) => {
   // Find the attachment index
-  const attachmentIndex = form.value.attachment.findIndex(a => a === attachment)
+  const attachmentIndex = form.value.attachments.findIndex(a => a === attachment)
   if (attachmentIndex === -1) return
   
   // Reset RD block and village selections
@@ -1924,7 +1951,7 @@ watch(() => form.value.classes_taught, async (newClasses) => {
 
 const onAttachmentRdBlockChange = async (attachment: any) => {
   // Find the attachment index
-  const attachmentIndex = form.value.attachment.findIndex(a => a === attachment)
+  const attachmentIndex = form.value.attachments.findIndex(a => a === attachment)
   if (attachmentIndex === -1) return
   
   // Reset village selection

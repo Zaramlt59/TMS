@@ -147,10 +147,33 @@ export const teacherService = {
   async create(data: any): Promise<any> {
     try {
       const transformedData = this.transformTeacherData(data)
-      return await prisma.teachers.create({
-        data: transformedData
+      
+      // Extract related data
+      const { posting_histories, deputations, attachments, ...teacherData } = transformedData
+      
+      // Create teacher with related records
+      const teacher = await prisma.teachers.create({
+        data: {
+          ...teacherData,
+          posting_histories: {
+            create: posting_histories || []
+          },
+          deputations: {
+            create: deputations || []
+          },
+          attachments: {
+            create: attachments || []
+          }
+        },
+        include: {
+          posting_histories: true,
+          deputations: true,
+          attachments: true
+        }
       })
-          } catch (error) {
+      
+      return this.transformRelationsForFrontend(teacher)
+    } catch (error) {
       console.error('Error creating teacher:', error)
       throw new Error('Failed to create teacher')
     }
@@ -160,11 +183,45 @@ export const teacherService = {
   async update(id: number, data: any): Promise<any> {
     try {
       const transformedData = this.transformTeacherData(data)
-      return await prisma.teachers.update({
-        where: { id },
-        data: transformedData
+      
+      // Extract related data
+      const { posting_histories, deputations, attachments, ...teacherData } = transformedData
+      
+      // First, delete existing related records
+      await prisma.posting_histories.deleteMany({
+        where: { teacher_id: id }
       })
-          } catch (error) {
+      await prisma.deputations.deleteMany({
+        where: { teacher_id: id }
+      })
+      await prisma.attachments.deleteMany({
+        where: { teacher_id: id }
+      })
+      
+      // Update teacher and recreate related records
+      const teacher = await prisma.teachers.update({
+        where: { id },
+        data: {
+          ...teacherData,
+          posting_histories: {
+            create: posting_histories || []
+          },
+          deputations: {
+            create: deputations || []
+          },
+          attachments: {
+            create: attachments || []
+          }
+        },
+        include: {
+          posting_histories: true,
+          deputations: true,
+          attachments: true
+        }
+      })
+      
+      return this.transformRelationsForFrontend(teacher)
+    } catch (error) {
       console.error('Error updating teacher:', error)
       throw new Error('Failed to update teacher')
     }
@@ -226,8 +283,12 @@ export const teacherService = {
     if (data.current_school_name !== undefined) transformed.current_school_name = data.current_school_name
     if (data.school_level !== undefined) transformed.school_level = data.school_level
     if (data.management !== undefined) {
-      // Convert spaces to underscores for enum values
-      transformed.management = data.management.replace(/\s+/g, '_')
+      // Convert specific management values to match enum
+      transformed.management = data.management === 'Adhoc Aided' ? 'Adhoc_Aided' : 
+                             data.management === 'Council Aided' ? 'Council_Aided' :
+                             data.management === 'Deficit Mission' ? 'Deficit_Mission' :
+                             data.management === 'Local Body' ? 'Local_Body' :
+                             data.management === 'Lumpsum Aided' ? 'Lumpsum_Aided' : data.management
     }
     if (data.medium !== undefined) transformed.medium = data.medium
     if (data.habitation !== undefined) transformed.habitation = data.habitation
@@ -238,8 +299,119 @@ export const teacherService = {
     if (data.habitation_class !== undefined) transformed.habitation_class = data.habitation_class
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
-      // Convert spaces to underscores for enum values
-      transformed.block_office = data.block_office.replace(/\s+/g, '_')
+      // Convert specific block office values to match enum
+      transformed.block_office = data.block_office === 'DEO Aizawl' ? 'DEO_Aizawl' :
+                                data.block_office === 'DEO Champhai' ? 'DEO_Champhai' :
+                                data.block_office === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
+                                data.block_office === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
+                                data.block_office === 'DEO Kolasib' ? 'DEO_Kolasib' :
+                                data.block_office === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
+                                data.block_office === 'DEO Lunglei' ? 'DEO_Lunglei' :
+                                data.block_office === 'DEO Mamit' ? 'DEO_Mamit' :
+                                data.block_office === 'DEO Saitual' ? 'DEO_Saitual' :
+                                data.block_office === 'DEO Serchhip' ? 'DEO_Serchhip' :
+                                data.block_office === 'DEO Siaha' ? 'DEO_Siaha' :
+                                data.block_office === 'Education Office(CADC)' ? 'Education_Office_CADC_' :
+                                data.block_office === 'Education Office (LADC)' ? 'Education_Office__LADC_' :
+                                data.block_office === 'Education Office (MADC)' ? 'Education_Office__MADC_' :
+                                data.block_office === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
+                                data.block_office === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
+                                data.block_office === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
+                                data.block_office === 'SDEO Champhai' ? 'SDEO_Champhai' :
+                                data.block_office === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
+                                data.block_office === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
+                                data.block_office === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
+                                data.block_office === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
+                                data.block_office === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
+                                data.block_office === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
+                                data.block_office === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
+                                data.block_office === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
+                                data.block_office === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
+                                data.block_office === 'SDEO Mamit' ? 'SDEO_Mamit' :
+                                data.block_office === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
+                                data.block_office === 'SDEO Saitual' ? 'SDEO_Saitual' :
+                                data.block_office === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
+                                data.block_office === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
+                                data.block_office === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : data.block_office
+    }
+    
+    // Handle related data arrays
+    if (data.posting_histories !== undefined) {
+      transformed.posting_histories = data.posting_histories.map((posting: any) => ({
+        school_name: posting.school_name,
+        school_type: posting.school_type === 'Co-educational' ? 'Co_educational' : posting.school_type,
+        medium: posting.medium,
+        management: posting.management === 'Adhoc Aided' ? 'Adhoc_Aided' : 
+                   posting.management === 'Council Aided' ? 'Council_Aided' :
+                   posting.management === 'Deficit Mission' ? 'Deficit_Mission' :
+                   posting.management === 'Local Body' ? 'Local_Body' :
+                   posting.management === 'Lumpsum Aided' ? 'Lumpsum_Aided' : posting.management,
+        block_office: posting.block_office === 'DEO Aizawl' ? 'DEO_Aizawl' :
+                     posting.block_office === 'DEO Champhai' ? 'DEO_Champhai' :
+                     posting.block_office === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
+                     posting.block_office === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
+                     posting.block_office === 'DEO Kolasib' ? 'DEO_Kolasib' :
+                     posting.block_office === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
+                     posting.block_office === 'DEO Lunglei' ? 'DEO_Lunglei' :
+                     posting.block_office === 'DEO Mamit' ? 'DEO_Mamit' :
+                     posting.block_office === 'DEO Saitual' ? 'DEO_Saitual' :
+                     posting.block_office === 'DEO Serchhip' ? 'DEO_Serchhip' :
+                     posting.block_office === 'DEO Siaha' ? 'DEO_Siaha' :
+                     posting.block_office === 'Education Office(CADC)' ? 'Education_Office_CADC_' :
+                     posting.block_office === 'Education Office (LADC)' ? 'Education_Office__LADC_' :
+                     posting.block_office === 'Education Office (MADC)' ? 'Education_Office__MADC_' :
+                     posting.block_office === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
+                     posting.block_office === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
+                     posting.block_office === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
+                     posting.block_office === 'SDEO Champhai' ? 'SDEO_Champhai' :
+                     posting.block_office === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
+                     posting.block_office === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
+                     posting.block_office === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
+                     posting.block_office === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
+                     posting.block_office === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
+                     posting.block_office === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
+                     posting.block_office === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
+                     posting.block_office === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
+                     posting.block_office === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
+                     posting.block_office === 'SDEO Mamit' ? 'SDEO_Mamit' :
+                     posting.block_office === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
+                     posting.block_office === 'SDEO Saitual' ? 'SDEO_Saitual' :
+                     posting.block_office === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
+                     posting.block_office === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
+                     posting.block_office === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : posting.block_office,
+        district: posting.district,
+        rd_block: posting.rd_block,
+        pincode: posting.pincode,
+        habitation: posting.habitation,
+        habitation_class: posting.habitation_class,
+        habitation_category: posting.habitation_category,
+        from_date: posting.from_date ? new Date(posting.from_date).toISOString() : undefined,
+        to_date: posting.to_date ? new Date(posting.to_date).toISOString() : undefined,
+        status: posting.status
+      }))
+    }
+    
+    if (data.deputations !== undefined) {
+      transformed.deputations = data.deputations.map((deputation: any) => ({
+        department_name: deputation.department_name,
+        designation: deputation.designation,
+        joining_date: deputation.joining_date ? new Date(deputation.joining_date).toISOString() : undefined,
+        end_date: deputation.end_date ? new Date(deputation.end_date).toISOString() : undefined,
+        status: deputation.status
+      }))
+    }
+    
+    if (data.attachments !== undefined) {
+      transformed.attachments = data.attachments.map((attachment: any) => ({
+        department_name: attachment.department_name,
+        designation: attachment.designation,
+        district: attachment.district,
+        rd_block: attachment.rd_block,
+        habitation: attachment.habitation,
+        joining_date: attachment.joining_date ? new Date(attachment.joining_date).toISOString() : undefined,
+        end_date: attachment.end_date ? new Date(attachment.end_date).toISOString() : undefined,
+        status: attachment.status
+      }))
     }
     
     return transformed

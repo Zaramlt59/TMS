@@ -512,24 +512,41 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
 }
 
-// Helper functions to parse JSON strings from database
+// Helper functions to parse subjects and classes from database
+// These can be either JSON arrays or comma-separated strings
 const parseSubjectsTaught = (subjectsString: string): string[] => {
   try {
     if (!subjectsString) return []
-    return JSON.parse(subjectsString)
+    
+    // Try to parse as JSON first
+    if (subjectsString.startsWith('[') && subjectsString.endsWith(']')) {
+      return JSON.parse(subjectsString)
+    }
+    
+    // If not JSON, split by comma and trim
+    return subjectsString.split(',').map(s => s.trim()).filter(s => s.length > 0)
   } catch (error) {
     console.error('Error parsing subjects_taught:', error)
-    return []
+    // Fallback: split by comma
+    return subjectsString.split(',').map(s => s.trim()).filter(s => s.length > 0)
   }
 }
 
 const parseClassesTaught = (classesString: string): string[] => {
   try {
     if (!classesString) return []
-    return JSON.parse(classesString)
+    
+    // Try to parse as JSON first
+    if (classesString.startsWith('[') && classesString.endsWith(']')) {
+      return JSON.parse(classesString)
+    }
+    
+    // If not JSON, split by comma and trim
+    return classesString.split(',').map(s => s.trim()).filter(s => s.length > 0)
   } catch (error) {
     console.error('Error parsing classes_taught:', error)
-    return []
+    // Fallback: split by comma
+    return classesString.split(',').map(s => s.trim()).filter(s => s.length > 0)
   }
 }
 

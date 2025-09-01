@@ -149,9 +149,9 @@ export interface Teacher {
   habitation_class?: 'Rural' | 'Urban'
   habitation_category?: 'City' | 'Town' | 'Village'
   block_office: string
-  posting_history: PostingHistory[]
-  deputation: Deputation[]
-  attachment: Attachment[]
+  posting_histories: PostingHistory[]
+  deputations: Deputation[]
+  attachments: Attachment[]
   created_at?: string
   updated_at?: string
 }
