@@ -104,11 +104,11 @@
               <label class="form-label">Block Office *</label>
               <select v-model="form.block_office" required class="form-select">
                 <option value="">Select block office</option>
-                <option v-for="office in BLOCK_OFFICES" :key="office" :value="office">
-                  {{ office }}
+                <option v-for="office in blockOffices" :key="office.id" :value="office.name">
+                  {{ office.name }}
                 </option>
               </select>
-              <p v-if="isEditing && form.block_office && !BLOCK_OFFICES.includes(form.block_office as any)" class="text-sm text-orange-600 mt-1">
+              <p v-if="isEditing && form.block_office && !blockOffices.some(office => office.name === form.block_office)" class="text-sm text-orange-600 mt-1">
                 Note: Current value "{{ form.block_office }}" is not in the standard list. You may need to update it.
               </p>
             </div>
@@ -232,13 +232,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { schoolsApi, districtsApi, mediumsApi, managementTypesApi, schoolTypesApi, locationsApi } from '../services/api'
-import type { School, District, Medium, ManagementType, SchoolType } from '../types'
+import { schoolsApi, districtsApi, mediumsApi, managementTypesApi, schoolTypesApi, locationsApi, blockOfficesApi } from '../services/api'
+import type { School, District, Medium, ManagementType, SchoolType, BlockOffice } from '../types'
 import {
   SCHOOL_LEVELS,
   HABITATION_CLASSES,
-  HABITATION_CATEGORIES,
-  BLOCK_OFFICES
+  HABITATION_CATEGORIES
 } from '../constants'
 import LocationDropdowns from '../components/LocationDropdowns.vue'
 
@@ -270,6 +269,7 @@ const districts = ref<District[]>([])
 const mediums = ref<Medium[]>([])
 const managementTypes = ref<ManagementType[]>([])
 const schoolTypes = ref<SchoolType[]>([])
+const blockOffices = ref<BlockOffice[]>([])
 
 // Location selection for cascading dropdowns
 const locationSelection = ref({
@@ -343,6 +343,17 @@ const loadSchoolTypes = async () => {
     }
   } catch (error) {
     console.error('Failed to load school types:', error)
+  }
+}
+
+const loadBlockOffices = async () => {
+  try {
+    const response = await blockOfficesApi.getActive()
+    if (response.data.success) {
+      blockOffices.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Failed to load block offices:', error)
   }
 }
 
@@ -634,7 +645,7 @@ onMounted(async () => {
   console.log('Route redirectedFrom:', route.redirectedFrom)
   
   // First, load all dropdown data
-  await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes()])
+  await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes(), loadBlockOffices()])
   console.log('All dropdown data loaded')
   
   // Set default location selection after districts are loaded
@@ -696,7 +707,7 @@ onMounted(() => {
     // Check if we're on this form and refresh data
     if (document.activeElement && document.activeElement.closest('form')) {
       console.log('Form focused, refreshing data...')
-      await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes()])
+      await Promise.all([loadDistricts(), loadMediums(), loadManagementTypes(), loadSchoolTypes(), loadBlockOffices()])
       
       // Re-validate form data after refresh
       if (isEditing.value && route.params.id && route.params.id !== 'undefined' && route.params.id !== 'null') {

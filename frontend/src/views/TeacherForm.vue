@@ -1131,7 +1131,7 @@ const onSchoolChange = async () => {
     }
     form.value.medium = selectedSchool.medium || 'English'
     form.value.district = selectedSchool.district || 'Aizawl'
-    form.value.block_office = selectedSchool.block_office || 'DEO Aizawl'
+    form.value.block_office = selectedSchool.block_office || ''
     form.value.habitation = selectedSchool.habitation || ''
     form.value.pincode = selectedSchool.pincode || ''
     form.value.rd_block = selectedSchool.rd_block || ''
@@ -1181,6 +1181,15 @@ const onSchoolChange = async () => {
 
 const loadTeacher = async (teacherId: number) => {
   try {
+    // Ensure dropdowns are loaded first
+    await Promise.all([
+      loadManagementTypes(),
+      loadBlockOffices(),
+      loadMediums(),
+      loadReligions(),
+      loadSchoolTypes()
+    ])
+    
     const response = await teachersApi.getById(teacherId)
     if (response.data.success && response.data.data) {
       const teacherData = { ...response.data.data }
@@ -1221,7 +1230,10 @@ const loadTeacher = async (teacherId: number) => {
       
       // Format dates for posting history
           if (teacherData.posting_histories && teacherData.posting_histories.length > 0) {
-      teacherData.posting_histories.forEach(posting => {
+      console.log('Processing posting histories:', teacherData.posting_histories)
+      teacherData.posting_histories.forEach((posting, index) => {
+        console.log(`Posting ${index + 1} - management:`, posting.management)
+        console.log(`Posting ${index + 1} - block_office:`, posting.block_office)
           if (posting.from_date) {
             try {
               const date = new Date(posting.from_date)
@@ -1248,6 +1260,16 @@ const loadTeacher = async (teacherId: number) => {
           // Fix school type format (replace underscores with hyphens)
           if (posting.school_type) {
             posting.school_type = posting.school_type.replace(/_/g, '-')
+          }
+          
+          // Fix management format (replace underscores with spaces)
+          if (posting.management) {
+            posting.management = posting.management.replace(/_/g, ' ')
+          }
+          
+          // Fix block office format (replace underscores with spaces)
+          if (posting.block_office) {
+            posting.block_office = posting.block_office.replace(/_/g, ' ')
           }
         })
       }
@@ -1358,8 +1380,24 @@ const loadTeacher = async (teacherId: number) => {
         attachments: parsedTeacherData.attachments || []
       }
       
+      console.log('Loading teacher - deputations from API:', parsedTeacherData.deputations)
+      console.log('Loading teacher - posting histories from API:', parsedTeacherData.posting_histories)
+      console.log('Loading teacher - attachments from API:', parsedTeacherData.attachments)
+      console.log('Loading teacher - full teacher data:', teacherData)
+      console.log('Loading teacher - management value:', teacherData.management)
+      console.log('Loading teacher - block_office value:', teacherData.block_office)
+      console.log('Available management types:', managementTypes.value)
+      console.log('Available block offices:', blockOffices.value)
       form.value = formDataWithArrays
+      console.log('Form loaded - deputations:', form.value.deputations)
+      console.log('Form loaded - posting histories:', form.value.posting_histories)
+      console.log('Form loaded - attachments:', form.value.attachments)
+      console.log('Form loaded - management:', form.value.management)
+      console.log('Form loaded - block_office:', form.value.block_office)
+      console.log('Form loaded - posting histories after processing:', form.value.posting_histories)
+      console.log('Form loaded - full form data:', form.value)
       selectedSchoolId.value = teacherData.school_id
+      console.log('Selected school ID set to:', selectedSchoolId.value)
 
       
       // Initialize posting_histories if not present
@@ -1483,24 +1521,18 @@ const loadTeacher = async (teacherId: number) => {
       if (typeof blockOfficeValue === 'object' && blockOfficeValue !== null && blockOfficeValue.name) {
         blockOfficeValue = blockOfficeValue.name
       }
-      if (!blockOfficeValue || !blockOffices.value.some(b => b.name === blockOfficeValue)) {
-        form.value.block_office = 'DEO Aizawl'
-      } else {
+      // Always preserve the original value, don't override with defaults
+      if (blockOfficeValue) {
         form.value.block_office = blockOfficeValue
       }
       
       if (!teacherData.medium || !mediums.value.some(m => m.name === teacherData.medium)) {
         form.value.medium = 'English'
       }
-          if (!teacherData.management || !managementTypes.value.some(m => m.name === teacherData.management)) {
-      // If the management type is not available (e.g., was set to inactive), 
-      // set it to the first available active management type
-      if (managementTypes.value.length > 0) {
-        form.value.management = managementTypes.value[0].name
-      } else {
-        form.value.management = ''
+      // Always preserve the original management value, don't override with defaults
+      if (teacherData.management) {
+        form.value.management = teacherData.management
       }
-    }
       
       if (!teacherData.habitation_class || !['Rural', 'Urban'].includes(teacherData.habitation_class)) {
         form.value.habitation_class = 'Rural'
@@ -1512,6 +1544,15 @@ const loadTeacher = async (teacherId: number) => {
   } catch (error) {
     console.error('Failed to load teacher:', error)
   }
+  
+  // Debug: Log final form state after loading
+  await nextTick()
+  console.log('=== TEACHER LOADING COMPLETED ===')
+  console.log('Final form state:', form.value)
+  console.log('Final selectedSchoolId:', selectedSchoolId.value)
+  console.log('Final posting histories count:', form.value.posting_histories?.length || 0)
+  console.log('Final deputations count:', form.value.deputations?.length || 0)
+  console.log('Final attachments count:', form.value.attachments?.length || 0)
 }
 
 const handleSubmit = async () => {
@@ -1596,6 +1637,7 @@ const handleSubmit = async () => {
 
   // Clean up form data before sending (remove undefined/null values)
   const cleanFormData = { ...form.value }
+  console.log('Before filtering - deputations:', cleanFormData.deputations)
   
   // Convert arrays back to JSON strings for API compatibility
   const subjectsString = JSON.stringify(cleanFormData.subjects_taught)
@@ -1612,12 +1654,18 @@ const handleSubmit = async () => {
   }
   
   if (cleanFormData.deputations) {
-    cleanFormData.deputations = cleanFormData.deputations.filter(deputation => 
-      deputation.department_name && deputation.designation && deputation.joining_date
-    ).map(deputation => ({
+    console.log('Filtering deputations:', cleanFormData.deputations)
+    // Only filter out completely empty deputations (keep all non-empty ones)
+    cleanFormData.deputations = cleanFormData.deputations.filter(deputation => {
+      // Keep deputation if it has any meaningful data
+      const hasData = deputation.department_name || deputation.designation || deputation.joining_date || deputation.end_date
+      console.log('Deputation has data:', hasData, deputation)
+      return hasData
+    }).map(deputation => ({
       ...deputation,
       status: deputation.status || (deputation.end_date ? 'Completed' : 'Active')
     }))
+    console.log('After filtering - deputations:', cleanFormData.deputations)
   }
   
   if (cleanFormData.attachments) {
@@ -1640,6 +1688,8 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     // Debug: Log what we're sending to the API
+    console.log('API Payload - deputations being sent:', apiPayload.deputations)
+    console.log('API Payload - full payload:', apiPayload)
     
     let response
     if (isEditing.value) {
@@ -1678,6 +1728,7 @@ const handleSubmit = async () => {
 }
 
 const addNewPosting = () => {
+  console.log('Before adding posting - deputations:', form.value.deputations)
   const newIndex = form.value.posting_histories.length
   form.value.posting_histories.push({
     school_name: '',
@@ -1699,6 +1750,7 @@ const addNewPosting = () => {
   // Initialize arrays for the new posting
   postingRdBlocks.value[newIndex] = []
   postingVillages.value[newIndex] = []
+  console.log('After adding posting - deputations:', form.value.deputations)
 }
 
 const removePosting = (index: number) => {
@@ -1713,6 +1765,7 @@ const onPostingSchoolChange = async (posting: any) => {
   const selectedSchool = schools.value.find(s => s.school_name === posting.school_name)
   
   if (selectedSchool) {
+    console.log('Selected school:', selectedSchool)
     
     // Auto-fill school details
     posting.school_type = selectedSchool.school_type ? selectedSchool.school_type.replace(/_/g, '-') : ''
@@ -1737,8 +1790,10 @@ const onPostingSchoolChange = async (posting: any) => {
     
           // If district is set, load RD blocks and villages
       if (posting.district) {
+        console.log('Loading location data for district:', posting.district)
         // Find the posting index to load RD blocks
         const postingIndex = form.value.posting_histories.findIndex(p => p === posting)
+        console.log('Posting index:', postingIndex)
         if (postingIndex !== -1) {
           await onPostingDistrictChange(posting, postingIndex)
         }
@@ -1755,6 +1810,7 @@ const onPostingEndDateChange = (posting: any) => {
 }
 
 const addNewDeputation = () => {
+  console.log('Before adding deputation - existing deputations:', form.value.deputations)
   form.value.deputations.push({
     department_name: '',
     designation: '',
@@ -1762,6 +1818,7 @@ const addNewDeputation = () => {
     end_date: '',
     status: 'Active' as 'Active' | 'Completed'
   })
+  console.log('After adding deputation - all deputations:', form.value.deputations)
 }
 
 const removeDeputation = (index: number) => {
@@ -1777,6 +1834,7 @@ const onDeputationEndDateChange = (deputation: any) => {
 }
 
 const addNewAttachment = () => {
+  console.log('Before adding attachment - deputations:', form.value.deputations)
   const newIndex = form.value.attachments.length
   form.value.attachments.push({
     department_name: '',
@@ -1792,6 +1850,7 @@ const addNewAttachment = () => {
   // Initialize arrays for the new attachment
   attachmentRdBlocks.value[newIndex] = []
   attachmentVillages.value[newIndex] = []
+  console.log('After adding attachment - deputations:', form.value.deputations)
 }
 
 const removeAttachment = (index: number) => {
@@ -1935,9 +1994,11 @@ const onAttachmentRdBlockChange = async (attachment: any) => {
 }
 
 const onPostingDistrictChange = async (posting: any, index: number) => {
+  console.log('onPostingDistrictChange called for index:', index, 'district:', posting.district)
   // Store the current values to preserve them
   const currentRdBlock = posting.rd_block
   const currentHabitation = posting.habitation
+  console.log('Current RD block:', currentRdBlock, 'Current habitation:', currentHabitation)
   
   // Initialize arrays if they don't exist
   if (!postingRdBlocks.value[index]) {
@@ -1959,10 +2020,14 @@ const onPostingDistrictChange = async (posting: any, index: number) => {
         const response = await locationsApi.getRdBlocks(districtId)
         if (response.data.success) {
           postingRdBlocks.value[index] = response.data.data || []
+          console.log('Loaded RD blocks:', postingRdBlocks.value[index])
           
           // Restore the rd_block value if it exists in the loaded options
           if (currentRdBlock && postingRdBlocks.value[index].some(rb => rb.name === currentRdBlock)) {
             posting.rd_block = currentRdBlock
+            console.log('Restored RD block:', currentRdBlock)
+            // Also load villages for the restored RD block
+            await onPostingRdBlockChange(posting, index)
           }
         }
       } catch (error) {
@@ -1972,8 +2037,10 @@ const onPostingDistrictChange = async (posting: any, index: number) => {
 }
 
 const onPostingRdBlockChange = async (posting: any, index: number) => {
+  console.log('onPostingRdBlockChange called for index:', index, 'rd_block:', posting.rd_block)
   // Store the current habitation value to preserve it
   const currentHabitation = posting.habitation
+  console.log('Current habitation:', currentHabitation)
   
   // Initialize villages array if it doesn't exist
   if (!postingVillages.value[index]) {
@@ -1992,10 +2059,12 @@ const onPostingRdBlockChange = async (posting: any, index: number) => {
           const response = await locationsApi.getVillages(rdBlock.id)
           if (response.data.success) {
             postingVillages.value[index] = response.data.data || []
+            console.log('Loaded villages:', postingVillages.value[index])
             
             // Restore the habitation value if it exists in the loaded options
             if (currentHabitation && postingVillages.value[index].some(v => v.name === currentHabitation)) {
               posting.habitation = currentHabitation
+              console.log('Restored habitation:', currentHabitation)
             }
           }
         }

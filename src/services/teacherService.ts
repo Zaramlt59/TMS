@@ -187,32 +187,47 @@ export const teacherService = {
       // Extract related data
       const { posting_histories, deputations, attachments, ...teacherData } = transformedData
       
-      // First, delete existing related records
+      console.log('Teacher update - deputations received:', deputations)
+      console.log('Teacher update - deputations undefined?', deputations === undefined)
+      
+      // Handle deputations more carefully - preserve existing ones if not provided
+      if (deputations !== undefined) {
+        // Only delete and recreate deputations if they are explicitly provided
+        await prisma.deputations.deleteMany({
+          where: { teacher_id: id }
+        })
+      }
+      
+      // Handle posting histories and attachments (keep existing logic for now)
       await prisma.posting_histories.deleteMany({
-        where: { teacher_id: id }
-      })
-      await prisma.deputations.deleteMany({
         where: { teacher_id: id }
       })
       await prisma.attachments.deleteMany({
         where: { teacher_id: id }
       })
       
+      // Prepare update data
+      const updateData: any = {
+        ...teacherData,
+        posting_histories: {
+          create: posting_histories || []
+        },
+        attachments: {
+          create: attachments || []
+        }
+      }
+      
+      // Only include deputations in update if they were provided
+      if (deputations !== undefined) {
+        updateData.deputations = {
+          create: deputations || []
+        }
+      }
+      
       // Update teacher and recreate related records
       const teacher = await prisma.teachers.update({
         where: { id },
-        data: {
-          ...teacherData,
-          posting_histories: {
-            create: posting_histories || []
-          },
-          deputations: {
-            create: deputations || []
-          },
-          attachments: {
-            create: attachments || []
-          }
-        },
+        data: updateData,
         include: {
           posting_histories: true,
           deputations: true,
@@ -462,9 +477,9 @@ export const teacherService = {
     }
     
     // Preserve relations data
-    if (data.posting_histories !== undefined) transformed.posting_history = data.posting_histories
-    if (data.deputations !== undefined) transformed.deputation = data.deputations
-    if (data.attachments !== undefined) transformed.attachment = data.attachments
+    if (data.posting_histories !== undefined) transformed.posting_histories = data.posting_histories
+    if (data.deputations !== undefined) transformed.deputations = data.deputations
+    if (data.attachments !== undefined) transformed.attachments = data.attachments
     
     return transformed
   },

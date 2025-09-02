@@ -148,7 +148,7 @@ export const teacherController = {
     try {
       const teacherData = req.body
       
-      if (!teacherData.teacherName) {
+      if (!teacherData.teacher_name) {
         return res.status(400).json({
           success: false,
           message: 'Teacher name is required'

@@ -190,15 +190,13 @@ export class ReligionService {
   async hardDeleteReligion(id: number): Promise<ApiResponse<null>> {
     try {
       // Check if religion is being used by any teacher
-      const checkSql = 'SELECT COUNT(*) as count FROM teachers WHERE religion = (SELECT name FROM religions WHERE id = ?)';
-      const checkResult = await prisma.religions.findUnique({ where: { id } });
-      const count = (checkResult as any).count;
+      const checkResult = await prisma.$queryRaw`SELECT COUNT(*) as count FROM teachers WHERE religion = (SELECT name FROM religions WHERE id = ${id})`;
+      const count = Array.isArray(checkResult) && checkResult.length > 0 ? (checkResult[0] as any).count : 0;
       
       if (count > 0) {
         // Get more details about which teachers are using this religion
-        const detailSql = 'SELECT teacher_name FROM teachers WHERE religion = (SELECT name FROM religions WHERE id = ?) LIMIT 5';
-        const detailResult = await prisma.religions.findUnique({ where: { id } });
-        const teacherNames = detailResult.map((t: any) => t.teacher_name).join(', ');
+        const detailResult = await prisma.$queryRaw`SELECT teacher_name FROM teachers WHERE religion = (SELECT name FROM religions WHERE id = ${id}) LIMIT 5`;
+        const teacherNames = Array.isArray(detailResult) ? detailResult.map((t: any) => t.teacher_name).join(', ') : '';
         
         return {
           success: false,

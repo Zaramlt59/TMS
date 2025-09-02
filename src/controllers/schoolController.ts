@@ -248,7 +248,7 @@ export const schoolController = {
     try {
       const schoolData = req.body
       
-      if (!schoolData.id || !schoolData.schoolName) {
+      if (!schoolData.school_id || !schoolData.school_name) {
         return res.status(400).json({
           success: false,
           message: 'School ID and name are required'
