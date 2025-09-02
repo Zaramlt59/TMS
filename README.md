@@ -76,7 +76,7 @@ TMS/
 3. **Set up environment variables**
    Create a `.env` file in the root directory:
    ```env
-   PORT=5000
+   PORT=5004
    DB_HOST=localhost
    DB_USER=your_username
    DB_PASSWORD=your_password
