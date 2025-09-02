@@ -3,29 +3,29 @@
     <!-- Government Header -->
     <div class="text-white shadow-sm" style="background-color: #220A06;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-12">
-          <div class="flex items-center space-x-3">
-            <img src="/src/assests/Inidan-Flag.svg" alt="Indian Flag" class="h-6 w-auto" />
-            <span class="text-sm font-medium">School Education Deptt. GoM</span>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-2 sm:py-0 sm:h-12">
+          <div class="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-0">
+            <img src="/src/assests/Inidan-Flag.svg" alt="Indian Flag" class="h-5 sm:h-6 w-auto flex-shrink-0" />
+            <span class="text-xs sm:text-sm font-medium truncate">School Education Deptt. GoM</span>
           </div>
-          <div class="flex items-center space-x-4 text-sm">
-            <span class="cursor-pointer hover:text-amber-200">Skip to Main Content</span>
+          <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm w-full sm:w-auto">
+            <span class="cursor-pointer hover:text-amber-200 whitespace-nowrap">Skip to Main Content</span>
             <div class="flex items-center space-x-1">
-              <span class="px-2 py-1 rounded cursor-pointer hover:bg-amber-700">A⁻</span>
-              <span class="px-2 py-1 rounded bg-amber-700">A</span>
-              <span class="px-2 py-1 rounded cursor-pointer hover:bg-amber-700">A⁺</span>
+              <span class="px-1 sm:px-2 py-1 rounded cursor-pointer hover:bg-amber-700 text-xs">A⁻</span>
+              <span class="px-1 sm:px-2 py-1 rounded bg-amber-700 text-xs">A</span>
+              <span class="px-1 sm:px-2 py-1 rounded cursor-pointer hover:bg-amber-700 text-xs">A⁺</span>
             </div>
-            <div class="w-6 h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center">
-              <div class="w-3 h-3 rounded-full border-2 border-white"></div>
+            <div class="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-white"></div>
             </div>
-            <div class="w-6 h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center flex-shrink-0">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <div class="flex items-center space-x-1 cursor-pointer hover:bg-amber-700 rounded px-2 py-1">
-              <span>English</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center space-x-1 cursor-pointer hover:bg-amber-700 rounded px-1 sm:px-2 py-1 flex-shrink-0">
+              <span class="text-xs sm:text-sm">English</span>
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </div>

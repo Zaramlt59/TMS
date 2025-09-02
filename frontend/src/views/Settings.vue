@@ -12,7 +12,7 @@
     <!-- Settings Tabs -->
     <div class="mt-8">
       <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8">
+        <nav class="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto">
           <button
             v-for="tab in tabs"
             :key="tab.id"
@@ -21,7 +21,7 @@
               activeTab === tab.id
                 ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+              'whitespace-nowrap py-2 px-1 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0'
             ]"
           >
             {{ tab.name }}
@@ -33,9 +33,9 @@
       <div class="mt-8">
         <!-- Districts Tab -->
         <div v-if="activeTab === 'districts'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Districts</h3>
-            <button @click="openModal('districts')" class="btn-primary">
+            <button @click="openModal('districts')" class="btn-primary w-full sm:w-auto">
               Add District
             </button>
           </div>
@@ -50,9 +50,9 @@
 
         <!-- RD Blocks Tab -->
         <div v-if="activeTab === 'rdBlocks'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">RD Blocks</h3>
-            <button @click="openModal('rdBlocks')" class="btn-primary">
+            <button @click="openModal('rdBlocks')" class="btn-primary w-full sm:w-auto">
               Add RD Block
             </button>
           </div>
@@ -67,9 +67,9 @@
 
         <!-- Habitations Tab -->
         <div v-if="activeTab === 'habitations'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Habitations</h3>
-            <button @click="openModal('habitations')" class="btn-primary">
+            <button @click="openModal('habitations')" class="btn-primary w-full sm:w-auto">
               Add Habitation
             </button>
           </div>
@@ -84,9 +84,9 @@
 
         <!-- Block Offices Tab -->
         <div v-if="activeTab === 'blockOffices'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Block Offices</h3>
-            <button @click="openModal('blockOffices')" class="btn-primary">
+            <button @click="openModal('blockOffices')" class="btn-primary w-full sm:w-auto">
               Add Block Office
             </button>
           </div>
@@ -101,9 +101,9 @@
 
         <!-- Subjects Tab -->
         <div v-if="activeTab === 'subjects'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Subjects Taught</h3>
-            <button @click="openModal('subjects')" class="btn-primary">
+            <button @click="openModal('subjects')" class="btn-primary w-full sm:w-auto">
               Add Subject
             </button>
           </div>
@@ -118,9 +118,9 @@
 
         <!-- Mediums Tab -->
         <div v-if="activeTab === 'mediums'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Mediums</h3>
-            <button @click="openModal('mediums')" class="btn-primary">
+            <button @click="openModal('mediums')" class="btn-primary w-full sm:w-auto">
               Add Medium
             </button>
           </div>
@@ -135,9 +135,9 @@
 
         <!-- School Types Tab -->
         <div v-if="activeTab === 'schoolTypes'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">School Types</h3>
-            <button @click="openModal('schoolTypes')" class="btn-primary">
+            <button @click="openModal('schoolTypes')" class="btn-primary w-full sm:w-auto">
               Add School Type
             </button>
           </div>
@@ -152,9 +152,9 @@
 
         <!-- Management Types Tab -->
         <div v-if="activeTab === 'managementTypes'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Management Types</h3>
-            <button @click="openModal('managementTypes')" class="btn-primary">
+            <button @click="openModal('managementTypes')" class="btn-primary w-full sm:w-auto">
               Add Management Type
             </button>
           </div>
@@ -169,9 +169,9 @@
 
         <!-- Religions Tab -->
         <div v-if="activeTab === 'religions'" class="space-y-6">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-lg font-medium text-gray-900">Religions</h3>
-            <button @click="openModal('religions')" class="btn-primary">
+            <button @click="openModal('religions')" class="btn-primary w-full sm:w-auto">
               Add Religion
             </button>
           </div>
@@ -390,7 +390,7 @@
                     Do you really want to delete <strong>{{ itemToDelete?.name }}</strong> permanently?
                   </p>
                   
-                  <div class="flex space-x-4">
+                  <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button 
                       @click="confirmDelete(true)" 
                       class="btn-danger flex-1"
