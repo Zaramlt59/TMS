@@ -19,7 +19,7 @@ import religionRoutes from './routes/religionRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5004;
 
 // Middleware
 app.use(helmet({
@@ -33,7 +33,7 @@ app.use(helmet({
   },
 }));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5000',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5004',
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
