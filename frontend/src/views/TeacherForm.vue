@@ -821,13 +821,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { teachersApi, schoolsApi, districtsApi, mediumsApi, managementTypesApi, blockOfficesApi, subjectsApi, locationsApi, schoolTypesApi, serviceCategoriesApi } from '../services/api'
+import { teachersApi, schoolsApi, subjectsApi, locationsApi } from '../services/api'
+import { useMasterDataStore } from '../stores/masterData'
+import { useLocationsStore } from '../stores/locations'
 import type { Teacher, School, District, Medium, ManagementType, BlockOffice, Subject, SchoolType } from '../types'
 import { CLASSES, SOCIAL_GROUPS, GENDERS } from '../constants'
 import { religionsApi } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
+const masterDataStore = useMasterDataStore()
+const locationsStore = useLocationsStore()
 
 const loading = ref(false)
 const isEditing = computed(() => !!route.params.id)
@@ -1039,10 +1043,7 @@ const loadSchools = async () => {
 
 const loadDistricts = async () => {
   try {
-    const response = await districtsApi.getAll()
-    if (response.data.success) {
-      districts.value = response.data.data || []
-    }
+    districts.value = await locationsStore.getDistricts()
   } catch (error) {
     console.error('Failed to load districts:', error)
   }
@@ -1050,10 +1051,7 @@ const loadDistricts = async () => {
 
 const loadMediums = async () => {
   try {
-    const response = await mediumsApi.getActive()
-    if (response.data.success) {
-      mediums.value = response.data.data || []
-    }
+    mediums.value = await masterDataStore.getMediums()
   } catch (error) {
     console.error('Failed to load mediums:', error)
   }
@@ -1061,10 +1059,7 @@ const loadMediums = async () => {
 
 const loadManagementTypes = async () => {
   try {
-    const response = await managementTypesApi.getActive()
-    if (response.data.success) {
-      managementTypes.value = response.data.data || []
-    }
+    managementTypes.value = await masterDataStore.getManagementTypes()
   } catch (error) {
     console.error('Failed to load management types:', error)
   }
@@ -1072,10 +1067,7 @@ const loadManagementTypes = async () => {
 
 const loadBlockOffices = async () => {
   try {
-    const response = await blockOfficesApi.getActive()
-    if (response.data.success) {
-      blockOffices.value = response.data.data || []
-    }
+    blockOffices.value = await masterDataStore.getBlockOffices()
   } catch (error) {
     console.error('Failed to load block offices:', error)
   }
@@ -1083,10 +1075,7 @@ const loadBlockOffices = async () => {
 
 const loadReligions = async () => {
   try {
-    const response = await religionsApi.getActive()
-    if (response.data.success) {
-      religions.value = response.data.data?.map(r => r.name) || []
-    }
+    religions.value = await masterDataStore.getReligions()
   } catch (error) {
     console.error('Failed to load religions:', error)
   }
@@ -1094,10 +1083,7 @@ const loadReligions = async () => {
 
 const loadServiceCategories = async () => {
   try {
-    const response = await serviceCategoriesApi.getActive()
-    if (response.data.success) {
-      serviceCategories.value = response.data.data || []
-    }
+    serviceCategories.value = await masterDataStore.getServiceCategories()
   } catch (error) {
     console.error('Failed to load service categories:', error)
   }
@@ -1105,10 +1091,7 @@ const loadServiceCategories = async () => {
 
 const loadSchoolTypes = async () => {
   try {
-    const response = await schoolTypesApi.getActive()
-    if (response.data.success) {
-      schoolTypes.value = response.data.data || []
-    }
+    schoolTypes.value = await masterDataStore.getSchoolTypes()
   } catch (error) {
     console.error('Failed to load school types:', error)
   }

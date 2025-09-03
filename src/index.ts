@@ -1,91 +1,35 @@
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
 import dotenv from 'dotenv';
-import path from 'path';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
-import schoolRoutes from './routes/schoolRoutes';
-import teacherRoutes from './routes/teacherRoutes';
-import districtRoutes from './routes/districtRoutes';
-import mediumRoutes from './routes/mediumRoutes';
-import managementTypeRoutes from './routes/managementTypeRoutes';
-import blockOfficeRoutes from './routes/blockOfficeRoutes';
-import locationRoutes from './routes/locationRoutes';
-import subjectRoutes from './routes/subjectRoutes';
-import schoolTypeRoutes from './routes/schoolTypeRoutes';
-import religionRoutes from './routes/religionRoutes';
-import serviceCategoryRoutes from './routes/serviceCategoryRoutes';
-import userRoutes from './routes/userRoutes';
+import { createApp } from './app';
 
 // Load environment variables
 dotenv.config();
 
-const app = express();
+const app = createApp();
 const PORT = process.env.PORT || 5004;
 
-// Middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-}));
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5004',
-  credentials: true
-}));
-app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+// Sentry
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || 0.1),
+    profilesSampleRate: Number(process.env.SENTRY_PROFILES_SAMPLE_RATE || 0.1),
+    integrations: [nodeProfilingIntegration()]
   });
-});
+}
 
-// API routes
-app.use('/api/schools', schoolRoutes);
-app.use('/api/teachers', teacherRoutes);
-app.use('/api/districts', districtRoutes);
-app.use('/api/mediums', mediumRoutes);
-app.use('/api/management-types', managementTypeRoutes);
-app.use('/api/block-offices', blockOfficeRoutes);
-app.use('/api/locations', locationRoutes);
-app.use('/api/subjects', subjectRoutes);
-app.use('/api/school-types', schoolTypeRoutes);
-app.use('/api/religions', religionRoutes);
-app.use('/api/service-categories', serviceCategoryRoutes);
-app.use('/api/users', userRoutes);
-
-// Serve static files from the frontend build
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-// Handle client-side routing - serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  // Skip API routes
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({
-      success: false,
-      message: 'Route not found'
-    });
-  }
-  
-  // Serve the frontend app for all other routes
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
+// (All middleware, routes, health/docs configured inside createApp)
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
+  if (process.env.SENTRY_DSN) {
+    try { Sentry.captureException(err); } catch {}
+  }
   res.status(500).json({
     success: false,
     message: 'Internal server error',

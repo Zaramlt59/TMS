@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  title: Mediums API
+  version: 1.0.0
+tags:
+  - name: Mediums
+paths:
+  /api/mediums:
+    get:
+      tags: [Mediums]
+      summary: List mediums
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/MediumsListResponse'
+    post:
+      tags: [Mediums]
+      summary: Create medium
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/Medium' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/MediumResponse'
+  /api/mediums/{id}:
+    get:
+      tags: [Mediums]
+      summary: Get medium by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/MediumResponse'
+    put:
+      tags: [Mediums]
+      summary: Update medium by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/Medium' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/MediumResponse'
+    delete:
+      tags: [Mediums]
+      summary: Delete medium by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+

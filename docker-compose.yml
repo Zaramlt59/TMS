@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  db:
+    image: mysql:8.0
+    container_name: tms_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-}
+      MYSQL_DATABASE: ${DB_NAME:-ttms_db}
+      MYSQL_USER: ${DB_USER:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: tms_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5004
+      DB_HOST: db
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_NAME: ${DB_NAME:-ttms_db}
+      DB_PORT: 3306
+      DATABASE_URL: mysql://${DB_USER:-root}:${DB_PASSWORD:-}@db:3306/${DB_NAME:-ttms_db}
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./.env:/app/.env:ro
+
+volumes:
+  db_data:
+
+

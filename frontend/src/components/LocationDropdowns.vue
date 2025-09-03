@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { locationsApi } from '../services/api'
+import { useLocationsStore } from '../stores/locations'
 
 interface Location {
   id: number
@@ -109,7 +109,9 @@ const loading = ref({
   villages: false
 })
 
-// Load districts on component mount
+const locationsStore = useLocationsStore()
+
+// Load districts on component mount (via store cache)
 onMounted(async () => {
   await loadDistricts()
 })
@@ -135,10 +137,7 @@ watch(() => props.modelValue, (newValue) => {
 const loadDistricts = async () => {
   loading.value.districts = true
   try {
-    const response = await locationsApi.getDistricts()
-    if (response.data.success) {
-      districts.value = response.data.data || []
-    }
+    districts.value = await locationsStore.getDistricts()
   } catch (error) {
     console.error('Failed to load districts:', error)
   } finally {
@@ -150,10 +149,7 @@ const loadDistricts = async () => {
 const loadRdBlocks = async (districtId: number) => {
   loading.value.rdBlocks = true
   try {
-    const response = await locationsApi.getRdBlocks(districtId)
-    if (response.data.success) {
-      rdBlocks.value = response.data.data || []
-    }
+    rdBlocks.value = await locationsStore.getRdBlocks(districtId)
   } catch (error) {
     console.error('Failed to load RD blocks:', error)
   } finally {
@@ -165,10 +161,7 @@ const loadRdBlocks = async (districtId: number) => {
 const loadVillages = async (rdBlockId: number) => {
   loading.value.villages = true
   try {
-    const response = await locationsApi.getVillages(rdBlockId)
-    if (response.data.success) {
-      villages.value = response.data.data || []
-    }
+    villages.value = await locationsStore.getVillages(rdBlockId)
   } catch (error) {
     console.error('Failed to load villages:', error)
   } finally {

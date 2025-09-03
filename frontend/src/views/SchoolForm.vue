@@ -232,7 +232,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { schoolsApi, districtsApi, mediumsApi, managementTypesApi, schoolTypesApi, locationsApi, blockOfficesApi } from '../services/api'
+import { schoolsApi } from '../services/api'
+import { useMasterDataStore } from '../stores/masterData'
+import { useLocationsStore } from '../stores/locations'
 import type { School, District, Medium, ManagementType, SchoolType, BlockOffice } from '../types'
 import {
   SCHOOL_LEVELS,
@@ -258,6 +260,8 @@ const extractSchoolId = (route: any): string | undefined => {
 
 const route = useRoute()
 const router = useRouter()
+const masterDataStore = useMasterDataStore()
+const locationsStore = useLocationsStore()
 
 const loading = ref(false)
 const isEditing = computed(() => {
@@ -304,10 +308,7 @@ const form = ref<SchoolFormData>({
 
 const loadDistricts = async () => {
   try {
-    const response = await districtsApi.getAll()
-    if (response.data.success) {
-      districts.value = response.data.data || []
-    }
+    districts.value = await locationsStore.getDistricts()
   } catch (error) {
     console.error('Failed to load districts:', error)
   }
@@ -315,10 +316,7 @@ const loadDistricts = async () => {
 
 const loadMediums = async () => {
   try {
-    const response = await mediumsApi.getActive()
-    if (response.data.success) {
-      mediums.value = response.data.data || []
-    }
+    mediums.value = await masterDataStore.getMediums()
   } catch (error) {
     console.error('Failed to load mediums:', error)
   }
@@ -326,10 +324,7 @@ const loadMediums = async () => {
 
 const loadManagementTypes = async () => {
   try {
-    const response = await managementTypesApi.getActive()
-    if (response.data.success) {
-      managementTypes.value = response.data.data || []
-    }
+    managementTypes.value = await masterDataStore.getManagementTypes()
   } catch (error) {
     console.error('Failed to load management types:', error)
   }
@@ -337,10 +332,7 @@ const loadManagementTypes = async () => {
 
 const loadSchoolTypes = async () => {
   try {
-    const response = await schoolTypesApi.getActive()
-    if (response.data.success) {
-      schoolTypes.value = response.data.data || []
-    }
+    schoolTypes.value = await masterDataStore.getSchoolTypes()
   } catch (error) {
     console.error('Failed to load school types:', error)
   }
@@ -348,10 +340,7 @@ const loadSchoolTypes = async () => {
 
 const loadBlockOffices = async () => {
   try {
-    const response = await blockOfficesApi.getActive()
-    if (response.data.success) {
-      blockOffices.value = response.data.data || []
-    }
+    blockOffices.value = await masterDataStore.getBlockOffices()
   } catch (error) {
     console.error('Failed to load block offices:', error)
   }
@@ -385,10 +374,7 @@ const villages = ref<any[]>([])
 
 const loadRdBlocksForDistrict = async (districtId: number) => {
   try {
-    const response = await locationsApi.getRdBlocks(districtId)
-    if (response.data.success) {
-      rdBlocks.value = response.data.data || []
-    }
+    rdBlocks.value = await locationsStore.getRdBlocks(districtId)
   } catch (error) {
     console.error('Failed to load RD blocks:', error)
   }
@@ -396,10 +382,7 @@ const loadRdBlocksForDistrict = async (districtId: number) => {
 
 const loadVillagesForRdBlock = async (rdBlockId: number) => {
   try {
-    const response = await locationsApi.getVillages(rdBlockId)
-    if (response.data.success) {
-      villages.value = response.data.data || []
-    }
+    villages.value = await locationsStore.getVillages(rdBlockId)
   } catch (error) {
     console.error('Failed to load villages:', error)
   }
@@ -418,12 +401,10 @@ const onLocationChange = async (location: { districtId?: number, rdBlockId?: num
   if (location.rdBlockId) {
     // Fetch and store the RD block name instead of ID
     try {
-      const response = await locationsApi.getRdBlocks(location.districtId || 1)
-      if (response.data.success && response.data.data) {
-        const selectedRdBlock = response.data.data.find((rb: any) => rb.id === location.rdBlockId)
-        if (selectedRdBlock) {
-          form.value.rd_block = selectedRdBlock.name
-        }
+      const rdBlockList = await locationsStore.getRdBlocks(location.districtId || 1)
+      const selectedRdBlock = rdBlockList.find((rb: any) => rb.id === location.rdBlockId)
+      if (selectedRdBlock) {
+        form.value.rd_block = selectedRdBlock.name
       }
     } catch (error) {
       console.error('Failed to fetch RD block name:', error)
@@ -433,12 +414,10 @@ const onLocationChange = async (location: { districtId?: number, rdBlockId?: num
   if (location.villageId) {
     // Fetch and store the village name instead of ID
     try {
-      const response = await locationsApi.getVillages(location.rdBlockId || 1)
-      if (response.data.success && response.data.data) {
-        const selectedVillage = response.data.data.find((v: any) => v.id === location.villageId)
-        if (selectedVillage) {
-          form.value.habitation = selectedVillage.name
-        }
+      const villageList = await locationsStore.getVillages(location.rdBlockId || 1)
+      const selectedVillage = villageList.find((v: any) => v.id === location.villageId)
+      if (selectedVillage) {
+        form.value.habitation = selectedVillage.name
       }
     } catch (error) {
       console.error('Failed to fetch village name:', error)

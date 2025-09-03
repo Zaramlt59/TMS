@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { InternalAxiosRequestConfig } from 'axios'
 import type { School, Teacher, District, Medium, ManagementType, BlockOffice, Subject, SchoolType, Religion, ApiResponse } from '../types'
 
 const api = axios.create({
@@ -6,7 +7,61 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
+
+// Attach JWT token from localStorage to every request
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers = (config.headers as any) || {}
+    ;(config.headers as any).Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Response interceptor to refresh token on 401
+let isRefreshing = false
+let pendingRequests: Array<(token: string) => void> = []
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config
+    if (error.response?.status === 401 && !original._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          pendingRequests.push((newToken: string) => {
+            original.headers.Authorization = `Bearer ${newToken}`
+            resolve(api(original))
+          })
+        })
+      }
+
+      original._retry = true
+      isRefreshing = true
+      try {
+        const csrf = localStorage.getItem('csrf') || ''
+        const resp = await axios.post('/api/users/refresh', {}, { withCredentials: true, headers: { 'X-CSRF-Token': csrf } })
+        const newToken = resp.data?.data?.token || ''
+        const newCsrf = resp.data?.data?.csrf || ''
+        if (newToken) localStorage.setItem('token', newToken)
+        if (newCsrf) localStorage.setItem('csrf', newCsrf)
+        pendingRequests.forEach((cb) => cb(newToken))
+        pendingRequests = []
+        isRefreshing = false
+        original.headers.Authorization = `Bearer ${newToken}`
+        return api(original)
+      } catch (e) {
+        isRefreshing = false
+        pendingRequests = []
+        localStorage.removeItem('token')
+        return Promise.reject(error)
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Schools API
 export const schoolsApi = {

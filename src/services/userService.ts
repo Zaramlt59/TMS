@@ -135,13 +135,10 @@ class UserService {
 
       const updatePayload: any = { ...updateData };
 
-      // Hash password if provided
-      if (updateData.password) {
+      // Hash password if provided and persist it
+      if (typeof updateData.password === 'string' && updateData.password.length > 0) {
         updatePayload.password = await bcrypt.hash(updateData.password, this.saltRounds);
       }
-
-      // Remove password from updateData to avoid overwriting
-      delete updatePayload.password;
 
       const user = await prisma.users.update({
         where: { id },

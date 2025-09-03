@@ -221,9 +221,27 @@ model users {
   is_active  Boolean?  @default(true)
   created_at DateTime  @default(now()) @db.Timestamp(0)
   updated_at DateTime? @db.DateTime(0)
+  refresh_tokens refresh_tokens[]
 
   @@index([username], map: "idx_users_username")
   @@index([email], map: "idx_users_email")
+}
+
+model refresh_tokens {
+  id                Int       @id @default(autoincrement())
+  user_id           Int
+  token             String    @unique @db.VarChar(255)
+  expires_at        DateTime
+  revoked_at        DateTime?
+  replaced_by_token String?   @db.VarChar(255)
+  device_id         String?   @db.VarChar(255)
+  ip_address        String?   @db.VarChar(100)
+  user_agent        String?   @db.VarChar(500)
+  created_at        DateTime  @default(now()) @db.Timestamp(0)
+
+  users users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([user_id], map: "idx_refresh_tokens_user_id")
 }
 
 model service_categories {

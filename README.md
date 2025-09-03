@@ -82,6 +82,15 @@ TMS/
    DB_PASSWORD=your_password
    DB_NAME=your_database
    NODE_ENV=development
+   # Optional: Observability
+   SENTRY_DSN=
+   SENTRY_TRACES_SAMPLE_RATE=0.1
+   SENTRY_PROFILES_SAMPLE_RATE=0.1
+   ```
+
+   For frontend Sentry, create `frontend/.env`:
+   ```env
+   VITE_SENTRY_DSN=
    ```
 
 4. **Build and start the application**
@@ -98,6 +107,16 @@ TMS/
    - **Unix/Mac**: `./deploy-monolithic.sh`
 
 ## 🌐 Access Points
+## 🛡️ Auth Flow
+- Access token (JWT, 15m) returned in JSON; frontend sends in Authorization header.
+- Refresh token (random, 7d) stored as HTTP-only cookie; refresh uses CSRF header (X-CSRF-Token).
+- Logout revokes refresh token and clears cookies.
+
+## 📦 Docker
+```bash
+docker compose up -d --build
+```
+App on http://localhost:5004, MySQL on 3306.
 
 Once running, access your application at:
 - **Frontend**: http://localhost:5000

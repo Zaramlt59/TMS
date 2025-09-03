@@ -38,11 +38,13 @@ class AuthService {
         this.isAuthenticated = true;
         this.currentUser = data.data.user;
         this.token = data.data.token;
+        const csrf = (data as any).data?.csrf || ''
         
         // Store in localStorage for persistence
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
         localStorage.setItem('token', this.token);
+        if (csrf) localStorage.setItem('csrf', csrf);
         
         return true;
       }
@@ -53,7 +55,10 @@ class AuthService {
     }
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    try {
+      await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
+    } catch {}
     this.isAuthenticated = false;
     this.currentUser = null;
     this.token = null;
@@ -62,6 +67,19 @@ class AuthService {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
+    localStorage.removeItem('csrf');
+
+    try {
+      // Sync Pinia store if present and redirect
+      const { useAuthStore } = await import('../stores/auth')
+      const store = useAuthStore()
+      store.isAuthenticated = false
+      store.currentUser = null
+      store.token = null
+      store.csrf = null
+      const router = (await import('../router')).default
+      router.push('/login')
+    } catch {}
   }
 
   getAuthStatus(): boolean {
@@ -93,6 +111,36 @@ class AuthService {
 
   isLoggedIn(): boolean {
     return this.getAuthStatus();
+  }
+
+  async requestPasswordReset(email: string): Promise<boolean> {
+    try {
+      const resp = await fetch('/api/users/password/reset-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      })
+      const data = await resp.json()
+      return !!data?.success
+    } catch (e) {
+      return false
+    }
+  }
+
+  async resetPassword(token: string, password: string): Promise<boolean> {
+    try {
+      const resp = await fetch('/api/users/password/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token, password }),
+      })
+      const data = await resp.json()
+      return !!data?.success
+    } catch (e) {
+      return false
+    }
   }
 }
 

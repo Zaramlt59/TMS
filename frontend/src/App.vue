@@ -101,22 +101,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { authService } from './services/auth'
+import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const currentUser = ref(authService.getCurrentUser())
+const auth = useAuthStore()
+const currentUser = computed(() => auth.currentUser)
 
-const handleLogout = () => {
-  authService.logout()
+const handleLogout = async () => {
+  await auth.logout()
   router.push('/login')
 }
 
 onMounted(() => {
   // Check if user is authenticated
-  if (!authService.isLoggedIn()) {
+  if (!auth.isLoggedIn) {
     router.push('/login')
   }
 })

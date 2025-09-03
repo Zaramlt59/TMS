@@ -1,0 +1,130 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - img "Indian Flag" [ref=e8]
+      - generic [ref=e9]: School Education Deptt. GoM
+    - generic [ref=e10]:
+      - generic [ref=e11] [cursor=pointer]: Skip to Main Content
+      - generic [ref=e12]:
+        - generic [ref=e13] [cursor=pointer]: A⁻
+        - generic [ref=e14]: A
+        - generic [ref=e15] [cursor=pointer]: A⁺
+      - img [ref=e19] [cursor=pointer]
+      - generic [ref=e21] [cursor=pointer]:
+        - generic [ref=e22] [cursor=pointer]: English
+        - img [ref=e23] [cursor=pointer]
+  - navigation [ref=e25]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - img "TMS Logo" [ref=e30]
+        - generic [ref=e31]:
+          - link "Dashboard" [ref=e32] [cursor=pointer]:
+            - /url: /
+          - link "Schools" [ref=e33] [cursor=pointer]:
+            - /url: /schools
+          - link "Teachers" [ref=e34] [cursor=pointer]:
+            - /url: /teachers
+          - link "Settings" [ref=e35] [cursor=pointer]:
+            - /url: /settings
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - text: Welcome,
+          - generic [ref=e38]: admin
+        - button "Logout" [ref=e39] [cursor=pointer]:
+          - img [ref=e40] [cursor=pointer]
+          - text: Logout
+  - main [ref=e42]:
+    - generic [ref=e43]:
+      - generic [ref=e45]:
+        - heading "Dashboard" [level=1] [ref=e46]
+        - paragraph [ref=e47]: Overview of the School & Teacher Data Entry System
+        - paragraph [ref=e48]:
+          - text: Welcome back,
+          - generic [ref=e49]: admin
+          - text: "! 👋"
+      - generic [ref=e50]:
+        - generic [ref=e53]:
+          - img [ref=e56]
+          - generic [ref=e58]:
+            - paragraph [ref=e59]: Total Schools
+            - paragraph [ref=e60]: "3"
+        - generic [ref=e63]:
+          - img [ref=e66]
+          - generic [ref=e68]:
+            - paragraph [ref=e69]: Total Teachers
+            - paragraph [ref=e70]: "3"
+        - generic [ref=e73]:
+          - img [ref=e76]
+          - generic [ref=e78]:
+            - paragraph [ref=e79]: Districts
+            - paragraph [ref=e80]: "3"
+      - generic [ref=e81]:
+        - heading "Quick Actions" [level=2] [ref=e82]
+        - generic [ref=e83]:
+          - link "Add New School Create a new school record" [ref=e84] [cursor=pointer]:
+            - /url: /schools/new
+            - generic [ref=e85] [cursor=pointer]:
+              - img [ref=e87] [cursor=pointer]
+              - heading "Add New School" [level=3] [ref=e89] [cursor=pointer]
+              - paragraph [ref=e90] [cursor=pointer]: Create a new school record
+          - link "Add New Teacher Create a new teacher record" [ref=e91] [cursor=pointer]:
+            - /url: /teachers/new
+            - generic [ref=e92] [cursor=pointer]:
+              - img [ref=e94] [cursor=pointer]
+              - heading "Add New Teacher" [level=3] [ref=e96] [cursor=pointer]
+              - paragraph [ref=e97] [cursor=pointer]: Create a new teacher record
+          - link "Settings Manage master data" [ref=e98] [cursor=pointer]:
+            - /url: /settings
+            - generic [ref=e99] [cursor=pointer]:
+              - img [ref=e101] [cursor=pointer]
+              - heading "Settings" [level=3] [ref=e104] [cursor=pointer]
+              - paragraph [ref=e105] [cursor=pointer]: Manage master data
+          - link "View Schools Browse all school records" [ref=e106] [cursor=pointer]:
+            - /url: /schools
+            - generic [ref=e107] [cursor=pointer]:
+              - img [ref=e109] [cursor=pointer]
+              - heading "View Schools" [level=3] [ref=e111] [cursor=pointer]
+              - paragraph [ref=e112] [cursor=pointer]: Browse all school records
+          - link "View Teachers Browse all teacher records" [ref=e113] [cursor=pointer]:
+            - /url: /teachers
+            - generic [ref=e114] [cursor=pointer]:
+              - img [ref=e116] [cursor=pointer]
+              - heading "View Teachers" [level=3] [ref=e118] [cursor=pointer]
+              - paragraph [ref=e119] [cursor=pointer]: Browse all teacher records
+      - generic [ref=e120]:
+        - heading "Recent Activity" [level=2] [ref=e121]
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - img [ref=e127]
+            - generic [ref=e129]:
+              - paragraph [ref=e130]: "New school added: Dicta qui tempora mo"
+              - paragraph
+          - generic [ref=e131]:
+            - img [ref=e133]
+            - generic [ref=e135]:
+              - paragraph [ref=e136]: "New school added: Est dolor aut debit"
+              - paragraph
+          - generic [ref=e137]:
+            - img [ref=e139]
+            - generic [ref=e141]:
+              - paragraph [ref=e142]: "New school added: Sint modi quis quo"
+              - paragraph
+          - generic [ref=e143]:
+            - img [ref=e145]
+            - generic [ref=e147]:
+              - paragraph [ref=e148]: "New teacher added: Aut officia aut ut m"
+              - paragraph [ref=e149]: 8/31/2025
+          - generic [ref=e150]:
+            - img [ref=e152]
+            - generic [ref=e154]:
+              - paragraph [ref=e155]: "New teacher added: Ut incidunt itaque"
+              - paragraph [ref=e156]: 8/31/2025
+          - generic [ref=e157]:
+            - img [ref=e159]
+            - generic [ref=e161]:
+              - paragraph [ref=e162]: "New teacher added: Ut obcaecati corpori"
+              - paragraph [ref=e163]: 8/31/2025
+```

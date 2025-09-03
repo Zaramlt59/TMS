@@ -61,6 +61,9 @@
             <span v-else>Signing in...</span>
           </button>
         </div>
+        <div class="text-center">
+          <router-link to="/forgot-password" class="text-sm text-primary-600">Forgot password?</router-link>
+        </div>
 
 
       </form>

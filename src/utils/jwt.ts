@@ -1,7 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '15m';
 
 export interface JWTPayload {
   userId: number;
@@ -12,7 +12,7 @@ export interface JWTPayload {
 
 export class JWTUtil {
   static generateToken(payload: JWTPayload): string {
-    const options: SignOptions = { expiresIn: '24h' };
+    const options: SignOptions = { expiresIn: ((process.env.JWT_EXPIRES_IN as any) || '15m') } as any;
     return jwt.sign(payload, JWT_SECRET, options);
   }
 

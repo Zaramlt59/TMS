@@ -6,13 +6,25 @@ import TeacherList from '../views/TeacherList.vue'
 import TeacherForm from '../views/TeacherForm.vue'
 import Settings from '../views/Settings.vue'
 import Login from '../views/Login.vue'
-import { authService } from '../services/auth'
+import { useAuthStore } from '../stores/auth'
+import ForgotPassword from '../views/ForgotPassword.vue'
+import ResetPassword from '../views/ResetPassword.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword
   },
   {
     path: '/',
@@ -65,7 +77,9 @@ const router = createRouter({
 
 // Navigation guard to protect routes
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = authService.isLoggedIn()
+  const auth = useAuthStore()
+  if (!auth.isAuthenticated) auth.initializeFromStorage()
+  const isAuthenticated = auth.isLoggedIn
   
   // Allow access to login page
   if (to.path === '/login') {
