@@ -256,14 +256,9 @@ const loadSchools = async (page = 1) => {
   try {
     const response = await schoolsApi.getAll(page, pagination.value.limit)
     if (response.data.success) {
-      // The API returns a simple array of schools, not a paginated response
       schools.value = response.data.data || []
-      // Set pagination to simple values since we're not using pagination yet
-      pagination.value = {
-        page: 1,
-        limit: schools.value.length,
-        total: schools.value.length,
-        totalPages: 1
+      if (response.data.pagination) {
+        pagination.value = response.data.pagination
       }
     }
   } catch (error) {

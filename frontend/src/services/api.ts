@@ -11,7 +11,7 @@ const api = axios.create({
 // Schools API
 export const schoolsApi = {
   getAll: (page = 1, limit = 10) => 
-    api.get<ApiResponse>(`/schools?page=${page}&limit=${limit}`),
+    api.get<ApiResponse & { pagination: any }>(`/schools?page=${page}&limit=${limit}`),
   
   getById: (id: string) => 
     api.get<ApiResponse<School>>(`/schools/${id}`),
@@ -44,7 +44,7 @@ export const schoolsApi = {
 // Teachers API
 export const teachersApi = {
   getAll: (page = 1, limit = 10) => 
-    api.get<ApiResponse>(`/teachers?page=${page}&limit=${limit}`),
+    api.get<ApiResponse & { pagination: any }>(`/teachers?page=${page}&limit=${limit}`),
   
   getById: (id: number) => 
     api.get<ApiResponse<Teacher>>(`/teachers/${id}`),
@@ -63,6 +63,8 @@ export const teachersApi = {
   
   search: (query: string) => 
     api.get<ApiResponse<Teacher[]>>(`/teachers/search?q=${encodeURIComponent(query)}`),
+  getStats: () =>
+    api.get<ApiResponse>(`/teachers/stats`),
 }
 
 // Districts API
@@ -286,6 +288,30 @@ export const locationsApi = {
 
   hardDeleteHabitation: (id: number) =>
     api.delete<ApiResponse<any>>(`/locations/habitations/${id}/permanent`),
+}
+
+// Service Categories API
+export const serviceCategoriesApi = {
+  getAll: () =>
+    api.get<ApiResponse<any[]>>('/service-categories'),
+
+  getActive: () =>
+    api.get<ApiResponse<any[]>>('/service-categories/active'),
+
+  getById: (id: number) =>
+    api.get<ApiResponse<any>>(`/service-categories/${id}`),
+
+  create: (data: { name: string, is_active?: boolean }) =>
+    api.post<ApiResponse<any>>('/service-categories', data),
+
+  update: (id: number, data: { name: string, is_active?: boolean }) =>
+    api.put<ApiResponse<any>>(`/service-categories/${id}`, data),
+
+  delete: (id: number) =>
+    api.delete<ApiResponse>(`/service-categories/${id}`),
+
+  hardDelete: (id: number) =>
+    api.delete<ApiResponse>(`/service-categories/${id}/permanent`),
 }
 
 export default api

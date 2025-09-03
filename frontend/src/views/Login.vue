@@ -90,7 +90,7 @@ const handleLogin = async () => {
   error.value = ''
   
   try {
-    const success = authService.login(username.value, password.value)
+    const success = await authService.login(username.value, password.value)
     
     if (success) {
       // Redirect to dashboard

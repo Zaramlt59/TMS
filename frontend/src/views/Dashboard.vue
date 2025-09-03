@@ -213,18 +213,16 @@ const recentTeachers = ref<Teacher[]>([])
 const loadStats = async () => {
   try {
     const [schoolsResponse, teachersResponse, statsResponse] = await Promise.all([
-      schoolsApi.getAll(1, 1),
-      teachersApi.getAll(1, 1),
+      schoolsApi.getStats(),
+      teachersApi.getStats(),
       schoolsApi.getStats()
     ])
 
     if (schoolsResponse.data.success) {
-      // The API returns a simple array, so we use the length
-      stats.value.schools = schoolsResponse.data.data?.length || 0
+      stats.value.schools = schoolsResponse.data.data?.totalSchools || 0
     }
     if (teachersResponse.data.success) {
-      // The API returns a simple array, so we use the length
-      stats.value.teachers = teachersResponse.data.data?.length || 0
+      stats.value.teachers = teachersResponse.data.data?.total || 0
     }
     if (statsResponse.data.success) {
       stats.value.districts = statsResponse.data.data?.uniqueDistricts || 0

@@ -5,11 +5,10 @@ export const schoolController = {
   // Get all schools
   async getAll(req: Request, res: Response) {
     try {
-      const schools = await schoolService.getAll()
-      res.json({
-        success: true,
-        data: schools
-      })
+      const page = parseInt((req.query.page as string) || '1')
+      const limit = Math.min(parseInt((req.query.limit as string) || '20'), 100)
+      const result = await schoolService.getAll({ page, limit })
+      res.json(result)
     } catch (error: any) {
       res.status(500).json({
         success: false,

@@ -141,6 +141,7 @@ export interface Teacher {
   school_level: string
   management: string
   medium: string
+  service_category?: string
   habitation?: string
   pincode?: string
   district?: string

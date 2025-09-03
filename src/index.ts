@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -14,6 +15,8 @@ import locationRoutes from './routes/locationRoutes';
 import subjectRoutes from './routes/subjectRoutes';
 import schoolTypeRoutes from './routes/schoolTypeRoutes';
 import religionRoutes from './routes/religionRoutes';
+import serviceCategoryRoutes from './routes/serviceCategoryRoutes';
+import userRoutes from './routes/userRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +39,7 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5004',
   credentials: true
 }));
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -59,6 +63,8 @@ app.use('/api/locations', locationRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/school-types', schoolTypeRoutes);
 app.use('/api/religions', religionRoutes);
+app.use('/api/service-categories', serviceCategoryRoutes);
+app.use('/api/users', userRoutes);
 
 // Serve static files from the frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -105,6 +111,8 @@ async function startServer() {
       console.log(`📚 Subjects API: http://localhost:${PORT}/api/subjects`);
       console.log(`🏫 School Types API: http://localhost:${PORT}/api/school-types`);
       console.log(`🙏 Religions API: http://localhost:${PORT}/api/religions`);
+      console.log(`🧾 Service Categories API: http://localhost:${PORT}/api/service-categories`);
+      console.log(`👤 Users API: http://localhost:${PORT}/api/users`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

@@ -2,17 +2,55 @@ import prisma from './prismaService'
 
 export const schoolService = {
   // Get all schools
-  async getAll(): Promise<any[]> {
+  async getAll(params?: { page: number; limit: number }): Promise<any> {
     try {
-      const schools = await prisma.schools.findMany({
-        orderBy: { school_name: 'asc' }
-      })
-      
-      // Transform database values to frontend display values
-      return schools.map(school => this.transformSchoolDataForFrontend(school))
+      const page = params?.page || 1
+      const limit = params?.limit || 20
+      const skip = (page - 1) * limit
+
+      const [rows, total] = await Promise.all([
+        prisma.schools.findMany({
+          skip,
+          take: limit,
+          orderBy: { school_name: 'asc' },
+          select: {
+            id: true,
+            school_id: true,
+            school_name: true,
+            school_type: true,
+            school_level: true,
+            management: true,
+            medium: true,
+            pincode: true,
+            district: true,
+            rd_block: true,
+            school_phone: true,
+            school_email: true,
+            habitation: true,
+            habitation_class: true,
+            habitation_category: true,
+            block_office: true,
+            created_at: true,
+            updated_at: true
+          }
+        }),
+        prisma.schools.count()
+      ])
+
+      return {
+        success: true,
+        message: 'Schools retrieved successfully',
+        data: rows.map(r => this.transformSchoolDataForFrontend(r)),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
     } catch (error) {
       console.error('Error fetching all schools:', error)
-      throw new Error('Failed to fetch schools')
+      return { success: false, message: 'Failed to fetch schools' }
     }
   },
 

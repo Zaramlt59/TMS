@@ -432,23 +432,9 @@ const loadTeachers = async (page = 1) => {
     console.log('Teachers array:', response.data.data)
     
     if (response.data.success) {
-      // The API returns a simple array of teachers, not a paginated response
       teachers.value = response.data.data || []
-      
-      // Debug individual teacher data
-      if (teachers.value.length > 0) {
-        console.log('First teacher data:', teachers.value[0])
-        console.log('First teacher posting_history:', teachers.value[0].posting_history)
-        console.log('First teacher deputation:', teachers.value[0].deputation)
-        console.log('First teacher attachment:', teachers.value[0].attachment)
-      }
-      
-      // Set pagination to simple values since we're not using pagination yet
-      pagination.value = {
-        page: 1,
-        limit: teachers.value.length,
-        total: teachers.value.length,
-        totalPages: 1
+      if (response.data.pagination) {
+        pagination.value = response.data.pagination
       }
     }
   } catch (error) {
@@ -576,6 +562,7 @@ const exportToExcel = () => {
       'Current School Name': teacher.current_school_name || '',
       'School Level': teacher.school_level || '',
       'Management Type': teacher.management || '',
+      'Service Category': teacher.service_category || '',
       'Medium of Institution': teacher.medium || '',
       
       // ===== LOCATION INFORMATION =====

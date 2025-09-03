@@ -179,6 +179,7 @@ model teachers {
   school_level        String                        @db.Text
   management          teachers_management
   medium              teachers_medium
+  service_category    String?                       @db.VarChar(100)
   habitation          String?                       @db.VarChar(255)
   pincode             String?                       @db.VarChar(10)
   district            String?                       @db.VarChar(100)
@@ -209,6 +210,28 @@ model villages {
 
   @@unique([rd_block_id, name], map: "unique_village_per_rd_block")
   @@index([rd_block_id], map: "idx_villages_rd_block_id")
+}
+
+model users {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique @db.VarChar(100)
+  email      String    @unique @db.VarChar(255)
+  password   String    @db.VarChar(255)
+  role       user_role @default(admin)
+  is_active  Boolean?  @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.DateTime(0)
+
+  @@index([username], map: "idx_users_username")
+  @@index([email], map: "idx_users_email")
+}
+
+model service_categories {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(100)
+  is_active  Boolean?  @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.DateTime(0)
 }
 
 enum posting_histories_school_type {
@@ -405,4 +428,8 @@ enum teachers_block_office {
   SDEO_Serchhip           @map("SDEO Serchhip")
   SDEO_Thenzawl           @map("SDEO Thenzawl")
   SDEO_West_Phaileng      @map("SDEO West Phaileng")
+}
+
+enum user_role {
+  admin
 }

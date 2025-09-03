@@ -145,7 +145,6 @@
           </div>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
             <div>
               <label class="form-label">School *</label>
               <select v-model="selectedSchoolId" required class="form-select" @change="onSchoolChange()">
@@ -155,28 +154,18 @@
                 </option>
               </select>
             </div>
+            <div>
+              <label class="form-label">Service Category</label>
+              <select v-model="form.service_category" class="form-select">
+                <option value="">Select service category</option>
+                <option v-for="cat in serviceCategories" :key="cat.id" :value="cat.name">
+                  {{ cat.name }}
+                </option>
+              </select>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label class="form-label">District *</label>
-              <select v-model="form.district" required class="form-select">
-                <option value="">Select district</option>
-                <option v-for="district in districts" :key="district.id" :value="district.name">
-                  {{ district.name }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label">Block Office *</label>
-              <select v-model="form.block_office" required class="form-select">
-                <option value="">Select block office</option>
-                <option v-for="office in blockOffices" :key="office.id" :value="office.name">
-                  {{ office.name }}
-                </option>
-              </select>
-            </div>
-          </div>
+          
 
           <div>
             <label class="form-label">Classes Taught *</label>
@@ -832,7 +821,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { teachersApi, schoolsApi, districtsApi, mediumsApi, managementTypesApi, blockOfficesApi, subjectsApi, locationsApi, schoolTypesApi } from '../services/api'
+import { teachersApi, schoolsApi, districtsApi, mediumsApi, managementTypesApi, blockOfficesApi, subjectsApi, locationsApi, schoolTypesApi, serviceCategoriesApi } from '../services/api'
 import type { Teacher, School, District, Medium, ManagementType, BlockOffice, Subject, SchoolType } from '../types'
 import { CLASSES, SOCIAL_GROUPS, GENDERS } from '../constants'
 import { religionsApi } from '../services/api'
@@ -845,6 +834,7 @@ const isEditing = computed(() => !!route.params.id)
 const schools = ref<School[]>([])
 const selectedSchoolId = ref('')
 const availableSubjects = ref<Subject[]>([])
+const serviceCategories = ref<{ id: number, name: string }[]>([])
 const religions = ref<string[]>([])
 
 // Create a local interface that extends Teacher for form handling
@@ -871,6 +861,7 @@ const form = ref<TeacherFormData>({
   school_level: '',
   management: '', // Empty initially to show placeholder
   medium: '', // Empty initially to show placeholder
+  service_category: '',
   habitation: '',
   pincode: '',
   district: '', // Empty initially to show placeholder
@@ -1098,6 +1089,17 @@ const loadReligions = async () => {
     }
   } catch (error) {
     console.error('Failed to load religions:', error)
+  }
+}
+
+const loadServiceCategories = async () => {
+  try {
+    const response = await serviceCategoriesApi.getActive()
+    if (response.data.success) {
+      serviceCategories.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Failed to load service categories:', error)
   }
 }
 
@@ -2077,11 +2079,11 @@ const onPostingRdBlockChange = async (posting: any, index: number) => {
 onMounted(async () => {
   await Promise.all([
     loadSchools(), 
-    loadDistricts(), 
     loadMediums(), 
     loadManagementTypes(), 
     loadBlockOffices(),
     loadReligions(),
+    loadServiceCategories(),
     loadSchoolTypes()
   ])
   if (isEditing.value) {
@@ -2095,7 +2097,6 @@ watch(() => route.path, async (newPath, oldPath) => {
   if (newPath === route.path && oldPath && oldPath.includes('/settings')) {
     await Promise.all([
       loadSchools(), 
-      loadDistricts(), 
       loadMediums(), 
       loadManagementTypes(), 
       loadBlockOffices(),
@@ -2117,7 +2118,6 @@ onMounted(() => {
     if (document.activeElement && document.activeElement.closest('form')) {
       await Promise.all([
         loadSchools(), 
-        loadDistricts(), 
         loadMediums(), 
         loadManagementTypes(), 
         loadBlockOffices(),

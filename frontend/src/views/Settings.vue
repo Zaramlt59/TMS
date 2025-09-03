@@ -183,6 +183,23 @@
             @delete="deleteItem('religions', $event)"
           />
         </div>
+
+        <!-- Service Categories Tab -->
+        <div v-if="activeTab === 'serviceCategories'" class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+            <h3 class="text-lg font-medium text-gray-900">Service Categories</h3>
+            <button @click="openModal('serviceCategories')" class="btn-primary w-full sm:w-auto">
+              Add Service Category
+            </button>
+          </div>
+          <DataTable
+            :data="serviceCategories"
+            :columns="serviceCategoryColumns"
+            :loading="loading"
+            @edit="editItem('serviceCategories', $event)"
+            @delete="deleteItem('serviceCategories', $event)"
+          />
+        </div>
       </div>
     </div>
 
@@ -330,6 +347,20 @@
           </div>
         </div>
 
+        <div v-else-if="activeTab === 'serviceCategories'" class="space-y-4">
+          <div>
+            <label class="form-label">Service Category *</label>
+            <input id="service-category-name" name="service-category-name" v-model="formData.name" type="text" required class="form-input" placeholder="Enter service category" />
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select v-model="formData.is_active" class="form-select">
+              <option :value="true">Active</option>
+              <option :value="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+
         <div v-else-if="activeTab === 'blockOffices'" class="space-y-4">
           <div>
             <label class="form-label">Block Office Name *</label>
@@ -438,7 +469,8 @@ import {
   locationsApi,
   subjectsApi,
   schoolTypesApi,
-  religionsApi
+  religionsApi,
+  serviceCategoriesApi
 } from '../services/api'
 import { CLASSES } from '../constants'
 import DataTable from '../components/DataTable.vue'
@@ -485,6 +517,7 @@ const schoolTypes = ref<SchoolType[]>([])
 const managementTypes = ref<ManagementType[]>([])
 const religions = ref<Religion[]>([])
 const blockOffices = ref<BlockOffice[]>([])
+const serviceCategories = ref<{id: number, name: string, is_active: boolean}[]>([])
 
 // Form data
 const formData = ref<any>({
@@ -505,15 +538,26 @@ const tabs = [
   { id: 'mediums', name: 'Mediums' },
   { id: 'schoolTypes', name: 'School Types' },
   { id: 'managementTypes', name: 'Management Types' },
-  { id: 'religions', name: 'Religions' }
+  { id: 'religions', name: 'Religions' },
+  { id: 'serviceCategories', name: 'Service Categories' }
 ]
 
 // Computed properties
 const modalTitle = computed(() => {
-  if (editingItem.value) {
-    return `Edit ${activeTab.value.slice(0, -1)}`
+  const singularMap: Record<string, string> = {
+    districts: 'District',
+    rdBlocks: 'RD Block',
+    habitations: 'Habitation',
+    blockOffices: 'Block Office',
+    subjects: 'Subject',
+    mediums: 'Medium',
+    schoolTypes: 'School Type',
+    managementTypes: 'Management Type',
+    religions: 'Religion',
+    serviceCategories: 'Service Category'
   }
-  return `Add ${activeTab.value.slice(0, -1)}`
+  const label = singularMap[activeTab.value] || 'Item'
+  return editingItem.value ? `Edit ${label}` : `Add ${label}`
 })
 
 const filteredRdBlocks = computed(() => {
@@ -572,6 +616,11 @@ const religionColumns = [
   { key: 'is_active', label: 'Status', formatter: (value: boolean) => value ? 'Active' : 'Inactive' }
 ]
 
+const serviceCategoryColumns = [
+  { key: 'name', label: 'Name' },
+  { key: 'is_active', label: 'Status', formatter: (value: boolean) => value ? 'Active' : 'Inactive' }
+]
+
 const blockOfficeColumns = [
   { key: 'name', label: 'Name' },
   { key: 'is_active', label: 'Status', formatter: (value: boolean) => value ? 'Active' : 'Inactive' }
@@ -607,6 +656,7 @@ const loadData = async () => {
     await loadSubjects()
     await loadSchoolTypes()
     await loadReligions()
+    await loadServiceCategories()
 
   } catch (error) {
     console.error('Failed to load data:', error)
@@ -680,6 +730,17 @@ const loadReligions = async () => {
   }
 }
 
+const loadServiceCategories = async () => {
+  try {
+    const response = await serviceCategoriesApi.getAll()
+    if (response.data.success && response.data.data) {
+      serviceCategories.value = response.data.data
+    }
+  } catch (error) {
+    console.error('Failed to load service categories:', error)
+  }
+}
+
 const openModal = (type: string) => {
   editingItem.value = null
   
@@ -738,6 +799,12 @@ const openModal = (type: string) => {
       }
       break
     case 'religions':
+      formData.value = {
+        name: '',
+        is_active: true
+      }
+      break
+    case 'serviceCategories':
       formData.value = {
         name: '',
         is_active: true
@@ -836,6 +903,9 @@ const confirmDelete = async (permanent: boolean) => {
         case 'religions':
           response = await religionsApi.hardDelete(itemToDelete.value.id)
           break
+        case 'serviceCategories':
+          response = await serviceCategoriesApi.hardDelete(itemToDelete.value.id)
+          break
       }
 
       if (response?.data.success) {
@@ -876,6 +946,9 @@ const confirmDelete = async (permanent: boolean) => {
           break
         case 'religions':
           response = await religionsApi.update(itemToDelete.value.id, updateData)
+          break
+        case 'serviceCategories':
+          response = await serviceCategoriesApi.update(itemToDelete.value.id, updateData)
           break
       }
 
@@ -943,6 +1016,9 @@ const saveItem = async () => {
         case 'religions':
           response = await religionsApi.update(editingItem.value.id, formData.value)
           break
+        case 'serviceCategories':
+          response = await serviceCategoriesApi.update(editingItem.value.id, formData.value)
+          break
       }
     } else {
       // Create new item
@@ -978,6 +1054,9 @@ const saveItem = async () => {
           break
         case 'religions':
           response = await religionsApi.create(formData.value)
+          break
+        case 'serviceCategories':
+          response = await serviceCategoriesApi.create(formData.value)
           break
       }
     }

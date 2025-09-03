@@ -2,22 +2,99 @@ import prisma from './prismaService'
 
 export const teacherService = {
   // Get all teachers
-  async getAll(): Promise<any[]> {
+  async getAll(params?: { page: number; limit: number }): Promise<any> {
     try {
-      const teachers = await prisma.teachers.findMany({
-        include: {
-          posting_histories: true,
-          deputations: true,
-          attachments: true
-        },
-        orderBy: { teacher_name: 'asc' }
-      })
-      
-      // Transform relation field names for frontend
-      return teachers.map(teacher => this.transformRelationsForFrontend(teacher))
+      const page = params?.page || 1
+      const limit = params?.limit || 20
+      const skip = (page - 1) * limit
+
+      const [rows, total] = await Promise.all([
+        prisma.teachers.findMany({
+          skip,
+          take: limit,
+          orderBy: { teacher_name: 'asc' },
+          select: {
+            id: true,
+            teacher_name: true,
+            date_of_birth: true,
+            joining_date: true,
+            phone_number: true,
+            email: true,
+            social_group: true,
+            religion: true,
+            gender: true,
+            aadhaar_number: true,
+            subjects_taught: true,
+            classes_taught: true,
+            school_id: true,
+            current_school_name: true,
+            school_level: true,
+            management: true,
+            medium: true,
+            service_category: true,
+            habitation: true,
+            pincode: true,
+            district: true,
+            rd_block: true,
+            school_phone: true,
+            habitation_class: true,
+            habitation_category: true,
+            block_office: true,
+            created_at: true,
+            updated_at: true,
+            posting_histories: {
+              select: {
+                school_name: true,
+                school_type: true,
+                medium: true,
+                management: true,
+                block_office: true,
+                district: true,
+                from_date: true,
+                to_date: true,
+                status: true
+              }
+            },
+            deputations: {
+              select: {
+                department_name: true,
+                designation: true,
+                joining_date: true,
+                end_date: true,
+                status: true
+              }
+            },
+            attachments: {
+              select: {
+                department_name: true,
+                designation: true,
+                district: true,
+                rd_block: true,
+                habitation: true,
+                joining_date: true,
+                end_date: true,
+                status: true
+              }
+            }
+          }
+        }),
+        prisma.teachers.count()
+      ])
+
+      return {
+        success: true,
+        message: 'Teachers retrieved successfully',
+        data: rows.map(r => this.transformRelationsForFrontend(r)),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
     } catch (error) {
       console.error('Error fetching all teachers:', error)
-      throw new Error('Failed to fetch teachers')
+      return { success: false, message: 'Failed to fetch teachers' }
     }
   },
 
@@ -306,6 +383,7 @@ export const teacherService = {
                              data.management === 'Lumpsum Aided' ? 'Lumpsum_Aided' : data.management
     }
     if (data.medium !== undefined) transformed.medium = data.medium
+    if (data.service_category !== undefined) transformed.service_category = data.service_category
     if (data.habitation !== undefined) transformed.habitation = data.habitation
     if (data.pincode !== undefined) transformed.pincode = data.pincode
     if (data.district !== undefined) transformed.district = data.district
@@ -464,6 +542,7 @@ export const teacherService = {
       transformed.management = data.management.replace(/_/g, ' ')
     }
     if (data.medium !== undefined) transformed.medium = data.medium
+    if (data.service_category !== undefined) transformed.service_category = data.service_category
     if (data.habitation !== undefined) transformed.habitation = data.habitation
     if (data.pincode !== undefined) transformed.pincode = data.pincode
     if (data.district !== undefined) transformed.district = data.district

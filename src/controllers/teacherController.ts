@@ -5,11 +5,10 @@ export const teacherController = {
   // Get all teachers
   async getAll(req: Request, res: Response) {
     try {
-      const teachers = await teacherService.getAll()
-      res.json({
-        success: true,
-        data: teachers
-      })
+      const page = parseInt((req.query.page as string) || '1')
+      const limit = Math.min(parseInt((req.query.limit as string) || '20'), 100)
+      const result = await teacherService.getAll({ page, limit })
+      res.json(result)
     } catch (error: any) {
       res.status(500).json({
         success: false,
