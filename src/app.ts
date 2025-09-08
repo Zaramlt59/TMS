@@ -43,6 +43,7 @@ export function createApp() {
 
   app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString(), uptime: process.uptime() }))
 
+  const apisGlobs = process.env.NODE_ENV === 'test' ? [] : ['docs/**/*.yaml']
   const swaggerSpec = swaggerJsdoc({
     definition: {
       openapi: '3.0.0',
@@ -62,7 +63,7 @@ export function createApp() {
         { name: 'Service Categories' }
       ]
     },
-    apis: ['docs/**/*.yaml']
+    apis: apisGlobs
   })
   if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_DOCS === 'true') {
     app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
