@@ -390,7 +390,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { teachersApi } from '../services/api'
+import { teachersApi, medicalRecordsApi, type MedicalRecord } from '../services/api'
 import type { Teacher, TeacherListResponse } from '../types'
 import * as XLSX from 'xlsx'
 
@@ -547,8 +547,43 @@ const parseClassesTaught = (classesString: string): string[] => {
   }
 }
 
-const exportToExcel = () => {
+type MedicalSummary = {
+  medicalRecordsCount: number
+  latestMedicalAilment: string
+  latestMedicalSeverity: string
+  latestMedicalRemarks: string
+  latestMedicalDocumentUrl: string
+}
+
+const getMedicalSummary = async (teacherId?: number): Promise<MedicalSummary> => {
+  if (!teacherId) {
+    return { medicalRecordsCount: 0, latestMedicalAilment: '', latestMedicalSeverity: '', latestMedicalRemarks: '', latestMedicalDocumentUrl: '' }
+  }
   try {
+    const resp = await medicalRecordsApi.getByTeacher(teacherId)
+    const records: MedicalRecord[] = (resp.data && (resp.data as any).data) ? (resp.data as any).data : []
+    const latest = records && records.length > 0 ? records[0] : undefined
+    return {
+      medicalRecordsCount: records.length || 0,
+      latestMedicalAilment: latest?.ailment_name || '',
+      latestMedicalSeverity: latest?.severity || '',
+      latestMedicalRemarks: latest?.remarks || '',
+      latestMedicalDocumentUrl: latest?.documents || ''
+    }
+  } catch {
+    return { medicalRecordsCount: 0, latestMedicalAilment: '', latestMedicalSeverity: '', latestMedicalRemarks: '', latestMedicalDocumentUrl: '' }
+  }
+}
+
+const exportToExcel = async () => {
+  try {
+    // Fetch medical summaries for current teacher list
+    const summariesArray = await Promise.all(teachers.value.map(t => getMedicalSummary(t.id)))
+    const summaryByTeacherId: Record<number, MedicalSummary> = {}
+    teachers.value.forEach((t, i) => {
+      if (typeof t.id === 'number') summaryByTeacherId[t.id] = summariesArray[i]
+    })
+
     // Prepare data for export
     const exportData = teachers.value.map(teacher => ({
       // ===== BASIC TEACHER INFORMATION =====
@@ -590,6 +625,12 @@ const exportToExcel = () => {
       'Total Posting Records': teacher.posting_history ? teacher.posting_history.length : 0,
       'Total Deputation Records': teacher.deputation ? teacher.deputation.length : 0,
       'Total Attachment Records': teacher.attachment ? teacher.attachment.length : 0,
+
+      // ===== MEDICAL RECORDS SUMMARY =====
+      'Medical Records Count': summaryByTeacherId[teacher.id as number]?.medicalRecordsCount ?? 0,
+      'Latest Medical Ailment': summaryByTeacherId[teacher.id as number]?.latestMedicalAilment ?? '',
+      'Latest Medical Severity': summaryByTeacherId[teacher.id as number]?.latestMedicalSeverity ?? '',
+      'Latest Medical Remarks': summaryByTeacherId[teacher.id as number]?.latestMedicalRemarks ?? '',
       
       // ===== LATEST POSTING DETAILS =====
       'Latest Posting School': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].school_name : '',
