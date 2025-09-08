@@ -28,7 +28,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
         '403': { description: Forbidden }
 
   /api/medical-records/{teacherId}:
@@ -49,12 +49,12 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './components.yaml#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/ApiResponse'
                   - type: object
                     properties:
                       data:
                         type: array
-                        items: { $ref: './components.yaml#/components/schemas/MedicalRecord' }
+                        items: { $ref: '#/components/schemas/MedicalRecord' }
         '403': { description: Forbidden }
 
   /api/medical-records/{id}:
@@ -87,7 +87,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
         '403': { description: Forbidden }
 
     delete:

@@ -1,7 +1,3 @@
-openapi: 3.0.0
-info:
-  title: Service Categories API
-  version: 1.0.0
 tags:
   - name: Service Categories
 paths:
@@ -15,7 +11,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ServiceCategoriesListResponse'
+                $ref: '#/components/schemas/ServiceCategoriesListResponse'
     post:
       tags: [Service Categories]
       summary: Create service category
@@ -23,14 +19,14 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: './components.yaml#/components/schemas/ServiceCategory' }
+            schema: { $ref: '#/components/schemas/ServiceCategory' }
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ServiceCategoryResponse'
+                $ref: '#/components/schemas/ServiceCategoryResponse'
   /api/service-categories/{id}:
     get:
       tags: [Service Categories]
@@ -46,7 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ServiceCategoryResponse'
+                $ref: '#/components/schemas/ServiceCategoryResponse'
     put:
       tags: [Service Categories]
       summary: Update service category by ID
@@ -59,7 +55,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: './components.yaml#/components/schemas/ServiceCategory' }
+            schema: { $ref: '#/components/schemas/ServiceCategory' }
       responses:
         '200':
           description: OK
