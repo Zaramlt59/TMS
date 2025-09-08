@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex items-start justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 overflow-hidden overflow-y-hidden pt-16">
+  <div class="min-h-screen flex items-start justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 overflow-x-hidden overflow-y-auto pt-16">
     <div class="w-full max-w-md space-y-3">
               <div>
           <div class="mx-auto flex items-center justify-center">

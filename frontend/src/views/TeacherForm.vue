@@ -1747,6 +1747,10 @@ const removePosting = (index: number) => {
 }
 
 const onPostingSchoolChange = async (posting: any) => {
+  // Ensure districts are loaded so the dropdown has options
+  if (!districts.value || districts.value.length === 0) {
+    await loadDistricts()
+  }
   const selectedSchool = schools.value.find(s => s.school_name === posting.school_name)
   
   if (selectedSchool) {
@@ -2067,6 +2071,7 @@ onMounted(async () => {
     loadBlockOffices(),
     loadReligions(),
     loadServiceCategories(),
+    loadDistricts(),
     loadSchoolTypes()
   ])
   if (isEditing.value) {
@@ -2084,7 +2089,8 @@ watch(() => route.path, async (newPath, oldPath) => {
       loadManagementTypes(), 
       loadBlockOffices(),
       loadReligions(),
-      loadSchoolTypes()
+      loadSchoolTypes(),
+      loadDistricts()
     ])
     
     // Re-validate form data after refresh
@@ -2105,7 +2111,8 @@ onMounted(() => {
         loadManagementTypes(), 
         loadBlockOffices(),
         loadReligions(),
-        loadSchoolTypes()
+        loadSchoolTypes(),
+        loadDistricts()
       ])
       
       // Re-validate form data after refresh
