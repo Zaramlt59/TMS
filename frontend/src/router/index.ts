@@ -9,12 +9,19 @@ import Login from '../views/Login.vue'
 import { useAuthStore } from '../stores/auth'
 import ForgotPassword from '../views/ForgotPassword.vue'
 import ResetPassword from '../views/ResetPassword.vue'
+import MedicalRecords from '../views/MedicalRecords.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/teachers/:id/medical-records',
+    name: 'MedicalRecords',
+    component: MedicalRecords,
+    props: true
   },
   {
     path: '/forgot-password',

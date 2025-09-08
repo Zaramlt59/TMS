@@ -93,9 +93,12 @@
                   Attachment History
                 </th>
                 <th class="w-40 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Medical History
+                </th>
+                <th class="w-40 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Location
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Actions
                 </th>
               </tr>
@@ -280,6 +283,14 @@
                   <div v-else class="text-sm text-gray-400 italic">
                     No attachment
                   </div>
+                </td>
+                <td class="px-4 py-4 w-40">
+                  <router-link
+                    :to="`/teachers/${teacher.id}/medical-records`"
+                    class="text-sm text-primary-600 hover:text-primary-900"
+                  >
+                    Click to see Medical Records
+                  </router-link>
                 </td>
                 <td class="px-4 py-4 w-40">
                   <div>

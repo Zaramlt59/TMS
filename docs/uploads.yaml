@@ -1,0 +1,37 @@
+tags:
+  - name: Uploads
+paths:
+  /api/uploads/medical-records:
+    post:
+      tags: [Uploads]
+      summary: Upload a medical record document (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './components.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          url: { type: string, description: 'Absolute URL to uploaded file' }
+                          relativeUrl: { type: string }
+                          originalName: { type: string }
+                          size: { type: integer }
+

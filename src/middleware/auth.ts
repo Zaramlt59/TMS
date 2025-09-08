@@ -23,7 +23,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
   const payload = JWTUtil.verifyToken(token);
   if (!payload) {
-    return res.status(403).json({
+    // Use 401 so clients can refresh tokens automatically
+    return res.status(401).json({
       success: false,
       message: 'Invalid or expired token'
     });

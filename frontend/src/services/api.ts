@@ -1,6 +1,19 @@
 import axios from 'axios'
 import type { InternalAxiosRequestConfig } from 'axios'
+// Local lightweight types for medical records; existing types are imported where available
 import type { School, Teacher, District, Medium, ManagementType, BlockOffice, Subject, SchoolType, Religion, ApiResponse } from '../types'
+
+export type MedicalRecord = {
+  id: number
+  teacher_id: number
+  ailment_name: string
+  severity: 'Mild' | 'Moderate' | 'Severe' | 'Critical'
+  remarks?: string | null
+  documents?: string | null
+  entered_by_id: number
+  created_at: string
+  updated_at?: string | null
+}
 
 const api = axios.create({
   baseURL: '/api',
@@ -120,6 +133,31 @@ export const teachersApi = {
     api.get<ApiResponse<Teacher[]>>(`/teachers/search?q=${encodeURIComponent(query)}`),
   getStats: () =>
     api.get<ApiResponse>(`/teachers/stats`),
+}
+
+// Medical Records API
+export const medicalRecordsApi = {
+  create: (data: { teacherId: number; ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; remarks?: string; documents?: string }) =>
+    api.post<ApiResponse<MedicalRecord>>('/medical-records', data),
+
+  getByTeacher: (teacherId: number) =>
+    api.get<ApiResponse<MedicalRecord[]>>(`/medical-records/${teacherId}`),
+
+  update: (id: number, data: Partial<{ ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; remarks?: string; documents?: string }>) =>
+    api.put<ApiResponse<MedicalRecord>>(`/medical-records/${id}`, data),
+
+  delete: (id: number) =>
+    api.delete<ApiResponse>(`/medical-records/${id}`)
+}
+
+export const uploadApi = {
+  uploadMedicalRecord: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post<ApiResponse<{ url: string }>>('/uploads/medical-records', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
 }
 
 // Districts API

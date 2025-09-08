@@ -194,6 +194,7 @@ model teachers {
   deputations         deputations[]
   posting_histories   posting_histories[]
   schools             schools                       @relation(fields: [school_id], references: [school_id], onDelete: Cascade, onUpdate: Restrict, map: "teachers_ibfk_1")
+  medical_records     medical_records[]
 
   @@index([district], map: "idx_teachers_district")
   @@index([school_id], map: "idx_teachers_school_id")
@@ -222,6 +223,8 @@ model users {
   created_at DateTime  @default(now()) @db.Timestamp(0)
   updated_at DateTime? @db.DateTime(0)
   refresh_tokens refresh_tokens[]
+  medical_records medical_records[]
+  medical_record_logs medical_record_logs[]
 
   @@index([username], map: "idx_users_username")
   @@index([email], map: "idx_users_email")
@@ -450,4 +453,42 @@ enum teachers_block_office {
 
 enum user_role {
   admin
+  teacher
+}
+
+/// Medical records for teachers, managed by admins
+model medical_records {
+  id             Int       @id @default(autoincrement())
+  teacher_id     Int
+  ailment_name   String    @db.VarChar(255)
+  severity       String    @db.VarChar(50) // Expected: Mild | Moderate | Severe | Critical
+  remarks        String?   @db.Text
+  documents      String?   @db.VarChar(500) // file path or URL
+  entered_by_id  Int
+  created_at     DateTime  @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @db.DateTime(0)
+  deleted_at     DateTime?
+
+  teachers teachers @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users    users    @relation(fields: [entered_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  medical_record_logs medical_record_logs[]
+
+  @@index([teacher_id], map: "idx_medical_records_teacher_id")
+  @@index([entered_by_id], map: "idx_medical_records_entered_by_id")
+  @@index([deleted_at], map: "idx_medical_records_deleted_at")
+}
+
+/// Audit log for medical record changes
+model medical_record_logs {
+  id                Int             @id @default(autoincrement())
+  medical_record_id Int
+  action            String          @db.VarChar(50) // created | updated | deleted
+  changed_by_id     Int
+  timestamp         DateTime        @default(now()) @db.Timestamp(0)
+
+  medical_records medical_records @relation(fields: [medical_record_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users           users           @relation(fields: [changed_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([medical_record_id], map: "idx_medical_record_logs_record_id")
+  @@index([changed_by_id], map: "idx_medical_record_logs_changed_by")
 }

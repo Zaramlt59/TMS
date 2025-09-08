@@ -1,0 +1,106 @@
+tags:
+  - name: Medical Records
+paths:
+  /api/medical-records:
+    post:
+      tags: [Medical Records]
+      summary: Create a new medical record (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [teacherId, ailmentName, severity]
+              properties:
+                teacherId: { type: integer }
+                ailmentName: { type: string }
+                severity:
+                  type: string
+                  enum: [Mild, Moderate, Severe, Critical]
+                remarks: { type: string }
+                documents: { type: string, description: "URL returned by uploads endpoint" }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ApiResponse'
+        '403': { description: Forbidden }
+
+  /api/medical-records/{teacherId}:
+    get:
+      tags: [Medical Records]
+      summary: Get all records for a specific teacher
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './components.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: './components.yaml#/components/schemas/MedicalRecord' }
+        '403': { description: Forbidden }
+
+  /api/medical-records/{id}:
+    put:
+      tags: [Medical Records]
+      summary: Update an existing record (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ailmentName: { type: string }
+                severity:
+                  type: string
+                  enum: [Mild, Moderate, Severe, Critical]
+                remarks: { type: string }
+                documents: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ApiResponse'
+        '403': { description: Forbidden }
+
+    delete:
+      tags: [Medical Records]
+      summary: Delete a record (admin only, soft delete)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+        '403': { description: Forbidden }
+

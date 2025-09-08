@@ -21,6 +21,8 @@ import subjectRoutes from './routes/subjectRoutes'
 import schoolTypeRoutes from './routes/schoolTypeRoutes'
 import religionRoutes from './routes/religionRoutes'
 import serviceCategoryRoutes from './routes/serviceCategoryRoutes'
+import medicalRecordRoutes from './routes/medicalRecordRoutes'
+import uploadRoutes from './routes/uploadRoutes'
 import userRoutes from './routes/userRoutes'
 import { loadEnv } from './utils/env'
 
@@ -74,11 +76,14 @@ export function createApp() {
   app.use('/api/block-offices', blockOfficeRoutes)
   app.use('/api/locations', locationRoutes)
   app.use('/api/subjects', subjectRoutes)
+  app.use('/api/medical-records', medicalRecordRoutes)
+  app.use('/api/uploads', uploadRoutes)
   app.use('/api/school-types', schoolTypeRoutes)
   app.use('/api/religions', religionRoutes)
   app.use('/api/service-categories', serviceCategoryRoutes)
   app.use('/api/users', userRoutes)
 
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
   app.use(express.static(path.join(__dirname, '../frontend/dist')))
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'Route not found' })
