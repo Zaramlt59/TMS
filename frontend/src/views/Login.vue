@@ -61,8 +61,11 @@
             <span v-else>Signing in...</span>
           </button>
         </div>
-        <div class="text-center">
+        <div class="text-center space-y-2">
           <router-link to="/forgot-password" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors">Forgot password?</router-link>
+          <div>
+            <router-link to="/otp-login" class="text-sm text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300 transition-colors">Teacher? Login with OTP</router-link>
+          </div>
         </div>
       </form>
     </div>

@@ -65,6 +65,15 @@
                 Teachers
               </router-link>
               <router-link
+                v-if="showUserManagement"
+                to="/users"
+                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[$route.path === '/users' ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
+              >
+                Users
+              </router-link>
+              <router-link
+                v-if="showSettings"
                 to="/settings"
                 class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[$route.path === '/settings' ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
@@ -143,6 +152,16 @@
               Teachers
             </router-link>
             <router-link
+              v-if="showUserManagement"
+              to="/users"
+              @click="closeMobileMenu"
+              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
+              :class="[$route.path === '/users' ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
+            >
+              Users
+            </router-link>
+            <router-link
+              v-if="showSettings"
               to="/settings"
               @click="closeMobileMenu"
               class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
@@ -182,11 +201,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { themeStore } from './stores/theme'
 import DarkModeToggle from './components/DarkModeToggle.vue'
+import { useRoleGuard } from './composables/useRoleGuard'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const currentUser = computed(() => auth.currentUser)
+
+// Role guard
+const { showUserManagement, showSettings } = useRoleGuard()
 
 // Mobile menu state
 const mobileMenuOpen = ref(false)

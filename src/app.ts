@@ -24,6 +24,8 @@ import serviceCategoryRoutes from './routes/serviceCategoryRoutes'
 import medicalRecordRoutes from './routes/medicalRecordRoutes'
 import uploadRoutes from './routes/uploadRoutes'
 import userRoutes from './routes/userRoutes'
+import userManagementRoutes from './routes/userManagementRoutes'
+import otpAuthRoutes from './routes/otpAuthRoutes'
 import { loadEnv } from './utils/env'
 
 export function createApp() {
@@ -43,28 +45,8 @@ export function createApp() {
 
   app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString(), uptime: process.uptime() }))
 
-  const apisGlobs = process.env.NODE_ENV === 'test' ? [] : ['docs/**/*.yaml']
-  const swaggerSpec = swaggerJsdoc({
-    definition: {
-      openapi: '3.0.0',
-      info: { title: 'TMS API', version: '1.0.0' },
-      tags: [
-        { name: 'Users' },
-        { name: 'Schools' },
-        { name: 'Teachers' },
-        { name: 'Districts' },
-        { name: 'Mediums' },
-        { name: 'Management Types' },
-        { name: 'Block Offices' },
-        { name: 'Locations' },
-        { name: 'Subjects' },
-        { name: 'School Types' },
-        { name: 'Religions' },
-        { name: 'Service Categories' }
-      ]
-    },
-    apis: apisGlobs
-  })
+  // Import the comprehensive Swagger specification
+  const swaggerSpec = require('./swagger-spec')
   if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_DOCS === 'true') {
     app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
   }
@@ -83,6 +65,8 @@ export function createApp() {
   app.use('/api/religions', religionRoutes)
   app.use('/api/service-categories', serviceCategoryRoutes)
   app.use('/api/users', userRoutes)
+  app.use('/api/user-management', userManagementRoutes)
+  app.use('/api/otp-auth', otpAuthRoutes)
 
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
   app.use(express.static(path.join(__dirname, '../frontend/dist')))

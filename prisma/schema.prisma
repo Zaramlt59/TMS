@@ -217,6 +217,7 @@ model users {
   id         Int       @id @default(autoincrement())
   username   String    @unique @db.VarChar(100)
   email      String    @unique @db.VarChar(255)
+  phone      String?   @unique @db.VarChar(20)
   password   String    @db.VarChar(255)
   role       user_role @default(admin)
   is_active  Boolean?  @default(true)
@@ -228,6 +229,7 @@ model users {
 
   @@index([username], map: "idx_users_username")
   @@index([email], map: "idx_users_email")
+  @@index([phone], map: "idx_users_phone")
 }
 
 model refresh_tokens {
@@ -452,8 +454,24 @@ enum teachers_block_office {
 }
 
 enum user_role {
+  super_admin
   admin
+  deo
+  sdeo
+  hoi
   teacher
+}
+
+/// OTP verification for teacher login
+model otp_verification {
+  id         Int      @id @default(autoincrement())
+  email      String?  @unique
+  phone      String?  @unique
+  otp        String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  
+  @@map("otp_verification")
 }
 
 /// Medical records for teachers, managed by admins

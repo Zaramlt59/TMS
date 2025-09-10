@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
+import { ROLES, type UserRole } from '../constants/roles'
 
 type User = {
   id: number
   username: string
   email: string
-  role: string
+  phone?: string
+  role: UserRole
   is_active: boolean
   created_at: string
 }
@@ -21,6 +23,35 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn(state): boolean {
       return state.isAuthenticated || !!(localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('token'))
     },
+    
+    // Role-based getters
+    isSuperAdmin(state): boolean {
+      return state.currentUser?.role === ROLES.SUPER_ADMIN
+    },
+    
+    isAdmin(state): boolean {
+      return state.currentUser?.role === ROLES.ADMIN || state.currentUser?.role === ROLES.SUPER_ADMIN
+    },
+    
+    isDEO(state): boolean {
+      return state.currentUser?.role === ROLES.DEO
+    },
+    
+    isSDEO(state): boolean {
+      return state.currentUser?.role === ROLES.SDEO
+    },
+    
+    isHOI(state): boolean {
+      return state.currentUser?.role === ROLES.HOI
+    },
+    
+    isTeacher(state): boolean {
+      return state.currentUser?.role === ROLES.TEACHER
+    },
+    
+    userRole(state): UserRole | null {
+      return state.currentUser?.role || null
+    }
   },
 
   actions: {
@@ -57,6 +88,21 @@ export const useAuthStore = defineStore('auth', {
         return true
       }
       return false
+    },
+
+    setUser(user: User): void {
+      this.currentUser = user
+      localStorage.setItem('currentUser', JSON.stringify(user))
+    },
+
+    setAuthenticated(authenticated: boolean): void {
+      this.isAuthenticated = authenticated
+      localStorage.setItem('isAuthenticated', authenticated.toString())
+    },
+
+    setToken(token: string): void {
+      this.token = token
+      localStorage.setItem('token', token)
     },
 
     async logout(): Promise<void> {

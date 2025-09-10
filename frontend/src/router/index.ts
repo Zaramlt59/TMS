@@ -10,6 +10,8 @@ import { useAuthStore } from '../stores/auth'
 import ForgotPassword from '../views/ForgotPassword.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 import MedicalRecords from '../views/MedicalRecords.vue'
+import UserManagement from '../views/UserManagement.vue'
+import OTPLogin from '../views/OTPLogin.vue'
 
 const routes = [
   {
@@ -74,6 +76,16 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings
+  },
+  {
+    path: '/users',
+    name: 'UserManagement',
+    component: UserManagement
+  },
+  {
+    path: '/otp-login',
+    name: 'OTPLogin',
+    component: OTPLogin
   }
 ]
 
@@ -88,8 +100,8 @@ router.beforeEach((to, from, next) => {
   if (!auth.isAuthenticated) auth.initializeFromStorage()
   const isAuthenticated = auth.isLoggedIn
   
-  // Allow access to login page
-  if (to.path === '/login') {
+  // Allow access to login and OTP login pages
+  if (to.path === '/login' || to.path === '/otp-login') {
     if (isAuthenticated) {
       // If already logged in, redirect to dashboard
       next('/')
