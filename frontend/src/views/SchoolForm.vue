@@ -2,10 +2,10 @@
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
           {{ isEditing ? 'Edit School' : 'Add New School' }}
         </h1>
-        <p class="mt-2 text-sm text-gray-700">
+        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
           {{ isEditing ? 'Update school information' : 'Create a new school record' }}
         </p>
       </div>
@@ -19,7 +19,7 @@
     <form @submit.prevent="handleSubmit" class="mt-8 space-y-6">
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Basic Information</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Basic Information</h3>
         </div>
         <div class="card-body space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -75,8 +75,8 @@
 
           <div>
             <label class="form-label">School Level *</label>
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <label v-for="level in SCHOOL_LEVELS" :key="level" class="flex items-center">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+              <label v-for="level in SCHOOL_LEVELS" :key="level" class="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
                 <input
                   :id="`school-level-${level}`"
                   :name="`school-level-${level}`"
@@ -118,7 +118,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Location Information</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Location Information</h3>
         </div>
         <div class="card-body space-y-6">
           <!-- Cascading Location Dropdowns -->
@@ -131,8 +131,8 @@
           </div>
 
           <!-- Additional Location Details -->
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                     <div>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
               <label class="form-label">Pincode</label>
               <input
                 id="pincode"
@@ -157,7 +157,7 @@
                 </option>
               </select>
             </div>
-            <div>
+            <div class="sm:col-span-2 lg:col-span-1">
               <label class="form-label">Habitation Category</label>
               <select v-model="form.habitation_category" class="form-select">
                 <option value="">Select habitation category</option>
@@ -172,7 +172,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Contact Information</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Contact Information</h3>
         </div>
         <div class="card-body space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -206,16 +206,16 @@
       </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3">
-        <router-link to="/schools" class="btn-secondary">
+      <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+        <router-link to="/schools" class="btn-secondary w-full sm:w-auto text-center">
           Cancel
         </router-link>
         <button
           type="submit"
           :disabled="loading"
-          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span v-if="loading" class="inline-flex items-center">
+          <span v-if="loading" class="inline-flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

@@ -2,10 +2,10 @@
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
           {{ isEditing ? 'Edit Teacher' : 'Add New Teacher' }}
         </h1>
-        <p class="mt-2 text-sm text-gray-700">
+        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
           {{ isEditing ? 'Update teacher information' : 'Create a new teacher record' }}
         </p>
       </div>
@@ -19,7 +19,7 @@
     <form @submit.prevent="handleSubmit" class="mt-8 space-y-6">
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Basic Information</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Basic Information</h3>
         </div>
         <div class="card-body space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -50,7 +50,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label class="form-label">Joining Date *</label>
               <input
@@ -79,9 +79,8 @@
                 @input="validatePhoneNumber"
                 @keypress="allowOnlyNumbers"
               />
-
             </div>
-            <div>
+            <div class="sm:col-span-2 lg:col-span-1">
               <label class="form-label">Email</label>
               <input
                 id="email"
@@ -169,36 +168,36 @@
 
           <div>
             <label class="form-label">Classes Taught *</label>
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <label v-for="classItem in CLASSES" :key="classItem" class="flex items-center">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+              <label v-for="classItem in CLASSES" :key="classItem" class="flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <input
                   type="checkbox"
                   :value="classItem"
                   v-model="form.classes_taught"
-                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                 />
-                <span class="ml-2 text-sm text-gray-700">{{ classItem }}</span>
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ classItem }}</span>
               </label>
             </div>
           </div>
 
           <div>
             <label class="form-label">Subjects Taught *</label>
-            <div v-if="availableSubjects.length > 0" class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <label v-for="subject in availableSubjects" :key="subject.name" class="flex items-center">
+            <div v-if="availableSubjects.length > 0" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+              <label v-for="subject in availableSubjects" :key="subject.name" class="flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <input
                   type="checkbox"
                   :value="subject.name"
                   v-model="form.subjects_taught"
-                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                 />
-                <span class="ml-2 text-sm text-gray-700">{{ subject.name }}</span>
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ subject.name }}</span>
               </label>
             </div>
-            <div v-else-if="form.classes_taught.length === 0" class="text-sm text-gray-500">
+            <div v-else-if="form.classes_taught.length === 0" class="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
               Please select classes first to see available subjects
             </div>
-            <div v-else class="text-sm text-gray-500">
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
               No subjects available for the selected classes
             </div>
           </div>
@@ -207,18 +206,18 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Posting History</h3>
-          <p class="text-sm text-gray-600 mt-1">Add previous school postings for this teacher</p>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Posting History</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Add previous school postings for this teacher</p>
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Posting History Items -->
-          <div v-for="(posting, index) in form.posting_histories" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(posting, index) in form.posting_histories" :key="index" class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
             <div class="flex justify-between items-center mb-4">
-              <h4 class="text-md font-medium text-gray-900">Previous Posting #{{ index + 1 }}</h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">Previous Posting #{{ index + 1 }}</h4>
               <button 
                 type="button" 
                 @click="removePosting(index)"
-                class="text-red-600 hover:text-red-800 text-sm font-medium"
+                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium transition-colors duration-200"
               >
                 Remove
               </button>
@@ -296,7 +295,7 @@
                     {{ rdBlock.name }}
                   </option>
                 </select>
-                <div v-if="!posting.district" class="text-xs text-gray-500 mt-1">Please select a district first</div>
+                <div v-if="!posting.district" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select a district first</div>
               </div>
               <div>
                 <label class="form-label">Habitation</label>
@@ -306,7 +305,7 @@
                     {{ village.name }}
                   </option>
                 </select>
-                <div v-if="!posting.rd_block" class="text-xs text-gray-500 mt-1">Please select an RD block first</div>
+                <div v-if="!posting.rd_block" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select an RD block first</div>
               </div>
             </div>
 
@@ -331,11 +330,11 @@
                     placeholder="dd - mm - yyyy"
                     @change="onPostingEndDateChange(posting)"
                   />
-                  <span v-if="!posting.to_date" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  <span v-if="!posting.to_date" class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                     Current
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Leave empty if still ongoing</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty if still ongoing</p>
               </div>
             </div>
 
@@ -361,11 +360,11 @@
                     <option value="Completed">Completed</option>
                   </select>
                   <span v-if="posting.status" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" 
-                        :class="posting.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'">
+                        :class="posting.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
                     {{ posting.status }}
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Auto-updates based on end date</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Auto-updates based on end date</p>
               </div>
             </div>
 
@@ -407,18 +406,18 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Deputation</h3>
-          <p class="text-sm text-gray-600 mt-1">Add deputation assignments for this teacher</p>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Deputation</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Add deputation assignments for this teacher</p>
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Deputation Items -->
-          <div v-for="(deputation, index) in form.deputations" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(deputation, index) in form.deputations" :key="index" class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
             <div class="flex justify-between items-center mb-4">
-              <h4 class="text-md font-medium text-gray-900">Deputation #{{ index + 1 }}</h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">Deputation #{{ index + 1 }}</h4>
               <button 
                 type="button" 
                 @click="removeDeputation(index)"
-                class="text-red-600 hover:text-red-800 text-sm font-medium"
+                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium transition-colors duration-200"
               >
                 Remove
               </button>
@@ -476,7 +475,7 @@
                     Current
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Leave empty if still ongoing</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty if still ongoing</p>
               </div>
               <div>
                 <label class="form-label">Status *</label>
@@ -511,18 +510,18 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">Attachment</h3>
-          <p class="text-sm text-gray-600 mt-1">Add attachment assignments for this teacher</p>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Attachment</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Add attachment assignments for this teacher</p>
         </div>
         <div class="card-body space-y-4">
           <!-- Existing Attachment Items -->
-          <div v-for="(attachment, index) in form.attachments" :key="index" class="border rounded-lg p-4 bg-gray-50">
+          <div v-for="(attachment, index) in form.attachments" :key="index" class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
             <div class="flex justify-between items-center mb-4">
-              <h4 class="text-md font-medium text-gray-900">Attachment #{{ index + 1 }}</h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">Attachment #{{ index + 1 }}</h4>
               <button 
                 type="button" 
                 @click="removeAttachment(index)"
-                class="text-red-600 hover:text-red-800 text-sm font-medium"
+                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium transition-colors duration-200"
               >
                 Remove
               </button>
@@ -611,11 +610,11 @@
                     placeholder="dd - mm - yyyy"
                     @change="onAttachmentEndDateChange(attachment)"
                   />
-                  <span v-if="!attachment.end_date" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  <span v-if="!attachment.end_date" class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                     Current
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Leave empty if still ongoing</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty if still ongoing</p>
               </div>
               <div>
                 <label class="form-label">Status *</label>
@@ -649,7 +648,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="text-lg font-medium text-gray-900">School Information (Auto-filled)</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">School Information (Auto-filled)</h3>
           <p class="text-sm text-gray-600 mt-1">All fields below will be automatically populated when you select a school above</p>
         </div>
         <div class="card-body space-y-4">
@@ -795,16 +794,16 @@
       </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3">
-        <router-link to="/teachers" class="btn-secondary">
+      <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+        <router-link to="/teachers" class="btn-secondary w-full sm:w-auto text-center">
           Cancel
         </router-link>
         <button
           type="submit"
           :disabled="loading || !selectedSchoolId"
-          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span v-if="loading" class="inline-flex items-center">
+          <span v-if="loading" class="inline-flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

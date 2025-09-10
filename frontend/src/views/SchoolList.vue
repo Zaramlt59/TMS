@@ -2,8 +2,8 @@
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">Schools</h1>
-        <p class="mt-2 text-sm text-gray-700">
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Schools</h1>
+        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
           Manage all school records in the system
         </p>
       </div>
@@ -45,11 +45,11 @@
       </div>
     </div>
 
-    <!-- Schools Table -->
-    <div class="mt-8 card">
+    <!-- Schools Table - Desktop View -->
+    <div class="mt-8 card hidden md:block">
       <div class="card-body p-0">
-        <div v-if="loading" class="text-center py-12">
-          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-primary-500 hover:bg-primary-400 transition ease-in-out duration-150 cursor-not-allowed">
+        <div v-if="loading" class="text-center py-12 bg-gray-50 dark:bg-gray-800/50">
+          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow-lg rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 cursor-not-allowed">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -58,12 +58,12 @@
           </div>
         </div>
 
-        <div v-else-if="schools.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-else-if="schools.length === 0" class="text-center py-12 bg-gray-50 dark:bg-gray-800/50">
+          <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No schools</h3>
-          <p class="mt-1 text-sm text-gray-500">Get started by creating a new school.</p>
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No schools</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new school.</p>
           <div class="mt-6">
             <router-link to="/schools/new" class="btn-primary">
               Add School
@@ -72,73 +72,95 @@
         </div>
 
         <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   School Details
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   Location
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   Type & Level
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   Management
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   Block Office
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="school in schools" :key="school.school_id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">{{ school.school_name }}</div>
-                    <div class="text-sm text-gray-500">ID: {{ school.school_id }}</div>
-                    <div class="text-sm text-gray-500">{{ school.medium }} Medium</div>
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-600">
+              <tr v-for="school in schools" :key="school.school_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+                <td class="px-6 py-4">
+                  <div class="space-y-1">
+                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ school.school_name }}</div>
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs text-gray-600 dark:text-gray-400">
+                        ID: {{ school.school_id }}
+                      </span>
+                      <span class="text-xs text-gray-600 dark:text-gray-400">
+                        {{ school.medium }} Medium
+                      </span>
+                    </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div class="text-sm text-gray-900">{{ school.district || 'N/A' }}</div>
-                    <div class="text-sm text-gray-500">{{ school.habitation || 'N/A' }}</div>
-                    <div class="text-sm text-gray-500">{{ school.habitation_class || 'N/A' }}</div>
+                <td class="px-6 py-4">
+                  <div class="space-y-1">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ school.district || 'N/A' }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">{{ school.habitation || 'N/A' }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                      {{ school.habitation_class || 'N/A' }}
+                    </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.school_type) }}</div>
-                    <div class="text-sm text-gray-500">{{ school.school_level }}</div>
+                <td class="px-6 py-4">
+                  <div class="space-y-1">
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.school_type) }}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                      {{ school.school_level }}
+                    </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4">
                   <div>
-                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.management) }}</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.management) }}
+                    </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4">
                   <div>
-                    <div class="text-sm text-gray-900">{{ formatDisplayText(school.block_office) }}</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.block_office) }}
+                    </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex space-x-2">
+                <td class="px-6 py-4 text-sm font-medium">
+                  <div class="flex items-center space-x-2">
                     <router-link
                       :to="`/schools/${school.school_id}/edit`"
-                      class="text-primary-600 hover:text-primary-900"
+                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-blue-200 dark:border-blue-700"
                     >
+                      <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
                       Edit
                     </router-link>
                     <button
                       @click="deleteSchool(school.school_id)"
-                      class="text-danger-600 hover:text-danger-900"
+                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-red-200 dark:border-red-700"
                     >
+                      <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
                       Delete
                     </button>
                   </div>
@@ -146,6 +168,125 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schools Cards - Mobile View -->
+    <div class="mt-8 md:hidden">
+      <div v-if="loading" class="text-center py-12 bg-gray-50 dark:bg-gray-800/50">
+        <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow-lg rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 cursor-not-allowed">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading...
+        </div>
+      </div>
+
+      <div v-else-if="schools.length === 0" class="text-center py-12 bg-gray-50 dark:bg-gray-800/50">
+        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No schools</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new school.</p>
+        <div class="mt-6">
+          <router-link to="/schools/new" class="btn-primary">
+            Add School
+          </router-link>
+        </div>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div 
+          v-for="school in schools" 
+          :key="school.school_id" 
+          class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-md dark:hover:shadow-xl dark:shadow-gray-900/20 transition-all duration-200 group"
+        >
+          <div class="p-4">
+            <!-- School Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-gray-700 dark:group-hover:text-gray-50">{{ school.school_name }}</h3>
+                <div class="flex items-center space-x-2 mt-1">
+                  <span class="text-xs text-gray-600 dark:text-gray-400">
+                    ID: {{ school.school_id }}
+                  </span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ school.medium }} Medium
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- School Details -->
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Location</dt>
+                  <dd class="space-y-2">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ school.district || 'N/A' }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">{{ school.habitation || 'N/A' }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                      {{ school.habitation_class || 'N/A' }}
+                    </div>
+                  </dd>
+                </div>
+                
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Type & Level</dt>
+                  <dd class="space-y-1">
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.school_type) }}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">{{ school.school_level }}</div>
+                  </dd>
+                </div>
+                
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Management</dt>
+                  <dd>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.management) }}
+                    </div>
+                  </dd>
+                </div>
+                
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Block Office</dt>
+                  <dd>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ formatDisplayText(school.block_office) }}
+                    </div>
+                  </dd>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex space-x-3">
+                <router-link
+                  :to="`/schools/${school.school_id}/edit`"
+                  class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 border border-blue-200 dark:border-blue-700"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                  Edit
+                </router-link>
+                <button
+                  @click="deleteSchool(school.school_id)"
+                  class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 border border-red-200 dark:border-red-700"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

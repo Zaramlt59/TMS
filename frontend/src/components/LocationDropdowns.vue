@@ -19,7 +19,7 @@
           {{ district.name }}
         </option>
       </select>
-      <div v-if="loading.districts" class="text-xs text-gray-500 mt-1">Loading districts...</div>
+      <div v-if="loading.districts" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Loading districts...</div>
     </div>
 
     <!-- RD Block Dropdown -->
@@ -41,8 +41,8 @@
           {{ rdBlock.name }}
         </option>
       </select>
-      <div v-if="loading.rdBlocks" class="text-xs text-gray-500 mt-1">Loading RD blocks...</div>
-      <div v-if="!selectedDistrict" class="text-xs text-gray-500 mt-1">Please select a district first</div>
+      <div v-if="loading.rdBlocks" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Loading RD blocks...</div>
+      <div v-if="!selectedDistrict" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select a district first</div>
     </div>
 
     <!-- Village/Habitation Dropdown -->
@@ -64,8 +64,8 @@
           {{ village.name }}
         </option>
       </select>
-      <div v-if="loading.villages" class="text-xs text-gray-500 mt-1">Loading villages...</div>
-      <div v-if="!selectedRdBlock" class="text-xs text-gray-500 mt-1">Please select an RD block first</div>
+      <div v-if="loading.villages" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Loading villages...</div>
+      <div v-if="!selectedRdBlock" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select an RD block first</div>
     </div>
   </div>
 </template>
