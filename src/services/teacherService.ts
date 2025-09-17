@@ -1,15 +1,19 @@
 import prisma from './prismaService'
 
 export const teacherService = {
-  // Get all teachers
-  async getAll(params?: { page: number; limit: number }): Promise<any> {
+  // Get all teachers with optional role-based filtering
+  async getAll(params?: { page: number; limit: number; roleFilters?: any }): Promise<any> {
     try {
       const page = params?.page || 1
       const limit = params?.limit || 20
       const skip = (page - 1) * limit
 
+      // Build where clause with role-based filters
+      const whereClause = this.buildWhereClause(params?.roleFilters)
+
       const [rows, total] = await Promise.all([
         prisma.teachers.findMany({
+          where: whereClause,
           skip,
           take: limit,
           orderBy: { teacher_name: 'asc' },
@@ -78,7 +82,7 @@ export const teacherService = {
             }
           }
         }),
-        prisma.teachers.count()
+        prisma.teachers.count({ where: whereClause })
       ])
 
       return {
@@ -96,6 +100,30 @@ export const teacherService = {
       console.error('Error fetching all teachers:', error)
       return { success: false, message: 'Failed to fetch teachers' }
     }
+  },
+
+  // Build where clause for role-based filtering
+  buildWhereClause(roleFilters?: any) {
+    const whereClause: any = {};
+
+    if (roleFilters) {
+      // Apply school_id filter
+      if (roleFilters.school_id) {
+        whereClause.school_id = roleFilters.school_id;
+      }
+
+      // Apply district filter
+      if (roleFilters.district) {
+        whereClause.district = roleFilters.district;
+      }
+
+      // Apply rd_block filter
+      if (roleFilters.rd_block) {
+        whereClause.rd_block = roleFilters.rd_block;
+      }
+    }
+
+    return whereClause;
   },
 
   // Get teachers by district

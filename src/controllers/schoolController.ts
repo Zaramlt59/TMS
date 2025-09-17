@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { schoolService } from '../services/schoolService'
+import { addRoleBasedFilters } from '../middleware/roleBasedFiltering'
 
 export const schoolController = {
   // Get all schools
@@ -7,7 +8,13 @@ export const schoolController = {
     try {
       const page = parseInt((req.query.page as string) || '1')
       const limit = Math.min(parseInt((req.query.limit as string) || '20'), 100)
-      const result = await schoolService.getAll({ page, limit })
+      
+      // Pass role filters to the service
+      const result = await schoolService.getAll({ 
+        page, 
+        limit, 
+        roleFilters: req.roleFilters 
+      })
       res.json(result)
     } catch (error: any) {
       res.status(500).json({
@@ -324,7 +331,7 @@ export const schoolController = {
     }
   },
 
-  // Delete school
+  // Delete school (now uses safe deletion)
   async delete(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
@@ -335,12 +342,34 @@ export const schoolController = {
         })
       }
       
-      const school = await schoolService.delete(id)
-      res.json({
-        success: true,
-        message: 'School deleted successfully',
-        data: school
-      })
+      // Get school_id first
+      const school = await schoolService.getById(id)
+      if (!school) {
+        return res.status(404).json({
+          success: false,
+          message: 'School not found'
+        })
+      }
+      
+      // Use safe deletion
+      const { cascadeService } = await import('../services/cascadeService')
+      const force = req.query.force === 'true'
+      const result = await cascadeService.safeDeleteSchool(school.school_id, force)
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          data: result.cascadeInfo
+        })
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.message,
+          data: result.cascadeInfo,
+          error: result.error
+        })
+      }
     } catch (error: any) {
       res.status(500).json({
         success: false,
@@ -350,7 +379,7 @@ export const schoolController = {
     }
   },
 
-  // Delete school by school_id (business identifier)
+  // Delete school by school_id (business identifier) - now uses safe deletion
   async deleteBySchoolId(req: Request, res: Response) {
     try {
       const { schoolId } = req.params
@@ -361,12 +390,25 @@ export const schoolController = {
         })
       }
       
-      const school = await schoolService.deleteBySchoolId(schoolId)
-      res.json({
-        success: true,
-        message: 'School deleted successfully',
-        data: school
-      })
+      // Use safe deletion
+      const { cascadeService } = await import('../services/cascadeService')
+      const force = req.query.force === 'true'
+      const result = await cascadeService.safeDeleteSchool(schoolId, force)
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          data: result.cascadeInfo
+        })
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.message,
+          data: result.cascadeInfo,
+          error: result.error
+        })
+      }
     } catch (error: any) {
       res.status(500).json({
         success: false,

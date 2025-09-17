@@ -22,6 +22,11 @@ export interface UserResponse {
   role: string;
   is_active: boolean;
   created_at: Date;
+  password?: string; // Optional for internal use
+  school_id?: string; // For teachers and HOIs
+  district?: string; // For DEOs and SDEOs
+  rd_block?: string; // For SDEOs
+  last_login?: Date; // Track last login time
 }
 
 class UserService {
@@ -85,7 +90,7 @@ class UserService {
 
       // Return user without password
       const { password, ...userResponse } = user;
-      return userResponse;
+      return userResponse as UserResponse;
     } catch (error) {
       throw error;
     }
@@ -103,7 +108,7 @@ class UserService {
 
       // Return user without password
       const { password, ...userResponse } = user;
-      return userResponse;
+      return userResponse as UserResponse;
     } catch (error) {
       throw error;
     }
@@ -156,6 +161,35 @@ class UserService {
     }
   }
 
+  async updateLastLogin(id: number): Promise<void> {
+    try {
+      // Try to update last_login field
+      await prisma.users.update({
+        where: { id },
+        data: {
+          last_login: new Date(),
+          updated_at: new Date()
+        }
+      });
+    } catch (error: any) {
+      // If last_login field doesn't exist, just update updated_at
+      if (error.code === 'P2021' || error.message?.includes('last_login')) {
+        try {
+          await prisma.users.update({
+            where: { id },
+            data: {
+              updated_at: new Date()
+            }
+          });
+        } catch (updateError) {
+          console.error('Failed to update user timestamp:', updateError);
+        }
+      } else {
+        console.error('Failed to update last login:', error);
+      }
+    }
+  }
+
   async deleteUser(id: number): Promise<boolean> {
     try {
       const user = await prisma.users.findUnique({
@@ -201,6 +235,14 @@ class UserService {
       };
 
       return await this.createUser(adminData);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyPassword(user: any, password: string): Promise<boolean> {
+    try {
+      return await bcrypt.compare(password, user.password);
     } catch (error) {
       throw error;
     }

@@ -9,12 +9,14 @@
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex space-x-3">
         <button
+          v-if="canExportData"
           @click="exportToExcel"
           class="btn-secondary"
         >
           Export to Excel
         </button>
         <router-link
+          v-if="canManageSchools"
           to="/schools/new"
           class="btn-primary"
         >
@@ -145,7 +147,21 @@
                 </td>
                 <td class="px-6 py-4 text-sm font-medium">
                   <div class="flex items-center space-x-2">
+                    <!-- View button - always visible -->
+                    <button
+                      @click="viewSchool(school)"
+                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-200 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-green-200 dark:border-green-700"
+                    >
+                      <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                      View
+                    </button>
+                    
+                    <!-- Edit button - only for users who can update schools -->
                     <router-link
+                      v-if="canManageSchools"
                       :to="`/schools/${school.school_id}/edit`"
                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-blue-200 dark:border-blue-700"
                     >
@@ -154,7 +170,10 @@
                       </svg>
                       Edit
                     </router-link>
+                    
+                    <!-- Delete button - only for users who can delete schools -->
                     <button
+                      v-if="canManageSchools"
                       @click="deleteSchool(school.school_id)"
                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-red-200 dark:border-red-700"
                     >
@@ -266,7 +285,21 @@
             <!-- Actions -->
             <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div class="flex space-x-3">
+                <!-- View button - always visible -->
+                <button
+                  @click="viewSchool(school)"
+                  class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-green-700 dark:text-green-200 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 border border-green-200 dark:border-green-700"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  View
+                </button>
+                
+                <!-- Edit button - only for users who can update schools -->
                 <router-link
+                  v-if="canManageSchools"
                   :to="`/schools/${school.school_id}/edit`"
                   class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 border border-blue-200 dark:border-blue-700"
                 >
@@ -275,7 +308,10 @@
                   </svg>
                   Edit
                 </router-link>
+                
+                <!-- Delete button - only for users who can delete schools -->
                 <button
+                  v-if="canManageSchools"
                   @click="deleteSchool(school.school_id)"
                   class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 border border-red-200 dark:border-red-700"
                 >
@@ -354,6 +390,190 @@
         </div>
       </div>
     </div>
+
+    <!-- School Details Modal -->
+    <div v-if="showSchoolModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-80" @click="closeSchoolModal"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl dark:shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+          <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+                  School Details
+                </h3>
+                <div v-if="selectedSchool" class="mt-4 space-y-6">
+                  <!-- Basic School Information -->
+                  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                      </svg>
+                      Basic Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-sm font-medium text-blue-700 dark:text-blue-300">School Name</label>
+                        <p class="mt-1 text-sm font-semibold text-blue-900 dark:text-blue-100">{{ selectedSchool.school_name }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-blue-700 dark:text-blue-300">School ID</label>
+                        <p class="mt-1 text-sm font-mono text-blue-900 dark:text-blue-100 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">{{ selectedSchool.school_id }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-blue-700 dark:text-blue-300">School Type</label>
+                        <p class="mt-1 text-sm text-blue-900 dark:text-blue-100">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
+                            {{ formatDisplayText(selectedSchool.school_type) }}
+                          </span>
+                        </p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-blue-700 dark:text-blue-300">School Level</label>
+                        <p class="mt-1 text-sm text-blue-900 dark:text-blue-100">{{ selectedSchool.school_level || 'Not specified' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Location Information -->
+                  <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
+                      Location Details
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">District</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">{{ selectedSchool.district || 'Not specified' }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">Block Office</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">{{ selectedSchool.block_office || 'Not specified' }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">Village/Habitation</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">{{ selectedSchool.habitation || 'Not specified' }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">Pin Code</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">{{ selectedSchool.pincode || 'Not specified' }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">RD Block</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">{{ selectedSchool.rd_block || 'Not specified' }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-green-700 dark:text-green-300">Habitation Type</label>
+                        <p class="mt-1 text-sm text-green-900 dark:text-green-100">
+                          <span v-if="selectedSchool.habitation_class" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
+                            {{ formatDisplayText(selectedSchool.habitation_class) }}
+                          </span>
+                          <span v-else class="text-gray-500">Not specified</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Educational Details -->
+                  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-4 flex items-center">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                      </svg>
+                      Educational Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-sm font-medium text-purple-700 dark:text-purple-300">Management Type</label>
+                        <p class="mt-1 text-sm text-purple-900 dark:text-purple-100">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+                            {{ formatDisplayText(selectedSchool.management) || 'Not specified' }}
+                          </span>
+                        </p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-purple-700 dark:text-purple-300">Medium of Instruction</label>
+                        <p class="mt-1 text-sm text-purple-900 dark:text-purple-100">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+                            {{ formatDisplayText(selectedSchool.medium) || 'Not specified' }}
+                          </span>
+                        </p>
+                      </div>
+                      <div v-if="selectedSchool.habitation_category" class="md:col-span-2">
+                        <label class="text-sm font-medium text-purple-700 dark:text-purple-300">Habitation Category</label>
+                        <p class="mt-1 text-sm text-purple-900 dark:text-purple-100">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+                            {{ formatDisplayText(selectedSchool.habitation_category) }}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Contact Information -->
+                  <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-4 flex items-center">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                      </svg>
+                      Contact Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-sm font-medium text-orange-700 dark:text-orange-300">Complete Address</label>
+                        <p class="mt-1 text-sm text-orange-900 dark:text-orange-100">
+                          {{ getCompleteAddress(selectedSchool) }}
+                        </p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-orange-700 dark:text-orange-300">Phone Number</label>
+                        <p class="mt-1 text-sm text-orange-900 dark:text-orange-100">
+                          <span v-if="selectedSchool.school_phone" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200">
+                            {{ selectedSchool.school_phone }}
+                          </span>
+                          <span v-else class="text-gray-500">Not specified</span>
+                        </p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-orange-700 dark:text-orange-300">Email Address</label>
+                        <p class="mt-1 text-sm text-orange-900 dark:text-orange-100">
+                          <span v-if="selectedSchool.school_email" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200">
+                            {{ selectedSchool.school_email }}
+                          </span>
+                          <span v-else class="text-gray-500">Not specified</span>
+                        </p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-orange-700 dark:text-orange-300">Pin Code</label>
+                        <p class="mt-1 text-sm text-orange-900 dark:text-orange-100">
+                          <span v-if="selectedSchool.pincode" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200">
+                            {{ selectedSchool.pincode }}
+                          </span>
+                          <span v-else class="text-gray-500">Not specified</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button @click="closeSchoolModal" class="btn-secondary">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -362,6 +582,10 @@ import { ref, onMounted, computed } from 'vue'
 import { schoolsApi } from '../services/api'
 import type { School, SchoolListResponse } from '../types'
 import * as XLSX from 'xlsx'
+import { useRoleGuard } from '../composables/useRoleGuard'
+
+// Role guard
+const { canManageSchools, canExportData } = useRoleGuard()
 
 // Helper function to format underscores to spaces
 const formatDisplayText = (text: string): string => {
@@ -373,6 +597,8 @@ const schools = ref<School[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
 const searchTimeout = ref<NodeJS.Timeout>()
+const showSchoolModal = ref(false)
+const selectedSchool = ref<School | null>(null)
 
 const pagination = ref({
   page: 1,
@@ -444,6 +670,27 @@ const changePage = (page: number) => {
 }
 
 
+
+const viewSchool = (school: School) => {
+  selectedSchool.value = school
+  showSchoolModal.value = true
+}
+
+const closeSchoolModal = () => {
+  showSchoolModal.value = false
+  selectedSchool.value = null
+}
+
+const getCompleteAddress = (school: School) => {
+  const addressParts = []
+  
+  if (school.habitation) addressParts.push(school.habitation)
+  if (school.block_office) addressParts.push(school.block_office)
+  if (school.district) addressParts.push(school.district)
+  if (school.pincode) addressParts.push(school.pincode)
+  
+  return addressParts.length > 0 ? addressParts.join(', ') : 'Not specified'
+}
 
 const deleteSchool = async (schoolId: string) => {
   if (!confirm('Are you sure you want to delete this school? This action cannot be undone.')) {

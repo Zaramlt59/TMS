@@ -1,14 +1,16 @@
 import express from 'express'
 import { schoolController } from '../controllers/schoolController'
 import { body, param, query } from 'express-validator'
+import { authenticateToken } from '../middleware/auth'
+import { addRoleBasedFilters } from '../middleware/roleBasedFiltering'
 
 const router = express.Router()
 
-// Get all schools
-router.get('/', schoolController.getAll)
+// Get all schools (with role-based filtering)
+router.get('/', authenticateToken, addRoleBasedFilters, schoolController.getAll)
 
-// Get all schools (including inactive)
-router.get('/all', schoolController.getAll)
+// Get all schools (including inactive) - with role-based filtering
+router.get('/all', authenticateToken, addRoleBasedFilters, schoolController.getAll)
 
 // Get schools by district
 router.get('/district/:district', schoolController.getByDistrict)

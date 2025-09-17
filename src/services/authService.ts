@@ -60,11 +60,95 @@ export class AuthService {
     })
   }
 
-  async revokeAllForUser(userId: number): Promise<void> {
-    await (prisma as any).refresh_tokens.updateMany({
-      where: { user_id: userId, revoked_at: null },
+  async revokeAllForUser(userId: number, excludeToken?: string): Promise<number> {
+    const whereClause: any = { 
+      user_id: userId, 
+      revoked_at: null 
+    };
+    
+    if (excludeToken) {
+      whereClause.token = { not: excludeToken };
+    }
+
+    const result = await (prisma as any).refresh_tokens.updateMany({
+      where: whereClause,
       data: { revoked_at: new Date() }
-    })
+    });
+
+    return result.count;
+  }
+
+  async getUserSessions(userId: number): Promise<any[]> {
+    const sessions = await (prisma as any).refresh_tokens.findMany({
+      where: { 
+        user_id: userId, 
+        revoked_at: null,
+        expires_at: { gt: new Date() }
+      },
+      select: {
+        token: true,
+        created_at: true,
+        expires_at: true,
+        device_id: true,
+        ip_address: true,
+        user_agent: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    return sessions.map(session => ({
+      id: session.token,
+      createdAt: session.created_at,
+      expiresAt: session.expires_at,
+      deviceId: session.device_id,
+      ipAddress: session.ip_address,
+      userAgent: session.user_agent,
+      isActive: session.expires_at > new Date()
+    }));
+  }
+
+  async revokeSession(sessionId: string, userId: number): Promise<boolean> {
+    const result = await (prisma as any).refresh_tokens.updateMany({
+      where: { 
+        token: sessionId, 
+        user_id: userId,
+        revoked_at: null 
+      },
+      data: { revoked_at: new Date() }
+    });
+
+    return result.count > 0;
+  }
+
+  async getSessionInfo(sessionId: string, userId: number): Promise<any | null> {
+    const session = await (prisma as any).refresh_tokens.findFirst({
+      where: { 
+        token: sessionId, 
+        user_id: userId 
+      },
+      select: {
+        token: true,
+        created_at: true,
+        expires_at: true,
+        revoked_at: true,
+        device_id: true,
+        ip_address: true,
+        user_agent: true
+      }
+    });
+
+    if (!session) return null;
+
+    return {
+      id: session.token,
+      createdAt: session.created_at,
+      expiresAt: session.expires_at,
+      revokedAt: session.revoked_at,
+      deviceId: session.device_id,
+      ipAddress: session.ip_address,
+      userAgent: session.user_agent,
+      isActive: !session.revoked_at && session.expires_at > new Date()
+    };
   }
 }
 

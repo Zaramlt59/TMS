@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { teacherService } from '../services/teacherService'
+import { addRoleBasedFilters } from '../middleware/roleBasedFiltering'
 
 export const teacherController = {
   // Get all teachers
@@ -7,7 +8,13 @@ export const teacherController = {
     try {
       const page = parseInt((req.query.page as string) || '1')
       const limit = Math.min(parseInt((req.query.limit as string) || '20'), 100)
-      const result = await teacherService.getAll({ page, limit })
+      
+      // Pass role filters to the service
+      const result = await teacherService.getAll({ 
+        page, 
+        limit, 
+        roleFilters: req.roleFilters 
+      })
       res.json(result)
     } catch (error: any) {
       res.status(500).json({
@@ -190,7 +197,7 @@ export const teacherController = {
     }
   },
 
-  // Delete teacher
+  // Delete teacher (now uses safe deletion)
   async delete(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
@@ -201,12 +208,25 @@ export const teacherController = {
         })
       }
       
-      const teacher = await teacherService.delete(id)
-      res.json({
-        success: true,
-        message: 'Teacher deleted successfully',
-        data: teacher
-      })
+      // Use safe deletion
+      const { cascadeService } = await import('../services/cascadeService')
+      const force = req.query.force === 'true'
+      const result = await cascadeService.safeDeleteTeacher(id, force)
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          data: result.cascadeInfo
+        })
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.message,
+          data: result.cascadeInfo,
+          error: result.error
+        })
+      }
     } catch (error: any) {
       res.status(500).json({
         success: false,

@@ -107,12 +107,19 @@ export const loginUser = async (req: Request, res: Response) => {
       });
     }
 
+    // Update last login time
+    await userService.updateLastLogin(user.id);
+
     // Generate JWT token
     const token = JWTUtil.generateToken({
       userId: user.id,
+      id: user.id,
       username: user.username,
       role: user.role,
-      email: user.email
+      email: user.email,
+      school_id: (user as any).school_id,
+      district: (user as any).district,
+      rd_block: (user as any).rd_block
     });
 
     res.json({
@@ -290,6 +297,151 @@ export const createDefaultAdmin = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Failed to create default admin'
+    });
+  }
+};
+
+// Get current user profile
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const user = await userService.getUserById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Remove sensitive information
+    const { password, ...userProfile } = user;
+
+    res.json({
+      success: true,
+      message: 'User profile retrieved successfully',
+      data: userProfile
+    });
+  } catch (error: any) {
+    console.error('Error getting current user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve user profile'
+    });
+  }
+};
+
+// Update current user profile
+export const updateCurrentUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const updateData = req.body;
+    
+    // Remove fields that users shouldn't be able to update themselves
+    delete updateData.role;
+    delete updateData.is_active;
+    delete updateData.password; // Use change-password endpoint for password changes
+
+    const user = await userService.updateUser(req.user.userId, updateData);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Remove sensitive information
+    const { password, ...userProfile } = user;
+
+    res.json({
+      success: true,
+      message: 'User profile updated successfully',
+      data: userProfile
+    });
+  } catch (error: any) {
+    console.error('Error updating current user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user profile'
+    });
+  }
+};
+
+// Change password for current user
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    // Verify current password
+    const user = await userService.getUserById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const isCurrentPasswordValid = await userService.verifyPassword(user, currentPassword);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Update password
+    const updated = await userService.updateUser(req.user.userId, { password: newPassword });
+
+    if (!updated) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to update password'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error: any) {
+    console.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to change password'
     });
   }
 };

@@ -24,7 +24,7 @@ class AuthService {
 
   async login(username: string, password: string): Promise<boolean> {
     try {
-      const response = await fetch('/api/users/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {}
     this.isAuthenticated = false;
     this.currentUser = null;
@@ -115,7 +115,7 @@ class AuthService {
 
   async requestPasswordReset(email: string): Promise<boolean> {
     try {
-      const resp = await fetch('/api/users/password/reset-request', {
+      const resp = await fetch('/api/auth/request-password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -130,7 +130,7 @@ class AuthService {
 
   async resetPassword(token: string, password: string): Promise<boolean> {
     try {
-      const resp = await fetch('/api/users/password/reset', {
+      const resp = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

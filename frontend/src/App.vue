@@ -35,7 +35,7 @@
     </div>
     
     <!-- Navigation -->
-    <nav v-if="$route.path !== '/login'" class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <nav v-if="$route.path !== '/login' && $route.path !== '/otp-login'" class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
@@ -43,6 +43,7 @@
               <img src="/src/assests/TMS logo 1.svg" alt="TMS Logo" class="h-8 w-auto" />
             </div>
             <div class="hidden md:ml-6 md:flex md:space-x-8">
+              <!-- Dashboard - Always visible -->
               <router-link
                 to="/"
                 class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
@@ -50,21 +51,70 @@
               >
                 Dashboard
               </router-link>
+              
+              <!-- Schools - Visible to all except basic users -->
               <router-link
+                v-if="canManageSchools || isTeacher"
                 to="/schools"
                 class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[$route.path.startsWith('/schools') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
               >
                 Schools
               </router-link>
+              
+              <!-- Teachers - Visible to all except basic users -->
               <router-link
+                v-if="canManageTeachers || isTeacher"
                 to="/teachers"
                 class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[$route.path.startsWith('/teachers') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
               >
                 Teachers
               </router-link>
+              
+              <!-- Medical Records - For users who can manage medical records -->
               <router-link
+                v-if="canManageMedicalRecords"
+                to="/medical-records"
+                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[$route.path.startsWith('/medical-records') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
+              >
+                Medical Records
+              </router-link>
+              
+              <!-- Reports - For users who can view reports -->
+              <router-link
+                v-if="canViewReports"
+                to="/reports"
+                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[$route.path.startsWith('/reports') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
+              >
+                Reports
+              </router-link>
+              
+              <!-- User Management - Only for super admins -->
+              <router-link
+                v-if="isSuperAdmin"
+                to="/user-management"
+                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[$route.path.startsWith('/user-management') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
+              >
+                User Management
+              </router-link>
+              
+              <!-- Audit Logs - Only for super admins -->
+              <router-link
+                v-if="isSuperAdmin"
+                to="/audit-logs"
+                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[$route.path.startsWith('/audit-logs') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
+              >
+                Audit Logs
+              </router-link>
+              
+              <!-- Settings - For users who can access settings -->
+              <router-link
+                v-if="showSettings"
                 to="/settings"
                 class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[$route.path === '/settings' ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
@@ -127,6 +177,7 @@
               Dashboard
             </router-link>
             <router-link
+              v-if="canManageSchools || isTeacher"
               to="/schools"
               @click="closeMobileMenu"
               class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
@@ -135,6 +186,7 @@
               Schools
             </router-link>
             <router-link
+              v-if="canManageTeachers || isTeacher"
               to="/teachers"
               @click="closeMobileMenu"
               class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
@@ -143,6 +195,43 @@
               Teachers
             </router-link>
             <router-link
+              v-if="canManageMedicalRecords"
+              to="/medical-records"
+              @click="closeMobileMenu"
+              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
+              :class="[$route.path.startsWith('/medical-records') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
+            >
+              Medical Records
+            </router-link>
+            <router-link
+              v-if="canViewReports"
+              to="/reports"
+              @click="closeMobileMenu"
+              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
+              :class="[$route.path.startsWith('/reports') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
+            >
+              Reports
+            </router-link>
+            <router-link
+              v-if="isSuperAdmin"
+              to="/user-management"
+              @click="closeMobileMenu"
+              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
+              :class="[$route.path.startsWith('/user-management') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
+            >
+              User Management
+            </router-link>
+            <router-link
+              v-if="isSuperAdmin"
+              to="/audit-logs"
+              @click="closeMobileMenu"
+              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
+              :class="[$route.path.startsWith('/audit-logs') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
+            >
+              Audit Logs
+            </router-link>
+            <router-link
+              v-if="showSettings"
               to="/settings"
               @click="closeMobileMenu"
               class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
@@ -182,11 +271,28 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { themeStore } from './stores/theme'
 import DarkModeToggle from './components/DarkModeToggle.vue'
+import { useRoleGuard } from './composables/useRoleGuard'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const currentUser = computed(() => auth.currentUser)
+
+// Role guard
+const { 
+  showUserManagement, 
+  showSettings,
+  canManageSchools,
+  canManageTeachers,
+  canManageMedicalRecords,
+  canViewReports,
+  isTeacher
+} = useRoleGuard()
+
+// Super admin check
+const isSuperAdmin = computed(() => {
+  return currentUser.value?.role === 'super_admin'
+})
 
 // Mobile menu state
 const mobileMenuOpen = ref(false)

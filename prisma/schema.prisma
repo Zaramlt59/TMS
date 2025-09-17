@@ -217,17 +217,28 @@ model users {
   id         Int       @id @default(autoincrement())
   username   String    @unique @db.VarChar(100)
   email      String    @unique @db.VarChar(255)
+  phone      String?   @unique @db.VarChar(20)
   password   String    @db.VarChar(255)
   role       user_role @default(admin)
   is_active  Boolean?  @default(true)
+  // Role-based filtering fields
+  school_id  String?   @db.VarChar(50)  // For teachers and HOIs
+  district   String?   @db.VarChar(100) // For DEOs and SDEOs
+  rd_block   String?   @db.VarChar(100) // For SDEOs
+  last_login DateTime? @db.Timestamp(0) // Track last login time
   created_at DateTime  @default(now()) @db.Timestamp(0)
   updated_at DateTime? @db.DateTime(0)
   refresh_tokens refresh_tokens[]
   medical_records medical_records[]
   medical_record_logs medical_record_logs[]
+  audit_logs audit_logs[]
 
   @@index([username], map: "idx_users_username")
   @@index([email], map: "idx_users_email")
+  @@index([phone], map: "idx_users_phone")
+  @@index([school_id], map: "idx_users_school_id")
+  @@index([district], map: "idx_users_district")
+  @@index([rd_block], map: "idx_users_rd_block")
 }
 
 model refresh_tokens {
@@ -452,22 +463,40 @@ enum teachers_block_office {
 }
 
 enum user_role {
+  super_admin
   admin
+  deo
+  sdeo
+  hoi
   teacher
+}
+
+/// OTP verification for teacher login
+model otp_verification {
+  id         Int      @id @default(autoincrement())
+  email      String?  @unique
+  phone      String?  @unique
+  otp        String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  
+  @@map("otp_verification")
 }
 
 /// Medical records for teachers, managed by admins
 model medical_records {
-  id             Int       @id @default(autoincrement())
-  teacher_id     Int
-  ailment_name   String    @db.VarChar(255)
-  severity       String    @db.VarChar(50) // Expected: Mild | Moderate | Severe | Critical
-  remarks        String?   @db.Text
-  documents      String?   @db.VarChar(500) // file path or URL
-  entered_by_id  Int
-  created_at     DateTime  @default(now()) @db.Timestamp(0)
-  updated_at     DateTime? @db.DateTime(0)
-  deleted_at     DateTime?
+  id               Int       @id @default(autoincrement())
+  teacher_id       Int
+  ailment_name     String    @db.VarChar(255)
+  severity         String    @db.VarChar(50) // Expected: Mild | Moderate | Severe | Critical
+  diagnosis_date   DateTime? @db.Date // Date when the ailment was diagnosed
+  treatment_status String?   @db.VarChar(50) // Expected: Pending | Ongoing | Completed | Cancelled
+  remarks          String?   @db.Text
+  documents        String?   @db.VarChar(500) // file path or URL
+  entered_by_id    Int
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime? @db.DateTime(0)
+  deleted_at       DateTime?
 
   teachers teachers @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
   users    users    @relation(fields: [entered_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -491,4 +520,63 @@ model medical_record_logs {
 
   @@index([medical_record_id], map: "idx_medical_record_logs_record_id")
   @@index([changed_by_id], map: "idx_medical_record_logs_changed_by")
+}
+
+/// Comprehensive audit logging for all system actions
+model audit_logs {
+  id            Int           @id @default(autoincrement())
+  user_id       Int
+  action        audit_action  // login, logout, create, update, delete, view, export, etc.
+  resource_type String        @db.VarChar(50) // user, school, teacher, medical_record, etc.
+  resource_id   String?       @db.VarChar(50) // ID of the affected resource
+  details       String?       @db.Text // JSON string with additional details
+  ip_address    String?       @db.VarChar(45) // IPv4 or IPv6
+  user_agent    String?       @db.VarChar(500) // Browser/client info
+  success       Boolean       @default(true) // Whether the action was successful
+  error_message String?       @db.VarChar(500) // Error details if action failed
+  created_at    DateTime      @default(now()) @db.Timestamp(0)
+
+  users users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([user_id], map: "idx_audit_logs_user_id")
+  @@index([action], map: "idx_audit_logs_action")
+  @@index([resource_type], map: "idx_audit_logs_resource_type")
+  @@index([created_at], map: "idx_audit_logs_created_at")
+  @@index([success], map: "idx_audit_logs_success")
+}
+
+/// Audit action types
+enum audit_action {
+  // Authentication actions
+  login
+  logout
+  login_failed
+  password_change
+  password_reset
+  
+  // User management actions
+  user_create
+  user_update
+  user_delete
+  user_activate
+  user_deactivate
+  role_change
+  
+  // Data access actions
+  view
+  create
+  update
+  delete
+  export
+  import
+  
+  // System actions
+  system_config_change
+  backup_created
+  restore_performed
+  
+  // Security actions
+  unauthorized_access
+  permission_denied
+  suspicious_activity
 }

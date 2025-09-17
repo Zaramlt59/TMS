@@ -181,3 +181,17 @@ export interface TeacherListResponse {
   teachers: Teacher[]
   pagination: PaginatedResponse<Teacher>
 }
+
+export interface User {
+  id?: number
+  username: string
+  email: string
+  phone?: string
+  role: 'super_admin' | 'admin' | 'deo' | 'sdeo' | 'hoi' | 'teacher'
+  is_active?: boolean
+  school_id?: string
+  district?: string
+  rd_block?: string
+  created_at?: string
+  updated_at?: string
+}

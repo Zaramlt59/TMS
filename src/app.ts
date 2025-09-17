@@ -24,6 +24,14 @@ import serviceCategoryRoutes from './routes/serviceCategoryRoutes'
 import medicalRecordRoutes from './routes/medicalRecordRoutes'
 import uploadRoutes from './routes/uploadRoutes'
 import userRoutes from './routes/userRoutes'
+import userManagementRoutes from './routes/userManagementRoutes'
+import otpAuthRoutes from './routes/otpAuthRoutes'
+import reportsRoutes from './routes/reportsRoutes'
+import auditRoutes from './routes/auditRoutes'
+import authRoutes from './routes/authRoutes'
+import rolesRoutes from './routes/rolesRoutes'
+import sessionRoutes from './routes/sessionRoutes'
+import cascadeRoutes from './routes/cascadeRoutes'
 import { loadEnv } from './utils/env'
 
 export function createApp() {
@@ -43,30 +51,50 @@ export function createApp() {
 
   app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString(), uptime: process.uptime() }))
 
-  const apisGlobs = process.env.NODE_ENV === 'test' ? [] : ['docs/**/*.yaml']
-  const swaggerSpec = swaggerJsdoc({
-    definition: {
-      openapi: '3.0.0',
-      info: { title: 'TMS API', version: '1.0.0' },
-      tags: [
-        { name: 'Users' },
-        { name: 'Schools' },
-        { name: 'Teachers' },
-        { name: 'Districts' },
-        { name: 'Mediums' },
-        { name: 'Management Types' },
-        { name: 'Block Offices' },
-        { name: 'Locations' },
-        { name: 'Subjects' },
-        { name: 'School Types' },
-        { name: 'Religions' },
-        { name: 'Service Categories' }
-      ]
-    },
-    apis: apisGlobs
-  })
+  // Import the modular Swagger specification
+  const swaggerSpec = require('./swagger')
   if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_DOCS === 'true') {
-    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+    // Add route for Swagger JSON
+    app.get('/api/docs/swagger.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.json(swaggerSpec)
+    })
+    
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      explorer: true,
+      swaggerOptions: {
+        docExpansion: 'none', // Collapse all operations by default
+        filter: true, // Enable search/filter functionality
+        showRequestHeaders: true,
+        showCommonExtensions: true,
+        tryItOutEnabled: true,
+        requestInterceptor: (req: any) => {
+          // Add authorization header if available
+          const token = req.headers?.authorization || 'Bearer ' + (req.body?.token || '');
+          if (token) {
+            req.headers.Authorization = token;
+          }
+          return req;
+        },
+        responseInterceptor: (res: any) => {
+          return res;
+        }
+      },
+      customCss: `
+        .swagger-ui .topbar { display: none }
+        .swagger-ui .info .title { color: #1f2937; font-size: 2.5rem; }
+        .swagger-ui .info .description { color: #6b7280; font-size: 1.1rem; }
+        .swagger-ui .scheme-container { background: #f9fafb; border-radius: 8px; }
+        .swagger-ui .opblock-tag { border-radius: 8px 8px 0 0; }
+        .swagger-ui .opblock { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .swagger-ui .opblock.opblock-post { border-color: #10b981; }
+        .swagger-ui .opblock.opblock-get { border-color: #3b82f6; }
+        .swagger-ui .opblock.opblock-put { border-color: #f59e0b; }
+        .swagger-ui .opblock.opblock-delete { border-color: #ef4444; }
+      `,
+      customSiteTitle: 'TMS API Documentation',
+      customfavIcon: '/favicon.ico'
+    }))
   }
 
   app.use('/api/schools', schoolRoutes)
@@ -82,7 +110,15 @@ export function createApp() {
   app.use('/api/school-types', schoolTypeRoutes)
   app.use('/api/religions', religionRoutes)
   app.use('/api/service-categories', serviceCategoryRoutes)
+  app.use('/api/auth', authRoutes)
   app.use('/api/users', userRoutes)
+  app.use('/api/user-management', userManagementRoutes)
+  app.use('/api/otp-auth', otpAuthRoutes)
+  app.use('/api/reports', reportsRoutes)
+  app.use('/api/audit', auditRoutes)
+  app.use('/api/roles', rolesRoutes)
+  app.use('/api/sessions', sessionRoutes)
+  app.use('/api/cascade', cascadeRoutes)
 
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
   app.use(express.static(path.join(__dirname, '../frontend/dist')))

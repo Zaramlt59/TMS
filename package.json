@@ -14,7 +14,16 @@
     "install:all": "npm install && cd frontend && npm install",
     "db:seed": "ts-node --transpile-only prisma/seed.ts",
     "test": "jest",
-    "e2e": "playwright test"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:api": "jest __tests__/api",
+    "test:integration": "jest __tests__/integration",
+    "test:all": "npm run test && npm run e2e",
+    "test:setup": "node scripts/setup-test-db-simple.js",
+    "test:clean": "node scripts/clean-test-db.js",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
@@ -40,7 +49,8 @@
     "pino-http": "^10.5.0",
     "prisma": "^6.15.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

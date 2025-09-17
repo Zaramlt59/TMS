@@ -5,9 +5,13 @@ const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '15m';
 
 export interface JWTPayload {
   userId: number;
+  id: number; // Alias for userId for compatibility
   username: string;
   role: string;
   email: string;
+  school_id?: string;
+  district?: string;
+  rd_block?: string;
 }
 
 export class JWTUtil {

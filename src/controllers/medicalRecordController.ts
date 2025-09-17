@@ -16,7 +16,8 @@ export const medicalRecordController = {
   async create(req: Request, res: Response) {
     if (!handleValidation(req, res)) return
     try {
-      const { teacherId, ailmentName, severity, remarks, documents } = req.body
+      const { teacherId, ailmentName, severity, diagnosisDate, treatmentStatus, remarks, documents } = req.body
+      
       const enteredById = req.user!.userId
 
       const record = await prisma.medical_records.create({
@@ -24,6 +25,8 @@ export const medicalRecordController = {
           teacher_id: Number(teacherId),
           ailment_name: ailmentName,
           severity,
+          diagnosis_date: diagnosisDate ? new Date(diagnosisDate) : null,
+          treatment_status: treatmentStatus || null,
           remarks,
           documents,
           entered_by_id: enteredById
@@ -45,6 +48,80 @@ export const medicalRecordController = {
     }
   },
 
+  // GET /api/medical-records (all records)
+  async getAll(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 10
+      const skip = (page - 1) * limit
+
+      const [records, totalCount] = await Promise.all([
+        prisma.medical_records.findMany({
+          where: { deleted_at: null },
+          include: {
+            teachers: {
+              select: {
+                id: true,
+                teacher_name: true,
+                school_id: true
+              }
+            }
+          },
+          orderBy: { created_at: 'desc' },
+          skip,
+          take: limit
+        }),
+        prisma.medical_records.count({
+          where: { deleted_at: null }
+        })
+      ])
+
+      const totalPages = Math.ceil(totalCount / limit)
+
+      res.json({ 
+        success: true, 
+        data: records,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1
+        }
+      })
+    } catch (e: any) {
+      console.error('Error fetching all medical records:', e)
+      res.status(500).json({ success: false, message: e.message || 'Failed to fetch records' })
+    }
+  },
+
+  // GET /api/medical-records/teachers-without-records
+  async getTeachersWithoutRecords(req: Request, res: Response) {
+    try {
+      const teachersWithoutRecords = await prisma.teachers.findMany({
+        where: {
+          medical_records: {
+            none: {
+              deleted_at: null
+            }
+          }
+        },
+        select: {
+          id: true,
+          teacher_name: true,
+          school_id: true
+        },
+        orderBy: { teacher_name: 'asc' }
+      })
+
+      res.json({ success: true, data: teachersWithoutRecords })
+    } catch (e: any) {
+      console.error('Error fetching teachers without medical records:', e)
+      res.status(500).json({ success: false, message: e.message || 'Failed to fetch teachers' })
+    }
+  },
+
   // GET /api/medical-records/:teacherId
   async getByTeacher(req: Request, res: Response) {
     if (!handleValidation(req, res)) return
@@ -56,6 +133,15 @@ export const medicalRecordController = {
 
       const records = await prisma.medical_records.findMany({
         where: { teacher_id: teacherId, deleted_at: null },
+        include: {
+          teachers: {
+            select: {
+              id: true,
+              teacher_name: true,
+              school_id: true
+            }
+          }
+        },
         orderBy: { created_at: 'desc' }
       })
 
@@ -71,7 +157,7 @@ export const medicalRecordController = {
     if (!handleValidation(req, res)) return
     try {
       const id = Number(req.params.id)
-      const { ailmentName, severity, remarks, documents } = req.body
+      const { ailmentName, severity, diagnosisDate, treatmentStatus, remarks, documents } = req.body
       const changedById = req.user!.userId
 
       const updated = await prisma.medical_records.update({
@@ -79,6 +165,8 @@ export const medicalRecordController = {
         data: {
           ...(ailmentName ? { ailment_name: ailmentName } : {}),
           ...(severity ? { severity } : {}),
+          ...(diagnosisDate !== undefined ? { diagnosis_date: diagnosisDate ? new Date(diagnosisDate) : null } : {}),
+          ...(treatmentStatus !== undefined ? { treatment_status: treatmentStatus || null } : {}),
           ...(remarks !== undefined ? { remarks } : {}),
           ...(documents !== undefined ? { documents } : {})
         }

@@ -8,11 +8,27 @@ export type MedicalRecord = {
   teacher_id: number
   ailment_name: string
   severity: 'Mild' | 'Moderate' | 'Severe' | 'Critical'
+  diagnosis_date?: string | null
+  treatment_status?: 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | null
   remarks?: string | null
   documents?: string | null
   entered_by_id: number
   created_at: string
   updated_at?: string | null
+  teachers?: {
+    id: number
+    teacher_name: string
+    school_id: string
+  }
+}
+
+export type PaginationInfo = {
+  page: number
+  limit: number
+  totalCount: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
 }
 
 const api = axios.create({
@@ -137,13 +153,19 @@ export const teachersApi = {
 
 // Medical Records API
 export const medicalRecordsApi = {
-  create: (data: { teacherId: number; ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; remarks?: string; documents?: string }) =>
+  getAll: (page: number = 1, limit: number = 10) =>
+    api.get<ApiResponse<MedicalRecord[]> & { pagination: PaginationInfo }>(`/medical-records?page=${page}&limit=${limit}`),
+
+  getTeachersWithoutRecords: () =>
+    api.get<ApiResponse<{ id: number; teacher_name: string; school_id: string }[]>>('/medical-records/teachers-without-records'),
+
+  create: (data: { teacherId: number; ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; diagnosisDate?: string; treatmentStatus?: string; remarks?: string; documents?: string }) =>
     api.post<ApiResponse<MedicalRecord>>('/medical-records', data),
 
   getByTeacher: (teacherId: number) =>
     api.get<ApiResponse<MedicalRecord[]>>(`/medical-records/${teacherId}`),
 
-  update: (id: number, data: Partial<{ ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; remarks?: string; documents?: string }>) =>
+  update: (id: number, data: Partial<{ ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; diagnosisDate?: string; treatmentStatus?: string; remarks?: string; documents?: string }>) =>
     api.put<ApiResponse<MedicalRecord>>(`/medical-records/${id}`, data),
 
   delete: (id: number) =>
@@ -151,13 +173,44 @@ export const medicalRecordsApi = {
 }
 
 export const uploadApi = {
+  // Upload medical record file
   uploadMedicalRecord: (file: File) => {
     const form = new FormData()
     form.append('file', file)
-    return api.post<ApiResponse<{ url: string }>>('/uploads/medical-records', form, {
+    return api.post<ApiResponse<{
+      url: string;
+      relativeUrl: string;
+      originalName: string;
+      size: number;
+      filename: string;
+    }>>('/uploads/medical-records', form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-  }
+  },
+
+  // List all uploaded files
+  listFiles: () =>
+    api.get<ApiResponse<Array<{
+      filename: string;
+      url: string;
+      relativeUrl: string;
+      size: number;
+      uploadedAt: string;
+    }>>>('/uploads'),
+
+  // Get file info
+  getFileInfo: (filename: string) =>
+    api.get<ApiResponse<{
+      filename: string;
+      url: string;
+      relativeUrl: string;
+      size: number;
+      uploadedAt: string;
+    }>>(`/uploads/medical-records/${filename}`),
+
+  // Delete uploaded file
+  deleteFile: (filename: string) =>
+    api.delete<ApiResponse<any>>(`/uploads/medical-records/${filename}`)
 }
 
 // Districts API
@@ -405,6 +458,123 @@ export const serviceCategoriesApi = {
 
   hardDelete: (id: number) =>
     api.delete<ApiResponse>(`/service-categories/${id}/permanent`),
+}
+
+// Cascade Management API
+export const cascadeApi = {
+  // Get cascade information
+  getSchoolCascadeInfo: (schoolId: string) =>
+    api.get<ApiResponse<{
+      schoolId: string;
+      cascadeInfo: {
+        teachers: number;
+        medicalRecords: number;
+        attachments: number;
+        deputations: number;
+        postingHistories: number;
+      };
+      totalAffected: number;
+      warning: string;
+    }>>(`/cascade/school/${schoolId}`),
+
+  getTeacherCascadeInfo: (teacherId: number) =>
+    api.get<ApiResponse<{
+      teacherId: number;
+      cascadeInfo: {
+        medicalRecords: number;
+        attachments: number;
+        deputations: number;
+        postingHistories: number;
+      };
+      totalAffected: number;
+      warning: string;
+    }>>(`/cascade/teacher/${teacherId}`),
+
+  getUserCascadeInfo: (userId: number) =>
+    api.get<ApiResponse<{
+      userId: number;
+      cascadeInfo: {
+        refreshTokens: number;
+        medicalRecordsEntered: number;
+        auditLogs: number;
+      };
+      totalAffected: number;
+      canDelete: boolean;
+      warning: string;
+    }>>(`/cascade/user/${userId}`),
+
+  // Safe delete operations
+  safeDeleteSchool: (schoolId: string, force: boolean = false) =>
+    api.delete<ApiResponse<any>>(`/cascade/school/${schoolId}?force=${force}`),
+
+  safeDeleteTeacher: (teacherId: number, force: boolean = false) =>
+    api.delete<ApiResponse<any>>(`/cascade/teacher/${teacherId}?force=${force}`),
+
+  safeDeleteUser: (userId: number, force: boolean = false) =>
+    api.delete<ApiResponse<any>>(`/cascade/user/${userId}?force=${force}`),
+}
+
+// User Profile Management API
+export const userProfileApi = {
+  getCurrentUser: () =>
+    api.get<ApiResponse<any>>('/users/me'),
+
+  updateCurrentUser: (data: { username?: string; email?: string; phone?: string }) =>
+    api.put<ApiResponse<any>>('/users/me', data),
+
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.post<ApiResponse<any>>('/users/change-password', data),
+}
+
+// Roles and Permissions API
+export const rolesApi = {
+  getAllRoles: () =>
+    api.get<ApiResponse<{
+      roles: any[];
+      hierarchy: any;
+      permissions: any;
+    }>>('/roles'),
+
+  getRolePermissions: (role: string) =>
+    api.get<ApiResponse<{
+      role: string;
+      permissions: string[];
+      display_name: string;
+      description: string;
+    }>>(`/roles/${role}/permissions`),
+
+  getRoleHierarchy: () =>
+    api.get<ApiResponse<{
+      hierarchy: any[];
+      levels: any;
+    }>>('/roles/hierarchy'),
+
+  getAllPermissions: () =>
+    api.get<ApiResponse<{
+      permissions: string[];
+      permissionsByCategory: any;
+      totalCount: number;
+    }>>('/roles/permissions/all'),
+}
+
+// Session Management API
+export const sessionApi = {
+  getUserSessions: () =>
+    api.get<ApiResponse<{
+      sessions: any[];
+      currentSession: string;
+    }>>('/sessions'),
+
+  revokeSession: (sessionId: string) =>
+    api.delete<ApiResponse<any>>(`/sessions/${sessionId}`),
+
+  revokeOtherSessions: () =>
+    api.delete<ApiResponse<{
+      revokedCount: number;
+    }>>('/sessions/others'),
+
+  getSessionInfo: (sessionId: string) =>
+    api.get<ApiResponse<any>>(`/sessions/${sessionId}`),
 }
 
 export default api

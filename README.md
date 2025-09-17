@@ -1,10 +1,10 @@
 # TMS - Teacher Management System
 
-A comprehensive monolithic application for managing school and teacher data with a modern Vue.js frontend and Express.js backend.
+A comprehensive monolithic application for managing school and teacher data with a modern Vue.js frontend and Express.js backend, featuring a modular API documentation system and role-based access control.
 
 ## 🏗️ Architecture
 
-This project has been restructured into a **monolithic architecture** where both the frontend and backend are served from a single Express.js server.
+This project has been restructured into a **monolithic architecture** where both the frontend and backend are served from a single Express.js server, with a highly modular and maintainable API documentation system.
 
 ### Structure
 ```
@@ -28,6 +28,16 @@ TMS/
 │   ├── 📁 database/                 # Database connection & schemas
 │   ├── 📁 types/                    # TypeScript type definitions
 │   ├── 📁 constants/                # Application constants
+│   ├── 📁 middleware/               # Express middleware
+│   ├── 📁 utils/                    # Utility functions
+│   ├── 📁 swagger/                  # Modular API documentation
+│   │   ├── 📄 index.js              # Main Swagger entry point
+│   │   ├── 📄 authentication.js     # Auth endpoints
+│   │   ├── 📄 schools.js            # School management
+│   │   ├── 📄 teachers.js           # Teacher management
+│   │   ├── 📄 districts.js          # Geographic data
+│   │   ├── 📄 reports.js            # Analytics & reporting
+│   │   └── 📄 ...                   # 15+ focused modules
 │   └── 📄 index.ts                  # Main server entry point
 │
 ├── 📁 frontend/                     # Frontend Vue.js application
@@ -38,12 +48,14 @@ TMS/
 │   │   ├── 📁 types/                # TypeScript interfaces
 │   │   ├── 📁 router/               # Vue Router configuration
 │   │   ├── 📁 constants/            # Frontend constants
+│   │   ├── 📁 composables/          # Vue composables
 │   │   └── 📁 assests/              # Static assets
 │   ├── 📁 dist/                     # Built frontend files (served by backend)
 │   ├── 📄 package.json              # Frontend dependencies
 │   ├── 📄 vite.config.ts            # Vite configuration
 │   └── 📄 tailwind.config.js        # Tailwind CSS configuration
 │
+├── 📁 docs/                         # Additional documentation
 ├── 📁 dist/                         # Built backend files
 ├── 📄 package.json                  # Root package.json (backend + build scripts)
 ├── 📄 tsconfig.json                 # TypeScript configuration
@@ -107,21 +119,34 @@ TMS/
    - **Unix/Mac**: `./deploy-monolithic.sh`
 
 ## 🌐 Access Points
-## 🛡️ Auth Flow
-- Access token (JWT, 15m) returned in JSON; frontend sends in Authorization header.
-- Refresh token (random, 7d) stored as HTTP-only cookie; refresh uses CSRF header (X-CSRF-Token).
-- Logout revokes refresh token and clears cookies.
+
+Once running, access your application at:
+- **Frontend**: http://localhost:5004
+- **API**: http://localhost:5004/api
+- **API Documentation**: http://localhost:5004/api/docs (Swagger UI)
+- **Health Check**: http://localhost:5004/health
+
+## 🛡️ Authentication & Security
+
+### Auth Flow
+- **Access Token**: JWT (15 minutes) returned in JSON response
+- **Refresh Token**: Random string (7 days) stored as HTTP-only cookie
+- **CSRF Protection**: Uses X-CSRF-Token header for refresh requests
+- **Role-Based Access**: Super Admin, Admin, and Teacher roles with granular permissions
+
+### Security Features
+- Helmet.js for security headers
+- CORS configuration
+- Input validation with express-validator
+- Rate limiting and login lockout protection
+- SQL injection protection
+- OTP-based authentication for teachers
 
 ## 📦 Docker
 ```bash
 docker compose up -d --build
 ```
 App on http://localhost:5004, MySQL on 3306.
-
-Once running, access your application at:
-- **Frontend**: http://localhost:5000
-- **API**: http://localhost:5000/api
-- **Health Check**: http://localhost:5000/health
 
 ## 📚 Available Scripts
 
@@ -144,16 +169,13 @@ The frontend is a Vue.js 3 application with TypeScript, Tailwind CSS, and Vite. 
 
 ### Database
 The application uses MySQL with the following main entities:
-- Schools
-- Teachers
-- Districts
-- RD Blocks
-- Villages
-- Subjects
-- School Types
-- Management Types
-- Mediums
-- Religions
+- **Schools** - Educational institutions with management types and locations
+- **Teachers** - Staff members with qualifications and medical records
+- **Geographic Data** - Districts, RD Blocks, Habitations, Block Offices
+- **Reference Data** - Subjects, School Types, Management Types, Mediums, Religions, Service Categories
+- **User Management** - Role-based access with Super Admin, Admin, and Teacher roles
+- **Medical Records** - Teacher health tracking and documentation
+- **Session Management** - User sessions and permissions tracking
 
 ## 🚀 Deployment
 
@@ -166,37 +188,98 @@ The application uses MySQL with the following main entities:
 - **Backend Only**: `npm run dev:backend`
 - **Frontend Only**: `npm run dev:frontend`
 
-## 🔒 Security Features
+## 📖 API Documentation
 
-- Helmet.js for security headers
-- CORS configuration
-- Input validation with express-validator
-- Rate limiting
-- SQL injection protection
+The project features a **modular Swagger/OpenAPI documentation system** with 21 focused modules:
+
+### Documentation Structure
+- **62 total endpoints** across all categories
+- **18 data schemas** for comprehensive type definitions
+- **Organized by domain** with emoji-categorized tags
+- **Interactive Swagger UI** at `/api/docs`
+
+### Module Categories
+1. **Authentication & Security** (4 modules)
+   - Core authentication, OTP auth, session management, user profiles
+2. **User Management** (1 module)
+   - Super admin user operations
+3. **Core Educational Entities** (3 modules)
+   - Schools, teachers, medical records
+4. **Geographic & Administrative** (4 modules)
+   - Districts, RD blocks, habitations, block offices
+5. **Reference Data** (6 modules)
+   - Management types, school types, subjects, religions, mediums, service categories
+6. **System Features** (3 modules)
+   - Cascade protection, file uploads, reports & analytics
 
 ## 📱 Features
 
-- **School Management**: CRUD operations for schools
-- **Teacher Management**: CRUD operations for teachers
-- **Location Management**: Hierarchical location system (Districts → RD Blocks → Villages)
+### Core Management
+- **School Management**: Complete CRUD operations with location and type management
+- **Teacher Management**: Staff management with qualifications and medical tracking
+- **Medical Records**: Health tracking with document uploads and treatment status
+- **User Management**: Role-based access control with Super Admin capabilities
+
+### Geographic & Administrative
+- **Location Management**: Hierarchical system (Districts → RD Blocks → Habitations)
+- **Block Offices**: Administrative office management
+- **Reference Data**: Comprehensive lookup tables for all system entities
+
+### System Features
+- **OTP Authentication**: Secure phone-based login for teachers
+- **Session Management**: Advanced session tracking and permissions
+- **Cascade Protection**: Safe deletion with dependency warnings
+- **File Uploads**: Document management with category organization
+- **Reports & Analytics**: Comprehensive reporting with export capabilities
 - **Data Export**: Excel export functionality
 - **Search & Filter**: Advanced search and filtering capabilities
-- **Responsive Design**: Mobile-friendly interface
+- **Responsive Design**: Mobile-friendly interface with modern UI components
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Node.js, Express.js, TypeScript, MySQL
-- **Frontend**: Vue.js 3, TypeScript, Tailwind CSS, Vite
-- **Database**: MySQL
+### Backend
+- **Runtime**: Node.js with Express.js
+- **Language**: TypeScript
+- **Database**: MySQL with Prisma ORM
+- **Authentication**: JWT with refresh tokens
+- **Documentation**: Swagger/OpenAPI 3.0 with modular structure
+- **Security**: Helmet.js, CORS, rate limiting, input validation
+
+### Frontend
+- **Framework**: Vue.js 3 with Composition API
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with custom components
+- **Build Tool**: Vite
+- **State Management**: Vue composables
+- **Routing**: Vue Router with role-based guards
+
+### Development & Deployment
 - **Build Tools**: TypeScript compiler, Vite
 - **Development**: ts-node-dev, concurrently
+- **Containerization**: Docker with docker-compose
+- **Process Management**: PM2 for production
 
 ## 📝 Notes
 
+### Architecture Notes
 - The monolithic structure serves the frontend static files from the Express.js server
 - All API endpoints are prefixed with `/api`
 - Client-side routing is handled by serving `index.html` for non-API routes
 - The frontend build output is served from `frontend/dist/`
+
+### API Documentation
+- **Modular Structure**: 21 focused modules instead of one large file
+- **Maintainable**: Each module is 2-11 KB for easy maintenance
+- **Organized**: Emoji-categorized tags for better navigation
+- **Complete**: 62 endpoints with comprehensive schemas and examples
+- **Interactive**: Full Swagger UI with authentication testing
+
+### Recent Improvements
+- ✅ **Modular Swagger Documentation**: Broke down 1,200+ KB monolithic spec into focused modules
+- ✅ **Enhanced UI Components**: Updated button styles and modern interface design
+- ✅ **Role-Based Access Control**: Granular permissions for different user types
+- ✅ **OTP Authentication**: Secure phone-based login system for teachers
+- ✅ **Medical Records Management**: Complete health tracking with document uploads
 
 ## 🤝 Contributing
 
