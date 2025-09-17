@@ -7,26 +7,50 @@ const prisma = new PrismaClient()
 // Get all users
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.users.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true,
-        created_at: true
-      },
-      orderBy: {
-        created_at: 'desc'
-      }
-    })
+    // First try to get users with last_login field
+    let users;
+    try {
+      users = await prisma.users.findMany({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          last_login: true as any, // Type assertion for field that may not exist yet
+          created_at: true
+        } as any as any,
+        orderBy: {
+          created_at: 'desc'
+        }
+      })
+    } catch (error: any) {
+      // If last_login field doesn't exist, get users without it
+      console.log('last_login field not found, falling back to basic user query')
+      users = await prisma.users.findMany({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          created_at: true
+        },
+        orderBy: {
+          created_at: 'desc'
+        }
+      })
+    }
 
-    // If last_login field doesn't exist in database, get it from audit_logs
+    // Get last login from audit_logs for users without last_login field
     const usersWithLastLogin = await Promise.all(users.map(async (user) => {
       if (!user.last_login) {
         try {
@@ -107,32 +131,62 @@ export const createUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Create user
-    const user = await prisma.users.create({
-      data: {
-        username,
-        email,
-        role,
-        password: hashedPassword,
-        is_active,
-        phone,
-        school_id,
-        district,
-        rd_block
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true,
-        created_at: true
-      }
-    })
+    let user;
+    try {
+      user = await prisma.users.create({
+        data: {
+          username,
+          email,
+          role,
+          password: hashedPassword,
+          is_active,
+          phone,
+          school_id,
+          district,
+          rd_block
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          last_login: true as any, // Type assertion for field that may not exist yet
+          created_at: true
+        } as any
+      })
+    } catch (error: any) {
+      // If last_login field doesn't exist, create without it
+      user = await prisma.users.create({
+        data: {
+          username,
+          email,
+          role,
+          password: hashedPassword,
+          is_active,
+          phone,
+          school_id,
+          district,
+          rd_block
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          created_at: true
+        }
+      })
+    }
 
     res.json({
       success: true,
@@ -201,23 +255,44 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     // Update user
-    const user = await prisma.users.update({
-      where: { id: parseInt(id) },
-      data: updateData,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true,
-        created_at: true
-      }
-    })
+    let user;
+    try {
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: updateData,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          last_login: true as any, // Type assertion for field that may not exist yet
+          created_at: true
+        } as any
+      })
+    } catch (error: any) {
+      // If last_login field doesn't exist, update without it
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: updateData,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          created_at: true
+        }
+      })
+    }
 
     res.json({
       success: true,
@@ -251,25 +326,48 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
     }
 
     // Toggle status
-    const user = await prisma.users.update({
-      where: { id: parseInt(id) },
-      data: {
-        is_active: !existingUser.is_active
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true,
-        created_at: true
-      }
-    })
+    let user;
+    try {
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: {
+          is_active: !existingUser.is_active
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          last_login: true as any, // Type assertion for field that may not exist yet
+          created_at: true
+        } as any
+      })
+    } catch (error: any) {
+      // If last_login field doesn't exist, update without it
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: {
+          is_active: !existingUser.is_active
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          created_at: true
+        }
+      })
+    }
 
     res.json({
       success: true,
@@ -313,23 +411,44 @@ export const updateUserRole = async (req: Request, res: Response) => {
     }
 
     // Update user role
-    const user = await prisma.users.update({
-      where: { id: parseInt(id) },
-      data: { role },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true,
-        created_at: true
-      }
-    })
+    let user;
+    try {
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: { role },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          last_login: true as any, // Type assertion for field that may not exist yet
+          created_at: true
+        } as any
+      })
+    } catch (error: any) {
+      // If last_login field doesn't exist, update without it
+      user = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: { role },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          role: true,
+          is_active: true,
+          school_id: true,
+          district: true,
+          rd_block: true,
+          created_at: true
+        }
+      })
+    }
 
     res.json({
       success: true,
