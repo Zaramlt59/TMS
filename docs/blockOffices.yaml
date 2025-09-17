@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  title: Block Offices API
+  version: 1.0.0
+tags:
+  - name: Block Offices
+paths:
+  /api/block-offices:
+    get:
+      tags: [Block Offices]
+      summary: List block offices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/BlockOfficesListResponse'
+    post:
+      tags: [Block Offices]
+      summary: Create block office
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/BlockOffice' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/BlockOfficeResponse'
+  /api/block-offices/{id}:
+    get:
+      tags: [Block Offices]
+      summary: Get block office by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/BlockOfficeResponse'
+    put:
+      tags: [Block Offices]
+      summary: Update block office by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/BlockOffice' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/BlockOfficeResponse'
+    delete:
+      tags: [Block Offices]
+      summary: Delete block office by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+

@@ -1,0 +1,89 @@
+openapi: 3.0.0
+info:
+  title: Teachers API
+  version: 1.0.0
+tags:
+  - name: Teachers
+paths:
+  /api/teachers:
+    get:
+      tags: [Teachers]
+      summary: List teachers
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/TeachersListResponse'
+    post:
+      tags: [Teachers]
+      summary: Create teacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/Teacher'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/TeacherResponse'
+  /api/teachers/{id}:
+    get:
+      tags: [Teachers]
+      summary: Get teacher by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/TeacherResponse'
+    put:
+      tags: [Teachers]
+      summary: Update teacher by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/Teacher' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/TeacherResponse'
+    delete:
+      tags: [Teachers]
+      summary: Delete teacher by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+

@@ -1,0 +1,492 @@
+openapi: 3.0.0
+info:
+  title: TMS (Teacher Management System) API
+  description: |
+    Comprehensive API documentation for the Teacher Management System with role-based access control and OTP authentication.
+    
+    ## Features
+    - **Role-Based Access Control (RBAC)**: 6 different user roles with hierarchical permissions
+    - **OTP Authentication**: Phone-based OTP login for teachers
+    - **User Management**: Complete CRUD operations for user administration
+    - **School Management**: Manage schools, teachers, and educational data
+    - **Medical Records**: Handle teacher medical records and documentation
+    - **Master Data**: Manage reference data like districts, subjects, etc.
+    
+    ## User Roles
+    1. **Super Admin** (Level 6): Full system access including user management
+    2. **Admin** (Level 5): Administrative access to schools and teachers
+    3. **DEO** (Level 4): District Education Officer - district-level access
+    4. **SDEO** (Level 3): Sub-Division Education Officer - sub-division access
+    5. **HOI** (Level 2): Head of Institution - institution-level access
+    6. **Teacher** (Level 1): Limited access to own profile and records
+    
+    ## Authentication Methods
+    - **Regular Login**: Username/password for admin roles
+    - **OTP Login**: Phone number + OTP for teachers
+    
+  version: 1.0.0
+  contact:
+    name: TMS Development Team
+    email: support@tms.gov.in
+    url: https://tms.gov.in
+
+servers:
+  - url: http://localhost:5004/api
+    description: Development server
+  - url: https://api.tms.gov.in/api
+    description: Production server
+
+tags:
+  # Authentication & Authorization
+  - name: Authentication
+    description: User authentication and authorization
+  - name: OTP Authentication
+    description: OTP-based authentication for teachers
+  - name: Roles & Permissions
+    description: Role hierarchy and permission system
+  - name: Session Management
+    description: User session management and security
+
+  # User Management
+  - name: User Management
+    description: User management operations for super administrators
+  - name: User Profile
+    description: User profile management and password operations
+
+  # Core Entities
+  - name: Schools
+    description: School management operations
+  - name: Teachers
+    description: Teacher management operations
+  - name: Medical Records
+    description: Medical records management
+
+  # Location Management
+  - name: Districts
+    description: District management operations
+  - name: RD Blocks
+    description: RD Block management operations
+  - name: Villages
+    description: Village management operations
+
+  # Master Data
+  - name: Master Data
+    description: Reference data management
+  - name: Management Types
+    description: Management type management
+  - name: School Types
+    description: School type management
+  - name: Service Categories
+    description: Service category management
+  - name: Subjects
+    description: Subject management
+  - name: Mediums
+    description: Medium management
+  - name: Religions
+    description: Religion management
+  - name: Block Offices
+    description: Block office management
+
+  # System Features
+  - name: Cascade Protection
+    description: Safe deletion with cascade warnings
+  - name: File Uploads
+    description: File upload and management
+  - name: Reports
+    description: Reporting and analytics
+
+paths:
+  # Authentication endpoints
+  /users/login:
+    $ref: './authentication.yaml#/paths/~1api~1users~1login'
+  /users/logout:
+    $ref: './authentication.yaml#/paths/~1api~1users~1logout'
+  /users/me:
+    $ref: './authentication.yaml#/paths/~1api~1users~1me'
+  /users/refresh-token:
+    $ref: './authentication.yaml#/paths/~1api~1users~1refresh-token'
+  /users/forgot-password:
+    $ref: './authentication.yaml#/paths/~1api~1users~1forgot-password'
+  /users/reset-password:
+    $ref: './authentication.yaml#/paths/~1api~1users~1reset-password'
+
+  # OTP Authentication endpoints
+  /otp-auth/send-otp:
+    $ref: './otp-auth.yaml#/paths/~1api~1otp-auth~1send-otp'
+  /otp-auth/verify-otp:
+    $ref: './otp-auth.yaml#/paths/~1api~1otp-auth~1verify-otp'
+  /otp-auth/resend-otp:
+    $ref: './otp-auth.yaml#/paths/~1api~1otp-auth~1resend-otp'
+
+  # User Management endpoints
+  /user-management/users:
+    $ref: './user-management.yaml#/paths/~1api~1user-management~1users'
+  /user-management/users/{id}:
+    $ref: './user-management.yaml#/paths/~1api~1user-management~1users~1{id}'
+  /user-management/users/{id}/toggle-status:
+    $ref: './user-management.yaml#/paths/~1api~1user-management~1users~1{id}~1toggle-status'
+
+  # Roles & Permissions endpoints
+  /roles:
+    $ref: './roles-permissions.yaml#/paths/~1api~1roles'
+  /roles/{role}/permissions:
+    $ref: './roles-permissions.yaml#/paths/~1api~1roles~1{role}~1permissions'
+  /roles/hierarchy:
+    $ref: './roles-permissions.yaml#/paths/~1api~1roles~1hierarchy'
+  /roles/permissions/all:
+    $ref: './roles-permissions.yaml#/paths/~1api~1roles~1permissions~1all'
+
+  # Session Management endpoints
+  /sessions:
+    $ref: './user-management.yaml#/paths/~1api~1sessions'
+  /sessions/{sessionId}:
+    $ref: './user-management.yaml#/paths/~1api~1sessions~1{sessionId}'
+  /sessions/others:
+    $ref: './user-management.yaml#/paths/~1api~1sessions~1others'
+
+  # User Profile endpoints
+  /users/me:
+    $ref: './user-management.yaml#/paths/~1api~1users~1me'
+  /users/me:
+    $ref: './user-management.yaml#/paths/~1api~1users~1me~1update'
+  /users/change-password:
+    $ref: './user-management.yaml#/paths/~1api~1users~1change-password'
+
+  # Cascade Protection endpoints
+  /cascade/school/{schoolId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1school~1{schoolId}'
+  /cascade/teacher/{teacherId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1teacher~1{teacherId}'
+  /cascade/user/{userId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1user~1{userId}'
+  /cascade/district/{districtId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1district~1{districtId}'
+  /cascade/rd-block/{rdBlockId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1rd-block~1{rdBlockId}'
+  /cascade/village/{villageId}:
+    $ref: './cascading-relationships.yaml#/paths/~1api~1cascade~1village~1{villageId}'
+
+  # School management endpoints (referenced from existing docs)
+  /schools:
+    $ref: './schools.yaml#/paths/~1api~1schools'
+  /schools/{id}:
+    $ref: './schools.yaml#/paths/~1api~1schools~1{id}'
+
+  # Teacher management endpoints (referenced from existing docs)
+  /teachers:
+    $ref: './teachers.yaml#/paths/~1api~1teachers'
+  /teachers/{id}:
+    $ref: './teachers.yaml#/paths/~1api~1teachers~1{id}'
+
+  # Medical records endpoints (referenced from existing docs)
+  /medical-records:
+    $ref: './medical-records.yaml#/paths/~1api~1medical-records'
+  /medical-records/{id}:
+    $ref: './medical-records.yaml#/paths/~1api~1medical-records~1{id}'
+  /medical-records/teacher/{teacherId}:
+    $ref: './medical-records.yaml#/paths/~1api~1medical-records~1teacher~1{teacherId}'
+
+  # Location Management endpoints
+  /districts:
+    $ref: './districts.yaml#/paths/~1api~1districts'
+  /districts/{id}:
+    $ref: './districts.yaml#/paths/~1api~1districts~1{id}'
+  /rd-blocks:
+    $ref: './locations.yaml#/paths/~1api~1rd-blocks'
+  /rd-blocks/{id}:
+    $ref: './locations.yaml#/paths/~1api~1rd-blocks~1{id}'
+  /villages:
+    $ref: './locations.yaml#/paths/~1api~1villages'
+  /villages/{id}:
+    $ref: './locations.yaml#/paths/~1api~1villages~1{id}'
+
+  # Master Data endpoints
+  /management-types:
+    $ref: './managementTypes.yaml#/paths/~1api~1management-types'
+  /management-types/{id}:
+    $ref: './managementTypes.yaml#/paths/~1api~1management-types~1{id}'
+  /school-types:
+    $ref: './schoolTypes.yaml#/paths/~1api~1school-types'
+  /school-types/{id}:
+    $ref: './schoolTypes.yaml#/paths/~1api~1school-types~1{id}'
+  /service-categories:
+    $ref: './serviceCategories.yaml#/paths/~1api~1service-categories'
+  /service-categories/{id}:
+    $ref: './serviceCategories.yaml#/paths/~1api~1service-categories~1{id}'
+  /subjects:
+    $ref: './subjects.yaml#/paths/~1api~1subjects'
+  /subjects/{id}:
+    $ref: './subjects.yaml#/paths/~1api~1subjects~1{id}'
+  /mediums:
+    $ref: './mediums.yaml#/paths/~1api~1mediums'
+  /mediums/{id}:
+    $ref: './mediums.yaml#/paths/~1api~1mediums~1{id}'
+  /religions:
+    $ref: './religions.yaml#/paths/~1api~1religions'
+  /religions/{id}:
+    $ref: './religions.yaml#/paths/~1api~1religions~1{id}'
+  /block-offices:
+    $ref: './blockOffices.yaml#/paths/~1api~1block-offices'
+  /block-offices/{id}:
+    $ref: './blockOffices.yaml#/paths/~1api~1block-offices~1{id}'
+
+  # File Upload endpoints
+  /uploads:
+    $ref: './uploads.yaml#/paths/~1api~1uploads'
+  /uploads/{id}:
+    $ref: './uploads.yaml#/paths/~1api~1uploads~1{id}'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique user identifier
+          example: 1
+        username:
+          type: string
+          description: Username
+          example: "admin"
+        email:
+          type: string
+          description: Email address
+          example: "admin@tms.gov.in"
+        phone:
+          type: string
+          description: Phone number
+          example: "9876543210"
+        role:
+          type: string
+          enum: [super_admin, admin, deo, sdeo, hoi, teacher]
+          description: User role
+          example: "admin"
+        is_active:
+          type: boolean
+          description: Whether user account is active
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-01-15T15:45:00Z"
+      required:
+        - id
+        - username
+        - email
+        - role
+        - is_active
+        - created_at
+
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Role identifier
+          example: "super_admin"
+        display_name:
+          type: string
+          description: Human-readable role name
+          example: "Super Administrator"
+        description:
+          type: string
+          description: Role description
+          example: "Full system access including user management and role assignment"
+        level:
+          type: integer
+          description: Role hierarchy level (higher number = more privileges)
+          example: 6
+        permissions:
+          type: array
+          items:
+            type: string
+          description: List of permissions for this role
+          example: ["users.read", "users.create", "users.update", "users.delete"]
+
+    Permission:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Permission identifier
+          example: "users.read"
+        description:
+          type: string
+          description: Permission description
+          example: "Read user information"
+        category:
+          type: string
+          description: Permission category
+          example: "users"
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          description: Error message
+          example: "An error occurred"
+        error:
+          type: string
+          description: Detailed error information (development only)
+          example: "Database connection failed"
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          example: 10
+        total:
+          type: integer
+          description: Total number of items
+          example: 50
+        pages:
+          type: integer
+          description: Total number of pages
+          example: 5
+        hasNext:
+          type: boolean
+          description: Whether there is a next page
+          example: true
+        hasPrev:
+          type: boolean
+          description: Whether there is a previous page
+          example: false
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or OTP verification
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: "Authentication required"
+            error: "No valid token provided"
+
+    ForbiddenError:
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: "Insufficient permissions"
+            error: "User role does not have required permissions"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: "Resource not found"
+            error: "The requested resource does not exist"
+
+    ValidationError:
+      description: Bad request - Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: "Validation failed"
+            error: "Invalid input data provided"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: "Internal server error"
+            error: "An unexpected error occurred"
+
+security:
+  - BearerAuth: []
+
+  examples:
+    RoleHierarchyExample:
+      summary: Role Hierarchy
+      description: Complete role hierarchy with levels and descriptions
+      value:
+        super_admin:
+          level: 6
+          display_name: "Super Administrator"
+          description: "Full system access including user management and role assignment"
+        admin:
+          level: 5
+          display_name: "Administrator"
+          description: "Administrative access to manage schools, teachers, and system data"
+        deo:
+          level: 4
+          display_name: "District Education Officer"
+          description: "District-level access to manage schools and teachers within assigned district"
+        sdeo:
+          level: 3
+          display_name: "Sub-Division Education Officer"
+          description: "Sub-division level access to manage schools and teachers within assigned sub-division"
+        hoi:
+          level: 2
+          display_name: "Head of Institution"
+          description: "Institution-level access to manage teachers and school data within assigned institution"
+        teacher:
+          level: 1
+          display_name: "Teacher"
+          description: "Limited access to view own profile and medical records"
+
+    PermissionCategoriesExample:
+      summary: Permission Categories
+      description: Available permission categories and their purposes
+      value:
+        users:
+          description: "User management permissions"
+          permissions: ["read", "create", "update", "delete", "manage_roles"]
+        schools:
+          description: "School management permissions"
+          permissions: ["read", "create", "update", "delete", "export"]
+        teachers:
+          description: "Teacher management permissions"
+          permissions: ["read", "read_own", "create", "update", "delete", "export"]
+        medical_records:
+          description: "Medical records permissions"
+          permissions: ["read", "read_own", "create", "update", "delete"]
+        master_data:
+          description: "Master data permissions"
+          permissions: ["read", "create", "update", "delete"]
+        reports:
+          description: "Reporting permissions"
+          permissions: ["read", "read_own", "create", "export"]
+        analytics:
+          description: "Analytics permissions"
+          permissions: ["read", "read_own"]

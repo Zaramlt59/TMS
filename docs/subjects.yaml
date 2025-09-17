@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  title: Subjects API
+  version: 1.0.0
+tags:
+  - name: Subjects
+paths:
+  /api/subjects:
+    get:
+      tags: [Subjects]
+      summary: List subjects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/SubjectsListResponse'
+    post:
+      tags: [Subjects]
+      summary: Create subject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/Subject' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/SubjectResponse'
+  /api/subjects/{id}:
+    get:
+      tags: [Subjects]
+      summary: Get subject by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/SubjectResponse'
+    put:
+      tags: [Subjects]
+      summary: Update subject by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/Subject' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/SubjectResponse'
+    delete:
+      tags: [Subjects]
+      summary: Delete subject by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+

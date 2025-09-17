@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  title: Management Types API
+  version: 1.0.0
+tags:
+  - name: Management Types
+paths:
+  /api/management-types:
+    get:
+      tags: [Management Types]
+      summary: List management types
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ManagementTypesListResponse'
+    post:
+      tags: [Management Types]
+      summary: Create management type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/ManagementType' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ManagementTypeResponse'
+  /api/management-types/{id}:
+    get:
+      tags: [Management Types]
+      summary: Get management type by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ManagementTypeResponse'
+    put:
+      tags: [Management Types]
+      summary: Update management type by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './components.yaml#/components/schemas/ManagementType' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ManagementTypeResponse'
+    delete:
+      tags: [Management Types]
+      summary: Delete management type by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+

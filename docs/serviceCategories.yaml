@@ -1,0 +1,77 @@
+tags:
+  - name: Service Categories
+paths:
+  /api/service-categories:
+    get:
+      tags: [Service Categories]
+      summary: List service categories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCategoriesListResponse'
+    post:
+      tags: [Service Categories]
+      summary: Create service category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServiceCategory' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCategoryResponse'
+  /api/service-categories/{id}:
+    get:
+      tags: [Service Categories]
+      summary: Get service category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCategoryResponse'
+    put:
+      tags: [Service Categories]
+      summary: Update service category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServiceCategory' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ServiceCategoryResponse'
+    delete:
+      tags: [Service Categories]
+      summary: Delete service category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+
