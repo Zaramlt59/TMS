@@ -6,17 +6,6 @@ import * as os from 'os'
  * This handles various proxy scenarios and development environments
  */
 export function getClientIP(req: Request): string {
-  // Debug logging to understand what we're getting
-  console.log('🔍 IP Extraction Debug:')
-  console.log('  - req.ip:', req.ip)
-  console.log('  - req.connection?.remoteAddress:', req.connection?.remoteAddress)
-  console.log('  - req.socket?.remoteAddress:', req.socket?.remoteAddress)
-  console.log('  - Headers:', {
-    'x-forwarded-for': req.headers['x-forwarded-for'],
-    'x-real-ip': req.headers['x-real-ip'],
-    'cf-connecting-ip': req.headers['cf-connecting-ip'],
-    'x-client-ip': req.headers['x-client-ip']
-  })
 
   // Check for various headers that proxies might set
   const forwardedFor = req.headers['x-forwarded-for'] as string
@@ -33,30 +22,25 @@ export function getClientIP(req: Request): string {
   if (forwardedFor) {
     // X-Forwarded-For can contain multiple IPs, take the first one (original client)
     clientIP = forwardedFor.split(',')[0].trim()
-    console.log('  - Using X-Forwarded-For:', clientIP)
   }
   
   // 2. Check X-Real-IP (nginx proxy)
   if (!clientIP && realIP) {
     clientIP = realIP
-    console.log('  - Using X-Real-IP:', clientIP)
   }
   
   // 3. Check Cloudflare connecting IP
   if (!clientIP && cfConnectingIP) {
     clientIP = cfConnectingIP
-    console.log('  - Using CF-Connecting-IP:', clientIP)
   }
   
   // 4. Check other common headers
   if (!clientIP && xClientIP) {
     clientIP = xClientIP
-    console.log('  - Using X-Client-IP:', clientIP)
   }
   
   if (!clientIP && xForwarded) {
     clientIP = xForwarded
-    console.log('  - Using X-Forwarded:', clientIP)
   }
   
   if (!clientIP && forwarded) {
@@ -64,7 +48,6 @@ export function getClientIP(req: Request): string {
     const forwardedMatch = forwarded.match(/for=([^;,\s]+)/)
     if (forwardedMatch) {
       clientIP = forwardedMatch[1].replace(/"/g, '')
-      console.log('  - Using Forwarded header:', clientIP)
     }
   }
 
@@ -74,7 +57,6 @@ export function getClientIP(req: Request): string {
                req.socket?.remoteAddress || 
                (req.connection as any)?.socket?.remoteAddress ||
                req.ip
-    console.log('  - Using connection remote address:', clientIP)
   }
 
   // 6. Special handling for development/localhost scenarios
@@ -87,7 +69,6 @@ export function getClientIP(req: Request): string {
       for (const iface of interfaces) {
         if (iface.family === 'IPv4' && !iface.internal) {
           clientIP = iface.address
-          console.log('  - Using local network IP:', clientIP, '(interface:', interfaceName, ')')
           break
         }
       }
@@ -99,8 +80,6 @@ export function getClientIP(req: Request): string {
 
   // Clean up the IP address
   if (clientIP) {
-    const originalIP = clientIP
-    
     // Remove IPv6 prefix if present
     if (clientIP.startsWith('::ffff:')) {
       clientIP = clientIP.substring(7)
@@ -116,15 +95,11 @@ export function getClientIP(req: Request): string {
     const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/
     
     if (ipv4Regex.test(clientIP) || ipv6Regex.test(clientIP)) {
-      console.log('  - Final IP (cleaned):', clientIP, '(from:', originalIP, ')')
       return clientIP
-    } else {
-      console.log('  - Invalid IP format:', clientIP, '(from:', originalIP, ')')
     }
   }
 
   // If all else fails, return a default
-  console.log('  - No valid IP found, returning "unknown"')
   return 'unknown'
 }
 

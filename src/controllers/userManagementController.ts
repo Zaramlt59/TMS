@@ -7,82 +7,28 @@ const prisma = new PrismaClient()
 // Get all users
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    // First try to get users with last_login field
-    let users;
-    try {
-      users = await prisma.users.findMany({
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          last_login: true as any, // Type assertion for field that may not exist yet
-          created_at: true
-        } as any as any,
-        orderBy: {
-          created_at: 'desc'
-        }
-      })
-    } catch (error: any) {
-      // If last_login field doesn't exist, get users without it
-      console.log('last_login field not found, falling back to basic user query')
-      users = await prisma.users.findMany({
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          created_at: true
-        },
-        orderBy: {
-          created_at: 'desc'
-        }
-      })
-    }
-
-    // Get last login from audit_logs for users without last_login field
-    const usersWithLastLogin = await Promise.all(users.map(async (user) => {
-      if (!user.last_login) {
-        try {
-          const lastLoginLog = await prisma.audit_logs.findFirst({
-            where: {
-              user_id: user.id,
-              action: 'login',
-              success: true
-            },
-            orderBy: {
-              created_at: 'desc'
-            },
-            select: {
-              created_at: true
-            }
-          })
-          
-          return {
-            ...user,
-            last_login: lastLoginLog?.created_at || null
-          }
-        } catch (error) {
-          // If audit_logs query fails, return user without last_login
-          return user
-        }
+    const users = await prisma.users.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        role: true,
+        is_active: true,
+        school_id: true,
+        district: true,
+        rd_block: true,
+        last_login: true as any,
+        created_at: true
+      },
+      orderBy: {
+        created_at: 'desc'
       }
-      return user
-    }))
+    })
 
     res.json({
       success: true,
-      data: usersWithLastLogin
+      data: users
     })
   } catch (error: any) {
     console.error('Error fetching users:', error)
@@ -144,7 +90,7 @@ export const createUser = async (req: Request, res: Response) => {
           school_id,
           district,
           rd_block
-        },
+        } as any,
         select: {
           id: true,
           username: true,
@@ -155,7 +101,7 @@ export const createUser = async (req: Request, res: Response) => {
           school_id: true,
           district: true,
           rd_block: true,
-          last_login: true as any, // Type assertion for field that may not exist yet
+          last_login: true as any,
           created_at: true
         } as any
       })
@@ -172,7 +118,7 @@ export const createUser = async (req: Request, res: Response) => {
           school_id,
           district,
           rd_block
-        },
+        } as any,
         select: {
           id: true,
           username: true,
@@ -184,7 +130,7 @@ export const createUser = async (req: Request, res: Response) => {
           district: true,
           rd_block: true,
           created_at: true
-        }
+        } as any
       })
     }
 
@@ -233,7 +179,7 @@ export const updateUser = async (req: Request, res: Response) => {
         return res.status(400).json({
           success: false,
           message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
-        })
+        } as any)
       }
     }
 
@@ -270,7 +216,7 @@ export const updateUser = async (req: Request, res: Response) => {
           school_id: true,
           district: true,
           rd_block: true,
-          last_login: true as any, // Type assertion for field that may not exist yet
+          last_login: true as any,
           created_at: true
         } as any
       })
@@ -290,7 +236,7 @@ export const updateUser = async (req: Request, res: Response) => {
           district: true,
           rd_block: true,
           created_at: true
-        }
+        } as any
       })
     }
 
@@ -332,7 +278,7 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
         where: { id: parseInt(id) },
         data: {
           is_active: !existingUser.is_active
-        },
+        } as any,
         select: {
           id: true,
           username: true,
@@ -343,7 +289,7 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
           school_id: true,
           district: true,
           rd_block: true,
-          last_login: true as any, // Type assertion for field that may not exist yet
+          last_login: true as any,
           created_at: true
         } as any
       })
@@ -353,7 +299,7 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
         where: { id: parseInt(id) },
         data: {
           is_active: !existingUser.is_active
-        },
+        } as any,
         select: {
           id: true,
           username: true,
@@ -365,7 +311,7 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
           district: true,
           rd_block: true,
           created_at: true
-        }
+        } as any
       })
     }
 
@@ -426,7 +372,7 @@ export const updateUserRole = async (req: Request, res: Response) => {
           school_id: true,
           district: true,
           rd_block: true,
-          last_login: true as any, // Type assertion for field that may not exist yet
+          last_login: true as any,
           created_at: true
         } as any
       })
@@ -446,7 +392,7 @@ export const updateUserRole = async (req: Request, res: Response) => {
           district: true,
           rd_block: true,
           created_at: true
-        }
+        } as any
       })
     }
 

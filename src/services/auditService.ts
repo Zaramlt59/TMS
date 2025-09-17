@@ -56,10 +56,21 @@ export class AuditService {
     success: boolean = true,
     errorMessage?: string
   ): Promise<void> {
+    // Set appropriate resource ID based on action
+    let resourceId: string
+    if (action === 'login_failed') {
+      // For failed logins, we might not have a valid user ID
+      resourceId = userId > 0 ? `user_${userId}` : 'unknown_user'
+    } else {
+      // For successful auth events, use the user ID as resource ID
+      resourceId = `user_${userId}`
+    }
+
     await this.log({
       userId,
       action,
       resourceType: 'auth',
+      resourceId,
       ipAddress,
       userAgent,
       success,
