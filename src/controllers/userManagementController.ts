@@ -1,35 +1,13 @@
 import { Request, Response } from 'express'
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
+import { UserManagementService } from '../services/userManagementService'
 
-const prisma = new PrismaClient()
-
-// Get all users
+/**
+ * Get all users
+ */
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.users.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        role: true,
-        is_active: true,
-        school_id: true,
-        district: true,
-        rd_block: true,
-        last_login: true as any,
-        created_at: true
-      },
-      orderBy: {
-        created_at: 'desc'
-      }
-    })
-
-    res.json({
-      success: true,
-      data: users
-    })
+    const users = await UserManagementService.getAllUsers()
+    res.json({ success: true, data: users })
   } catch (error: any) {
     console.error('Error fetching users:', error)
     res.status(500).json({
@@ -39,214 +17,68 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 }
 
-// Create a new user
+/**
+ * Create a new user
+ */
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { username, email, role, password, is_active = true, phone, school_id, district, rd_block } = req.body
-
-    // Validate required fields
-    if (!username || !email || !role || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Username, email, role, and password are required'
-      })
-    }
-
-    // Validate role
-    const validRoles = ['super_admin', 'admin', 'deo', 'sdeo', 'hoi', 'teacher']
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
-      })
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.users.findUnique({
-      where: { username }
-    })
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Username already exists'
-      })
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Create user
-    let user;
-    try {
-      user = await prisma.users.create({
-        data: {
-          username,
-          email,
-          role,
-          password: hashedPassword,
-          is_active,
-          phone,
-          school_id,
-          district,
-          rd_block
-        } as any,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          last_login: true as any,
-          created_at: true
-        } as any
-      })
-    } catch (error: any) {
-      // If last_login field doesn't exist, create without it
-      user = await prisma.users.create({
-        data: {
-          username,
-          email,
-          role,
-          password: hashedPassword,
-          is_active,
-          phone,
-          school_id,
-          district,
-          rd_block
-        } as any,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          created_at: true
-        } as any
-      })
-    }
-
-    res.json({
+    const userData = req.body
+    const user = await UserManagementService.createUser(userData)
+    
+    res.status(201).json({
       success: true,
-      data: user,
-      message: 'User created successfully'
+      message: 'User created successfully',
+      data: user
     })
   } catch (error: any) {
     console.error('Error creating user:', error)
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      meta: error.meta
-    })
+    
+    if (error.message.includes('already exists')) {
+      return res.status(409).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to create user',
-      error: error.message
+      message: 'Failed to create user'
     })
   }
 }
 
-// Update user
+/**
+ * Update user information
+ */
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { username, email, role, password, is_active, phone, school_id, district, rd_block } = req.body
-
-    // Check if user exists
-    const existingUser = await prisma.users.findUnique({
-      where: { id: parseInt(id) }
-    })
-
-    if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      })
-    }
-
-    // Validate role if provided
-    if (role) {
-      const validRoles = ['super_admin', 'admin', 'deo', 'sdeo', 'hoi', 'teacher']
-      if (!validRoles.includes(role)) {
-        return res.status(400).json({
-          success: false,
-          message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
-        } as any)
-      }
-    }
-
-    // Prepare update data
-    const updateData: any = {
-      username,
-      email,
-      role,
-      is_active,
-      phone,
-      school_id,
-      district,
-      rd_block
-    }
-
-    // Only hash password if provided
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10)
-    }
-
-    // Update user
-    let user;
-    try {
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: updateData,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          last_login: true as any,
-          created_at: true
-        } as any
-      })
-    } catch (error: any) {
-      // If last_login field doesn't exist, update without it
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: updateData,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          created_at: true
-        } as any
-      })
-    }
-
+    const updateData = req.body
+    
+    const user = await UserManagementService.updateUser(Number(id), updateData)
+    
     res.json({
       success: true,
-      data: user,
-      message: 'User updated successfully'
+      message: 'User updated successfully',
+      data: user
     })
   } catch (error: any) {
     console.error('Error updating user:', error)
+    
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
+    if (error.message.includes('already exists')) {
+      return res.status(409).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to update user'
@@ -254,74 +86,29 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 }
 
-// Toggle user status
+/**
+ * Toggle user active status
+ */
 export const toggleUserStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-
-    // Check if user exists
-    const existingUser = await prisma.users.findUnique({
-      where: { id: parseInt(id) }
-    })
-
-    if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      })
-    }
-
-    // Toggle status
-    let user;
-    try {
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: {
-          is_active: !existingUser.is_active
-        } as any,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          last_login: true as any,
-          created_at: true
-        } as any
-      })
-    } catch (error: any) {
-      // If last_login field doesn't exist, update without it
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: {
-          is_active: !existingUser.is_active
-        } as any,
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          created_at: true
-        } as any
-      })
-    }
-
+    const user = await UserManagementService.toggleUserStatus(Number(id))
+    
     res.json({
       success: true,
-      data: user,
-      message: `User ${user.is_active ? 'activated' : 'deactivated'} successfully`
+      message: `User ${user.is_active ? 'activated' : 'deactivated'} successfully`,
+      data: user
     })
   } catch (error: any) {
     console.error('Error toggling user status:', error)
+    
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to toggle user status'
@@ -329,80 +116,38 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
   }
 }
 
-// Update user role
+/**
+ * Update user role
+ */
 export const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { role } = req.body
-
-    // Validate role
-    const validRoles = ['super_admin', 'admin', 'deo', 'sdeo', 'hoi', 'teacher']
-    if (!validRoles.includes(role)) {
+    
+    if (!role) {
       return res.status(400).json({
         success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+        message: 'Role is required'
       })
     }
-
-    // Check if user exists
-    const existingUser = await prisma.users.findUnique({
-      where: { id: parseInt(id) }
-    })
-
-    if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      })
-    }
-
-    // Update user role
-    let user;
-    try {
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: { role },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          last_login: true as any,
-          created_at: true
-        } as any
-      })
-    } catch (error: any) {
-      // If last_login field doesn't exist, update without it
-      user = await prisma.users.update({
-        where: { id: parseInt(id) },
-        data: { role },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          is_active: true,
-          school_id: true,
-          district: true,
-          rd_block: true,
-          created_at: true
-        } as any
-      })
-    }
-
+    
+    const user = await UserManagementService.updateUserRole(Number(id), role)
+    
     res.json({
       success: true,
-      data: user,
-      message: 'User role updated successfully'
+      message: 'User role updated successfully',
+      data: user
     })
   } catch (error: any) {
     console.error('Error updating user role:', error)
+    
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to update user role'
@@ -410,44 +155,28 @@ export const updateUserRole = async (req: Request, res: Response) => {
   }
 }
 
-// Delete user (now uses safe deletion)
+/**
+ * Delete user
+ */
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-
-    // Check if user exists
-    const existingUser = await prisma.users.findUnique({
-      where: { id: parseInt(id) }
-    })
-
-    if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      })
-    }
-
-    // Use safe deletion
-    const { cascadeService } = await import('../services/cascadeService')
-    const force = req.query.force === 'true'
-    const result = await cascadeService.safeDeleteUser(parseInt(id), force)
+    const result = await UserManagementService.deleteUser(Number(id))
     
-    if (result.success) {
-      res.json({
-        success: true,
-        message: result.message,
-        data: result.cascadeInfo
-      })
-    } else {
-      res.status(400).json({
-        success: false,
-        message: result.message,
-        data: result.cascadeInfo,
-        error: result.error
-      })
-    }
+    res.json({
+      success: true,
+      message: result.message
+    })
   } catch (error: any) {
     console.error('Error deleting user:', error)
+    
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to delete user'
