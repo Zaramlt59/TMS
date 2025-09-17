@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto'
 import { isLocked, registerFailure, clearFailures } from '../utils/loginLockout'
 import jwt from 'jsonwebtoken'
 import { AuditService } from '../services/auditService'
+import { getClientIP } from '../utils/ipExtractor'
 
 const REFRESH_COOKIE_NAME = 'rt'
 const CSRF_COOKIE_NAME = 'csrf'
@@ -46,20 +47,23 @@ export const authLogin = async (req: Request, res: Response) => {
         message: 'Username and password are required' 
       })
     }
+    // Get real client IP
+    const clientIP = getClientIP(req)
+    
     // Clear any existing failures for tests
     if (process.env.NODE_ENV === 'test') {
-      clearFailures(username, req.ip)
+      clearFailures(username, clientIP)
     }
     
     // Check if account is locked (skip for tests)
     if (process.env.NODE_ENV !== 'test') {
-      const lock = isLocked(username, req.ip)
+      const lock = isLocked(username, clientIP)
       if (lock.locked) {
         // Log failed login attempt due to lockout
         await AuditService.logAuth(
           0, // Use 0 for failed auth attempts
           'login_failed',
-          req.ip,
+          clientIP,
           req.headers['user-agent'] as string,
           false,
           `Account locked for ${Math.ceil(lock.msRemaining/1000)}s`
@@ -70,21 +74,21 @@ export const authLogin = async (req: Request, res: Response) => {
     const user = await userService.authenticateUser({ username, password })
     if (!user) {
       // Only register failures in non-test environments
-      const state = process.env.NODE_ENV !== 'test' ? registerFailure(username, req.ip) : { locked: false, msRemaining: 0 }
+      const state = process.env.NODE_ENV !== 'test' ? registerFailure(username, clientIP) : { locked: false, msRemaining: 0 }
       const msg = state.locked ? `Too many attempts. Locked for ${Math.ceil(state.msRemaining/1000)}s` : 'Invalid username or password'
       
       // Log failed login attempt
       await AuditService.logAuth(
         0, // Use 0 for failed auth attempts
         'login_failed',
-        req.ip,
+        clientIP,
         req.headers['user-agent'] as string,
         false,
         msg
       )
       return res.status(401).json({ success: false, message: msg })
     }
-    clearFailures(username, req.ip)
+    clearFailures(username, clientIP)
 
     const accessToken = JWTUtil.generateToken({
       userId: user.id,
@@ -101,7 +105,7 @@ export const authLogin = async (req: Request, res: Response) => {
       userId: user.id,
       ttlDays: REFRESH_TTL_DAYS,
       deviceId: req.body.deviceId,
-      ip: req.ip,
+      ip: clientIP,
       userAgent: req.headers['user-agent']
     })
 
@@ -115,7 +119,7 @@ export const authLogin = async (req: Request, res: Response) => {
     await AuditService.logAuth(
       user.id,
       'login',
-      req.ip,
+      clientIP,
       req.headers['user-agent'] as string,
       true
     )
@@ -128,6 +132,9 @@ export const authLogin = async (req: Request, res: Response) => {
 
 export const authRefresh = async (req: Request, res: Response) => {
   try {
+    // Get real client IP
+    const clientIP = getClientIP(req)
+    
     // CSRF validation
     const csrfHeader = (req.headers['x-csrf-token'] as string) || ''
     const csrfCookie = req.cookies?.[CSRF_COOKIE_NAME]
@@ -141,7 +148,7 @@ export const authRefresh = async (req: Request, res: Response) => {
     const rotated = await authService.rotateRefreshToken(oldToken, {
       ttlDays: REFRESH_TTL_DAYS,
       deviceId: req.body?.deviceId,
-      ip: req.ip,
+      ip: clientIP,
       userAgent: req.headers['user-agent']
     })
     if (!rotated) return res.status(401).json({ success: false, message: 'Invalid refresh token' })
@@ -170,6 +177,9 @@ export const authRefresh = async (req: Request, res: Response) => {
 
 export const authLogout = async (req: Request, res: Response) => {
   try {
+    // Get real client IP
+    const clientIP = getClientIP(req)
+    
     const token = req.cookies?.[REFRESH_COOKIE_NAME]
     if (token) await authService.revokeToken(token)
     res.clearCookie(REFRESH_COOKIE_NAME, { path: '/' })
@@ -180,7 +190,7 @@ export const authLogout = async (req: Request, res: Response) => {
       await AuditService.logAuth(
         req.user.id,
         'logout',
-        req.ip,
+        clientIP,
         req.headers['user-agent'] as string,
         true
       )

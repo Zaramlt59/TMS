@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
 import { generateOTP, storeOTP, verifyOTP, sendOTPEmail, sendOTPSMS, cleanupExpiredOTPs } from '../services/otpService'
 import userService from '../services/userService'
+import { getClientIP } from '../utils/ipExtractor'
 
 const prisma = new PrismaClient()
 

@@ -39,6 +39,10 @@ export function createApp() {
   const env = loadEnv()
   const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
+  // Configure Express to trust proxies for proper IP extraction
+  // This is important for getting real client IPs in development and production
+  app.set('trust proxy', true)
+
   const globalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false })
   app.use(globalLimiter)
   app.use(pinoHttp({ logger }))
