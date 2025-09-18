@@ -41,8 +41,8 @@ export function createApp() {
 
   // Configure Express to trust proxies for proper IP extraction
   // This is important for getting real client IPs in development and production
-  // Only trust proxies in production or when behind a known proxy
-  if (process.env.NODE_ENV === 'production') {
+  // Trust proxies when in production or when TRUST_PROXY is set
+  if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true') {
     app.set('trust proxy', 1) // Trust first proxy
   } else {
     app.set('trust proxy', false) // Don't trust proxies in development

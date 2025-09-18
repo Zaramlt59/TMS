@@ -6,7 +6,6 @@ import * as os from 'os'
  * This handles various proxy scenarios and development environments
  */
 export function getClientIP(req: Request): string {
-
   // Check for various headers that proxies might set
   const forwardedFor = req.headers['x-forwarded-for'] as string
   const realIP = req.headers['x-real-ip'] as string
