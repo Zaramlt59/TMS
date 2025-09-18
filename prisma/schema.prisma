@@ -162,6 +162,7 @@ model subjects {
 
 model teachers {
   id                  Int                           @id @default(autoincrement())
+  teacher_ID          String?                       @unique @db.VarChar(50)
   teacher_name        String                        @db.VarChar(255)
   date_of_birth       DateTime                      @db.Date
   joining_date        DateTime                      @db.Date
@@ -198,6 +199,7 @@ model teachers {
 
   @@index([district], map: "idx_teachers_district")
   @@index([school_id], map: "idx_teachers_school_id")
+  @@index([teacher_ID], map: "idx_teachers_teacher_id")
 }
 
 model villages {

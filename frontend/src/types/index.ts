@@ -123,6 +123,7 @@ export interface School {
 
 export interface Teacher {
   id?: number
+  teacher_ID?: string
   teacher_name: string
   date_of_birth: string
   joining_date: string

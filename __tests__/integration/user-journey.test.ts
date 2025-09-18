@@ -99,7 +99,7 @@ describe('User Journey Integration Tests', () => {
         gender: 'Male',
         subjects_taught: 'Mathematics',
         classes_taught: 'Class 10',
-        school_id: schoolId.toString(),
+        school_id: 'INTEG001', // Use the school_id string, not the database id
         current_school_name: 'Integration Test School',
         school_level: 'Secondary',
         management: 'Government',
@@ -118,11 +118,11 @@ describe('User Journey Integration Tests', () => {
 
       // Step 4: Create a medical record for the teacher
       const medicalRecordData = {
-        teacher_id: teacherId,
-        ailment_name: 'Integration Test Ailment',
+        teacherId: teacherId,
+        ailmentName: 'Integration Test Ailment',
         severity: 'Moderate',
-        diagnosis_date: '2024-01-15',
-        treatment_status: 'Ongoing',
+        diagnosisDate: '2024-01-15',
+        treatmentStatus: 'Ongoing',
         remarks: 'Integration test medical record'
       }
 

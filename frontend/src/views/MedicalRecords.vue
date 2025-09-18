@@ -341,7 +341,7 @@
             </div>
           </div>
           <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="save" class="btn-primary sm:ml-3">Save</button>
+            <button @click="save" class="btn-primary sm:ml-3">{{ editing ? 'Update' : 'Create' }}</button>
             <button @click="closeModal" class="btn-secondary mt-3 sm:mt-0 sm:ml-3">Cancel</button>
           </div>
         </div>

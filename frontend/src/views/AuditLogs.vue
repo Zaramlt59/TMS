@@ -26,7 +26,7 @@
 
     <!-- Filters -->
     <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
           <input
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
         <div class="p-5">
           <div class="flex items-center">
@@ -166,7 +166,8 @@
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No audit logs found matching your criteria.</p>
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <!-- Desktop Table View -->
+        <div v-else class="hidden md:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
             <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
@@ -209,7 +210,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                   <div>{{ formatResourceType(log.resource_type) }}</div>
                   <div v-if="log.resource_id" class="text-xs text-gray-500 dark:text-gray-400">
-                    ID: {{ log.resource_id }}
+ID: {{ log.resource_id }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -235,6 +236,95 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-4 p-4">
+          <div
+            v-for="log in auditLogs"
+            :key="log.id"
+            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-md dark:hover:shadow-xl dark:shadow-gray-900/20 transition-all duration-200"
+          >
+            <div class="p-4">
+              <!-- Header with user info and status -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8">
+                    <div class="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {{ log.users?.username?.charAt(0).toUpperCase() || '?' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {{ log.users?.username || 'Unknown' }}
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ log.users?.role || 'Unknown Role' }}
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end space-y-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        :class="log.success ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'">
+                    {{ log.success ? 'Success' : 'Failed' }}
+                  </span>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        :class="getActionBadgeClass(log.action)">
+                    {{ formatAction(log.action) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Log details -->
+              <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 sm:mb-0">
+                    Resource
+                  </dt>
+                  <dd class="text-sm text-gray-900 dark:text-gray-100">
+                    <div>{{ formatResourceType(log.resource_type) }}</div>
+                    <div v-if="log.resource_id" class="text-xs text-gray-500 dark:text-gray-400">
+                      ID: {{ log.resource_id }}
+                    </div>
+                  </dd>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 sm:mb-0">
+                    IP Address
+                  </dt>
+                  <dd class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ log.ip_address || 'Unknown' }}
+                  </dd>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 sm:mb-0">
+                    Timestamp
+                  </dt>
+                  <dd class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ formatDate(log.created_at) }}
+                  </dd>
+                </div>
+              </div>
+              
+              <!-- Actions -->
+              <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  @click="viewLogDetails(log)"
+                  class="w-full inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 border border-blue-200 dark:border-blue-700"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Pagination -->

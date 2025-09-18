@@ -111,6 +111,7 @@
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-gray-50">
                       {{ teacher.teacher_name }}
                     </div>
+                    <div v-if="teacher.teacher_ID" class="text-sm text-gray-500 dark:text-gray-400 font-mono">ID: {{ teacher.teacher_ID }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">DOB: {{ formatDate(teacher.date_of_birth) }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Joined: {{ formatDate(teacher.joining_date) }}</div>
                   </div>
@@ -376,6 +377,7 @@
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-gray-700 dark:group-hover:text-gray-50">{{ teacher.teacher_name }}</h3>
                 <div class="flex items-center space-x-2 mt-1">
+                  <span v-if="teacher.teacher_ID" class="text-sm text-gray-600 dark:text-gray-300 font-mono">ID: {{ teacher.teacher_ID }}</span>
                   <span class="text-sm text-gray-600 dark:text-gray-300">DOB: {{ formatDate(teacher.date_of_birth) }}</span>
                   <span class="text-sm text-gray-600 dark:text-gray-300">Joined: {{ formatDate(teacher.joining_date) }}</span>
                 </div>
@@ -674,6 +676,10 @@
                       <div>
                         <label class="text-sm font-medium text-blue-700 dark:text-blue-300">Full Name</label>
                         <p class="mt-1 text-sm font-semibold text-blue-900 dark:text-blue-100">{{ selectedTeacher.teacher_name }}</p>
+                      </div>
+                      <div>
+                        <label class="text-sm font-medium text-blue-700 dark:text-blue-300">Teacher ID</label>
+                        <p class="mt-1 text-sm text-blue-900 dark:text-blue-100 font-mono">{{ selectedTeacher.teacher_ID || 'Not assigned' }}</p>
                       </div>
                       <div>
                         <label class="text-sm font-medium text-blue-700 dark:text-blue-300">Date of Birth</label>

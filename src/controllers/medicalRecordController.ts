@@ -133,15 +133,6 @@ export const medicalRecordController = {
 
       const records = await prisma.medical_records.findMany({
         where: { teacher_id: teacherId, deleted_at: null },
-        include: {
-          teachers: {
-            select: {
-              id: true,
-              teacher_name: true,
-              school_id: true
-            }
-          }
-        },
         orderBy: { created_at: 'desc' }
       })
 

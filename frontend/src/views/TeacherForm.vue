@@ -38,6 +38,22 @@
               />
             </div>
             <div>
+              <label class="form-label">Teacher ID *</label>
+              <input
+                id="teacher-id"
+                name="teacher-id"
+                v-model="form.teacher_ID"
+                type="text"
+                required
+                class="form-input"
+                placeholder="Enter teacher ID"
+                maxlength="50"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
               <label class="form-label">Date of Birth *</label>
               <input
                 id="date-of-birth"
@@ -48,9 +64,6 @@
                 class="form-input"
               />
             </div>
-          </div>
-
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label class="form-label">Joining Date *</label>
               <input
@@ -63,6 +76,9 @@
                 placeholder="dd - mm - yyyy"
               />
             </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="form-label">Phone Number *</label>
               <input
@@ -80,7 +96,7 @@
                 @keypress="allowOnlyNumbers"
               />
             </div>
-            <div class="sm:col-span-2 lg:col-span-1">
+            <div>
               <label class="form-label">Email</label>
               <input
                 id="email"
@@ -848,6 +864,7 @@ interface TeacherFormData extends Omit<Teacher, 'subjects_taught' | 'classes_tau
 
 const form = ref<TeacherFormData>({
   teacher_name: '',
+  teacher_ID: '',
   date_of_birth: '',
   joining_date: '', // Empty initially to show placeholder
   phone_number: '',

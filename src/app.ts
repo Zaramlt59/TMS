@@ -41,7 +41,12 @@ export function createApp() {
 
   // Configure Express to trust proxies for proper IP extraction
   // This is important for getting real client IPs in development and production
-  app.set('trust proxy', true)
+  // Only trust proxies in production or when behind a known proxy
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1) // Trust first proxy
+  } else {
+    app.set('trust proxy', false) // Don't trust proxies in development
+  }
 
   const globalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false })
   app.use(globalLimiter)

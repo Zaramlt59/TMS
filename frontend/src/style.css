@@ -107,3 +107,55 @@
     @apply border-gray-600;
   }
 }
+
+/* Mobile-specific improvements */
+@layer utilities {
+  /* Better touch targets for mobile */
+  @media (max-width: 768px) {
+    .btn {
+      @apply min-h-[44px] px-4 py-3;
+    }
+    
+    .form-input,
+    .form-select {
+      @apply min-h-[44px] px-4 py-3 text-base;
+    }
+    
+    /* Better spacing for mobile cards */
+    .card {
+      @apply mx-2 sm:mx-0;
+    }
+    
+    /* Improved mobile table responsiveness */
+    .table-responsive {
+      @apply -mx-4 sm:mx-0;
+    }
+    
+    /* Better mobile modal spacing */
+    .modal-mobile {
+      @apply mx-4 my-4 max-h-[calc(100vh-2rem)];
+    }
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  @media (max-width: 640px) {
+    body {
+      @apply overflow-x-hidden;
+    }
+    
+    .container {
+      @apply px-4;
+    }
+  }
+  
+  /* Better mobile navigation */
+  @media (max-width: 768px) {
+    .mobile-nav-item {
+      @apply block px-4 py-3 text-base;
+    }
+    
+    .mobile-nav-item:hover {
+      @apply bg-gray-50 dark:bg-gray-700;
+    }
+  }
+}

@@ -19,6 +19,7 @@ export const teacherService = {
           orderBy: { teacher_name: 'asc' },
           select: {
             id: true,
+            // teacher_ID: true, // Temporarily commented out due to Prisma client type issue
             teacher_name: true,
             date_of_birth: true,
             joining_date: true,
@@ -380,6 +381,7 @@ export const teacherService = {
     const transformed: any = {}
     
     // Map frontend field names to database field names
+    if (data.teacher_ID !== undefined) transformed.teacher_ID = data.teacher_ID
     if (data.teacher_name !== undefined) transformed.teacher_name = data.teacher_name
     if (data.date_of_birth !== undefined) {
       // Convert date string to ISO DateTime format for Prisma
@@ -543,6 +545,7 @@ export const teacherService = {
     const transformed: any = {}
 
     // Map database field names to frontend field names
+    if (data.teacher_ID !== undefined) transformed.teacher_ID = data.teacher_ID
     if (data.teacher_name !== undefined) transformed.teacher_name = data.teacher_name
     if (data.date_of_birth !== undefined) {
       // Convert ISO DateTime string to date string for frontend
