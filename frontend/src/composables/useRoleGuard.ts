@@ -32,7 +32,7 @@ export function useRoleGuard() {
   const canManageTeachers = computed(() => can('teachers.create') || can('teachers.update') || can('teachers.delete'))
   const canManageMedicalRecords = computed(() => can('medical_records.create') || can('medical_records.update') || can('medical_records.delete'))
   const canManageMasterData = computed(() => can('master_data.create') || can('master_data.update') || can('master_data.delete'))
-  const canViewReports = computed(() => can('reports.read'))
+  const canViewReports = computed(() => can('reports.read') && !(isAdmin.value && !isSuperAdmin.value))
   const canExportData = computed(() => can('reports.export') || can('schools.export') || can('teachers.export'))
 
   // UI visibility helpers

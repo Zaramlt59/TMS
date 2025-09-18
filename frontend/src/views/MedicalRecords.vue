@@ -4,8 +4,8 @@
       <div class="sm:flex-auto">
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Medical Records</h1>
         <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-          <span v-if="teacherName">Teacher: <span class="font-medium">{{ teacherName }}</span> (ID: {{ teacherId }})</span>
-          <span v-else-if="!showAllRecords">Teacher ID: {{ teacherId }}</span>
+          <span v-if="teacherName">Teacher: <span class="font-medium">{{ teacherName }}</span> ({{ teacherDisplayId }})</span>
+          <span v-else-if="!showAllRecords">Teacher ID: {{ teacherDisplayId }}</span>
           <span v-else>All Medical Records</span>
         </p>
       </div>
@@ -86,7 +86,8 @@
                 <tr v-for="rec in filteredRecords" :key="rec.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200">
                   <td v-if="showAllRecords" class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                     <div class="font-medium">{{ rec.teachers?.teacher_name || 'Unknown Teacher' }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || rec.teacher_id }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ rec.teachers?.teacher_ID || 'Not assigned' }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || 'Not assigned' }}</div>
                   </td>
                   <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{{ rec.ailment_name }}</td>
                   <td class="px-4 py-3 text-sm">
@@ -141,7 +142,8 @@
             
             <div v-if="showAllRecords" class="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
               <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ rec.teachers?.teacher_name || 'Unknown Teacher' }}</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || rec.teacher_id }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ rec.teachers?.teacher_ID || 'Not assigned' }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || 'Not assigned' }}</div>
             </div>
             
             <div class="space-y-2">
@@ -287,7 +289,7 @@
                            @mousedown="selectTeacher(teacher)"
                            class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                         <div class="font-medium text-gray-900 dark:text-gray-100">{{ teacher.teacher_name }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">ID: {{ teacher.id }} | School: {{ teacher.school_id }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Teacher ID: {{ teacher.teacher_ID || 'Not assigned' }} | School: {{ teacher.school_id }}</div>
                       </div>
                     </div>
                     
@@ -300,7 +302,7 @@
                 </div>
                 <div v-else class="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                   <div class="font-medium text-gray-900 dark:text-gray-100">{{ form.teacherName }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">ID: {{ form.teacherId }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ form.teacherDisplayId }}</div>
                 </div>
               </div>
               <div>
@@ -365,6 +367,7 @@ const treatmentStatuses = ['Pending','Ongoing','Completed','Cancelled'] as const
 
 const teacherId = ref<number>(Number(route.params.id) || 0)
 const teacherName = ref<string>('')
+const teacherDisplayId = ref<string>('')
 const records = ref<MedicalRecord[]>([])
 const loading = ref(false)
 const teachers = ref<any[]>([])
@@ -405,7 +408,7 @@ watch(teacherId, (newTeacherId, oldTeacherId) => {
 const showModal = ref(false)
 const editing = ref(false)
 const editingId = ref<number | null>(null)
-const form = ref<{ teacherId?: number; teacherName?: string; ailmentName: string; severity: any; diagnosisDate: string; treatmentStatus: string; remarks?: string; documents?: string }>({ teacherId: undefined, teacherName: '', ailmentName: '', severity: '', diagnosisDate: '', treatmentStatus: '', remarks: '', documents: '' })
+const form = ref<{ teacherId?: number; teacherName?: string; teacherDisplayId?: string; ailmentName: string; severity: any; diagnosisDate: string; treatmentStatus: string; remarks?: string; documents?: string }>({ teacherId: undefined, teacherName: '', teacherDisplayId: '', ailmentName: '', severity: '', diagnosisDate: '', treatmentStatus: '', remarks: '', documents: '' })
 const fileInput = ref<HTMLInputElement | null>(null)
 const uploadName = ref('')
 
@@ -474,7 +477,9 @@ const loadTeacherName = async () => {
     if (!teacherId.value) return
     const resp = await teachersApi.getById(teacherId.value)
     if (resp.data?.success && (resp.data as any).data) {
-      teacherName.value = (resp.data as any).data.teacher_name || ''
+      const teacherData = (resp.data as any).data
+      teacherName.value = teacherData.teacher_name || ''
+      teacherDisplayId.value = teacherData.teacher_ID || `ID: ${teacherId.value}`
     }
   } catch (error) {
     console.error('Error loading teacher name:', error)
@@ -602,6 +607,7 @@ const openEdit = (rec: MedicalRecord) => {
   form.value = { 
     teacherId: showAllRecords.value ? rec.teacher_id : teacherId.value,
     teacherName: rec.teachers?.teacher_name || '',
+    teacherDisplayId: rec.teachers?.teacher_ID || 'Not assigned',
     ailmentName: rec.ailment_name, 
     severity: rec.severity as any, 
     diagnosisDate: rec.diagnosis_date ? new Date(rec.diagnosis_date).toISOString().split('T')[0] : '', 

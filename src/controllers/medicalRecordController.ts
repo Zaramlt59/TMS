@@ -64,6 +64,7 @@ export const medicalRecordController = {
                 id: true,
                 teacher_name: true,
                 school_id: true
+                // teacher_ID: true // Temporarily commented out due to Prisma client type issues
               }
             }
           },
@@ -76,11 +77,38 @@ export const medicalRecordController = {
         })
       ])
 
+      // Fetch teacher_ID separately using individual queries
+      const teacherIdMap = new Map()
+      for (const record of records) {
+        if (record.teachers) {
+          try {
+            const result = await prisma.$queryRaw`
+              SELECT teacher_ID FROM teachers WHERE id = ${record.teachers.id}
+            `
+            if (Array.isArray(result) && result.length > 0) {
+              teacherIdMap.set(record.teachers.id, (result[0] as any).teacher_ID)
+            }
+          } catch (error) {
+            console.error(`Error fetching teacher_ID for id ${record.teachers.id}:`, error)
+            teacherIdMap.set(record.teachers.id, null)
+          }
+        }
+      }
+
+      // Add teacher_ID to each record
+      const recordsWithTeacherId = records.map(record => ({
+        ...record,
+        teachers: record.teachers ? {
+          ...record.teachers,
+          teacher_ID: teacherIdMap.get(record.teachers.id) || null
+        } : null
+      }))
+
       const totalPages = Math.ceil(totalCount / limit)
 
       res.json({ 
         success: true, 
-        data: records,
+        data: recordsWithTeacherId,
         pagination: {
           page,
           limit,
@@ -111,11 +139,34 @@ export const medicalRecordController = {
           id: true,
           teacher_name: true,
           school_id: true
+          // teacher_ID: true // Temporarily commented out due to Prisma client type issues
         },
         orderBy: { teacher_name: 'asc' }
       })
 
-      res.json({ success: true, data: teachersWithoutRecords })
+      // Fetch teacher_ID separately using individual queries
+      const teacherIdMap = new Map()
+      for (const teacher of teachersWithoutRecords) {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `
+          if (Array.isArray(result) && result.length > 0) {
+            teacherIdMap.set(teacher.id, (result[0] as any).teacher_ID)
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error)
+          teacherIdMap.set(teacher.id, null)
+        }
+      }
+
+      // Add teacher_ID to each teacher
+      const teachersWithId = teachersWithoutRecords.map(teacher => ({
+        ...teacher,
+        teacher_ID: teacherIdMap.get(teacher.id) || null
+      }))
+
+      res.json({ success: true, data: teachersWithId })
     } catch (e: any) {
       console.error('Error fetching teachers without medical records:', e)
       res.status(500).json({ success: false, message: e.message || 'Failed to fetch teachers' })

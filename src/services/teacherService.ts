@@ -86,10 +86,30 @@ export const teacherService = {
         prisma.teachers.count({ where: whereClause })
       ])
 
+      // Fetch teacher_ID separately using individual queries
+      const teacherIdMap = new Map()
+      for (const row of rows) {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT teacher_ID FROM teachers WHERE id = ${row.id}
+          `
+          if (Array.isArray(result) && result.length > 0) {
+            teacherIdMap.set(row.id, (result[0] as any).teacher_ID)
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher_ID for id ${row.id}:`, error)
+          teacherIdMap.set(row.id, null)
+        }
+      }
+
       return {
         success: true,
         message: 'Teachers retrieved successfully',
-        data: rows.map(r => this.transformRelationsForFrontend(r)),
+        data: rows.map(r => {
+          const transformed = this.transformRelationsForFrontend(r)
+          transformed.teacher_ID = teacherIdMap.get(r.id) || null
+          return transformed
+        }),
         pagination: {
           page,
           limit,
@@ -190,8 +210,28 @@ export const teacherService = {
         orderBy: { teacher_name: 'asc' }
       })
       
+      // Fetch teacher_IDs separately using individual queries
+      const teacherIdMap = new Map()
+      for (const teacher of teachers) {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `
+          if (Array.isArray(result) && result.length > 0) {
+            teacherIdMap.set(teacher.id, (result[0] as any).teacher_ID)
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error)
+          teacherIdMap.set(teacher.id, null)
+        }
+      }
+      
       // Transform relation field names for frontend
-      return teachers.map(teacher => this.transformRelationsForFrontend(teacher))
+      return teachers.map(teacher => {
+        const transformed = this.transformRelationsForFrontend(teacher)
+        transformed.teacher_ID = teacherIdMap.get(teacher.id) || null
+        return transformed
+      })
     } catch (error) {
       console.error('Error fetching teachers by school:', error)
       throw new Error('Failed to fetch teachers by school')
@@ -211,8 +251,22 @@ export const teacherService = {
       })
       
       if (teacher) {
+        // Fetch teacher_ID separately using raw query
+        const teacherIdResult = await prisma.$queryRaw`
+          SELECT teacher_ID FROM teachers WHERE id = ${id}
+        `
+        
+        // Extract teacher_ID from the result
+        let teacher_ID = null
+        if (Array.isArray(teacherIdResult) && teacherIdResult.length > 0) {
+          teacher_ID = (teacherIdResult[0] as any).teacher_ID
+        }
+        
         // Transform database values back to frontend display values
-        return this.transformTeacherDataForFrontend(teacher)
+        const transformed = this.transformTeacherDataForFrontend(teacher)
+        transformed.teacher_ID = teacher_ID
+        
+        return transformed
       }
       
       return teacher
@@ -241,9 +295,29 @@ export const teacherService = {
         orderBy: { teacher_name: 'asc' }
       })
       
+      // Fetch teacher_IDs separately using individual queries
+      const teacherIdMap = new Map()
+      for (const teacher of teachers) {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `
+          if (Array.isArray(result) && result.length > 0) {
+            teacherIdMap.set(teacher.id, (result[0] as any).teacher_ID)
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error)
+          teacherIdMap.set(teacher.id, null)
+        }
+      }
+      
       // Transform relation field names for frontend
-      return teachers.map(teacher => this.transformRelationsForFrontend(teacher))
-          } catch (error) {
+      return teachers.map(teacher => {
+        const transformed = this.transformRelationsForFrontend(teacher)
+        transformed.teacher_ID = teacherIdMap.get(teacher.id) || null
+        return transformed
+      })
+    } catch (error) {
       console.error('Error searching teachers:', error)
       throw new Error('Failed to search teachers')
     }
