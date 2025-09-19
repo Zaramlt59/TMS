@@ -86,7 +86,7 @@
                 <tr v-for="rec in filteredRecords" :key="rec.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200">
                   <td v-if="showAllRecords" class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                     <div class="font-medium">{{ rec.teachers?.teacher_name || 'Unknown Teacher' }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ rec.teachers?.teacher_ID || 'Not assigned' }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ (rec.teachers as any)?.teacher_ID || 'Not assigned' }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || 'Not assigned' }}</div>
                   </td>
                   <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{{ rec.ailment_name }}</td>
@@ -142,7 +142,7 @@
             
             <div v-if="showAllRecords" class="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
               <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ rec.teachers?.teacher_name || 'Unknown Teacher' }}</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ rec.teachers?.teacher_ID || 'Not assigned' }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Teacher ID: {{ (rec.teachers as any)?.teacher_ID || 'Not assigned' }}</div>
               <div class="text-xs text-gray-500 dark:text-gray-400">School ID: {{ rec.teachers?.school_id || 'Not assigned' }}</div>
             </div>
             
@@ -289,7 +289,7 @@
                            @mousedown="selectTeacher(teacher)"
                            class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                         <div class="font-medium text-gray-900 dark:text-gray-100">{{ teacher.teacher_name }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Teacher ID: {{ teacher.teacher_ID || 'Not assigned' }} | School: {{ teacher.school_id }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Teacher ID: {{ (teacher as any).teacher_ID || 'Not assigned' }} | School: {{ teacher.school_id }}</div>
                       </div>
                     </div>
                     
@@ -438,10 +438,17 @@ const fileUrl = (url?: string | null) => {
   if (!url) return '#'
   // If already absolute (starts with http/https), return as is
   if (/^https?:\/\//i.test(url)) return url
-  // If already starts with /uploads/, just prepend the base URL
-  if (url.startsWith('/uploads/')) return `http://localhost:5004${url}`
-  // Otherwise, prepend the API base URL with /uploads/
-  return `http://localhost:5004/uploads/${url}`
+  
+  // Extract filename from the URL
+  let filename = url
+  if (url.startsWith('/uploads/medical-records/')) {
+    filename = url.replace('/uploads/medical-records/', '')
+  } else if (url.startsWith('/uploads/')) {
+    filename = url.replace('/uploads/', '')
+  }
+  
+  // Use the API endpoint for authenticated file access
+  return `/api/uploads/medical-records/${filename}`
 }
 
 const loadRecords = async () => {
@@ -507,14 +514,15 @@ const filterTeachers = () => {
   const query = teacherSearchQuery.value.toLowerCase().trim()
   filteredTeachers.value = teachers.value.filter(teacher => 
     teacher.teacher_name.toLowerCase().includes(query) ||
+    (teacher.teacher_ID && teacher.teacher_ID.toLowerCase().includes(query)) ||
     teacher.id.toString().includes(query) ||
     teacher.school_id.toLowerCase().includes(query)
   )
 }
 
 const selectTeacher = (teacher: any) => {
-  form.value.teacherId = teacher.id
-  teacherSearchQuery.value = `${teacher.teacher_name} (ID: ${teacher.id})`
+  form.value.teacherId = teacher.teacher_ID || teacher.id
+  teacherSearchQuery.value = `${teacher.teacher_name} (ID: ${teacher.teacher_ID || teacher.id})`
   showTeacherDropdown.value = false
 }
 
@@ -607,7 +615,7 @@ const openEdit = (rec: MedicalRecord) => {
   form.value = { 
     teacherId: showAllRecords.value ? rec.teacher_id : teacherId.value,
     teacherName: rec.teachers?.teacher_name || '',
-    teacherDisplayId: rec.teachers?.teacher_ID || 'Not assigned',
+    teacherDisplayId: (rec.teachers as any)?.teacher_ID || 'Not assigned',
     ailmentName: rec.ailment_name, 
     severity: rec.severity as any, 
     diagnosisDate: rec.diagnosis_date ? new Date(rec.diagnosis_date).toISOString().split('T')[0] : '', 

@@ -43,6 +43,7 @@
                 id="teacher-id"
                 name="teacher-id"
                 v-model="form.teacher_ID"
+                @input="validateTeacherID"
                 type="text"
                 required
                 class="form-input"
@@ -1007,6 +1008,20 @@ const validateAadhaarNumber = (event: Event) => {
   form.value.aadhaar_number = numericValue
 }
 
+const validateTeacherID = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = target.value
+  
+  // Remove any characters that are not alphanumeric, hyphens, or underscores
+  const validValue = value.replace(/[^a-zA-Z0-9_-]/g, '')
+  
+  // Limit to 50 characters
+  const limitedValue = validValue.slice(0, 50)
+  
+  // Update the form value
+  form.value.teacher_ID = limitedValue
+}
+
 // Prevent non-numeric characters from being typed
 const allowOnlyNumbers = (event: KeyboardEvent) => {
   const key = event.key
@@ -1594,6 +1609,17 @@ const handleSubmit = async () => {
 
   if (!form.value.aadhaar_number) {
     alert('Aadhaar number is required')
+    return
+  }
+
+  if (!form.value.teacher_ID || form.value.teacher_ID.trim() === '') {
+    alert('Teacher ID is required')
+    return
+  }
+
+  // Validate teacher_ID format (alphanumeric, max 50 characters)
+  if (!/^[a-zA-Z0-9_-]{1,50}$/.test(form.value.teacher_ID.trim())) {
+    alert('Teacher ID must contain only letters, numbers, hyphens, and underscores (max 50 characters)')
     return
   }
 

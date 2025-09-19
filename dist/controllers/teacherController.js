@@ -32,9 +32,13 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.teacherController = void 0;
 const teacherService_1 = require("../services/teacherService");
+const prismaService_1 = __importDefault(require("../services/prismaService"));
 exports.teacherController = {
     // Get all teachers
     async getAll(req, res) {
@@ -127,7 +131,23 @@ exports.teacherController = {
     // Get teacher by ID
     async getById(req, res) {
         try {
-            const id = parseInt(req.params.id);
+            const idParam = req.params.id;
+            // Convert teacher_ID to database id if needed
+            let id = parseInt(idParam);
+            if (isNaN(id)) {
+                // If idParam is a teacher_ID (string), find the corresponding database id
+                const teacher = await prismaService_1.default.teachers.findFirst({
+                    where: { teacher_ID: idParam },
+                    select: { id: true }
+                });
+                if (!teacher) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Teacher not found with the provided Teacher ID'
+                    });
+                }
+                id = teacher.id;
+            }
             const teacher = await teacherService_1.teacherService.getById(id);
             if (!teacher) {
                 return res.status(404).json({
@@ -184,6 +204,29 @@ exports.teacherController = {
                     message: 'Teacher name is required'
                 });
             }
+            // Validate teacher_ID - if provided, it must be non-empty and unique
+            if (teacherData.teacher_ID !== undefined && teacherData.teacher_ID !== null) {
+                if (typeof teacherData.teacher_ID === 'string' && teacherData.teacher_ID.trim() === '') {
+                    // Convert empty string to null to avoid unique constraint issues
+                    teacherData.teacher_ID = null;
+                }
+                else if (teacherData.teacher_ID && typeof teacherData.teacher_ID === 'string') {
+                    // Check if teacher_ID already exists
+                    const existingTeacher = await prismaService_1.default.teachers.findFirst({
+                        where: { teacher_ID: teacherData.teacher_ID }
+                    });
+                    if (existingTeacher) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Teacher ID already exists. Please use a different Teacher ID.'
+                        });
+                    }
+                }
+            }
+            else {
+                // If teacher_ID is undefined, set it to null
+                teacherData.teacher_ID = null;
+            }
             const teacher = await teacherService_1.teacherService.create(teacherData);
             res.status(201).json({
                 success: true,
@@ -192,6 +235,7 @@ exports.teacherController = {
             });
         }
         catch (error) {
+            console.error('Teacher creation error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Failed to create teacher',
@@ -202,8 +246,50 @@ exports.teacherController = {
     // Update teacher
     async update(req, res) {
         try {
-            const id = parseInt(req.params.id);
+            const idParam = req.params.id;
+            // Convert teacher_ID to database id if needed
+            let id = parseInt(idParam);
+            if (isNaN(id)) {
+                // If idParam is a teacher_ID (string), find the corresponding database id
+                const teacher = await prismaService_1.default.teachers.findFirst({
+                    where: { teacher_ID: idParam },
+                    select: { id: true }
+                });
+                if (!teacher) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Teacher not found with the provided Teacher ID'
+                    });
+                }
+                id = teacher.id;
+            }
             const teacherData = req.body;
+            // Validate teacher_ID - if provided, it must be non-empty and unique
+            if (teacherData.teacher_ID !== undefined && teacherData.teacher_ID !== null) {
+                if (typeof teacherData.teacher_ID === 'string' && teacherData.teacher_ID.trim() === '') {
+                    // Convert empty string to null to avoid unique constraint issues
+                    teacherData.teacher_ID = null;
+                }
+                else if (teacherData.teacher_ID && typeof teacherData.teacher_ID === 'string') {
+                    // Check if teacher_ID already exists (excluding current teacher)
+                    const existingTeacher = await prismaService_1.default.teachers.findFirst({
+                        where: {
+                            teacher_ID: teacherData.teacher_ID,
+                            id: { not: id }
+                        }
+                    });
+                    if (existingTeacher) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Teacher ID already exists. Please use a different Teacher ID.'
+                        });
+                    }
+                }
+            }
+            else {
+                // If teacher_ID is undefined, set it to null
+                teacherData.teacher_ID = null;
+            }
             const teacher = await teacherService_1.teacherService.update(id, teacherData);
             res.json({
                 success: true,
@@ -212,6 +298,7 @@ exports.teacherController = {
             });
         }
         catch (error) {
+            console.error('Teacher update error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Failed to update teacher',
@@ -222,12 +309,22 @@ exports.teacherController = {
     // Delete teacher (now uses safe deletion)
     async delete(req, res) {
         try {
-            const id = parseInt(req.params.id);
+            const idParam = req.params.id;
+            // Convert teacher_ID to database id if needed
+            let id = parseInt(idParam);
             if (isNaN(id)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid teacher ID'
+                // If idParam is a teacher_ID (string), find the corresponding database id
+                const teacher = await prismaService_1.default.teachers.findFirst({
+                    where: { teacher_ID: idParam },
+                    select: { id: true }
                 });
+                if (!teacher) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Teacher not found with the provided Teacher ID'
+                    });
+                }
+                id = teacher.id;
             }
             // Use safe deletion
             const { cascadeService } = await Promise.resolve().then(() => __importStar(require('../services/cascadeService')));

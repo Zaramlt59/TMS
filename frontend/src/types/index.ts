@@ -143,6 +143,7 @@ export interface Teacher {
   management: string
   medium: string
   service_category?: string
+  teacher_type?: string
   habitation?: string
   pincode?: string
   district?: string

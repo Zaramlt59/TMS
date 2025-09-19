@@ -43,11 +43,17 @@ function createApp() {
     const logger = (0, pino_1.default)({ level: process.env.LOG_LEVEL || 'info' });
     // Configure Express to trust proxies for proper IP extraction
     // This is important for getting real client IPs in development and production
-    app.set('trust proxy', true);
+    // Trust proxies when in production or when TRUST_PROXY is set
+    if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true') {
+        app.set('trust proxy', 1); // Trust first proxy
+    }
+    else {
+        app.set('trust proxy', false); // Don't trust proxies in development
+    }
     const globalLimiter = (0, express_rate_limit_1.default)({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false });
     app.use(globalLimiter);
     app.use((0, pino_http_1.default)({ logger }));
-    app.use((0, helmet_1.default)({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], imgSrc: ["'self'", "data:", "https:"] } } }));
+    app.use((0, helmet_1.default)({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], imgSrc: ["'self'", "data:", "https:"], objectSrc: ["'self'"], mediaSrc: ["'self'"] } } }));
     app.use((0, cors_1.default)({ origin: env.CORS_ORIGIN || 'http://localhost:3000', credentials: true }));
     app.use((0, cookie_parser_1.default)());
     app.use((0, compression_1.default)());

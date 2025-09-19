@@ -855,6 +855,28 @@ const editItem = (type: string, item: any) => {
     
     formData.value = subjectData
     console.log('🔍 Final form data for subjects:', formData.value)
+  } else if (type === 'habitations') {
+    // For habitations, we need to find the district_id from the rd_block_id
+    const habitationData = { ...item }
+    
+    // Find the RD block to get the district_id
+    const rdBlock = rdBlocks.value.find(block => block.id === item.rd_block_id)
+    if (rdBlock) {
+      habitationData.district_id = rdBlock.district_id
+      console.log('🔍 Found district_id for habitation:', rdBlock.district_id)
+    } else {
+      console.warn('🔍 Could not find RD block for habitation:', item.rd_block_id)
+    }
+    
+    formData.value = habitationData
+    console.log('🔍 Final form data for habitations:', formData.value)
+  } else if (type === 'serviceCategories') {
+    // For service categories, ensure proper data mapping
+    const serviceCategoryData = { ...item }
+    console.log('🔍 Service category data:', serviceCategoryData)
+    
+    formData.value = serviceCategoryData
+    console.log('🔍 Final form data for service categories:', formData.value)
   } else {
     formData.value = { ...item }
   }

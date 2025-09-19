@@ -22,6 +22,7 @@ exports.teacherService = {
                     orderBy: { teacher_name: 'asc' },
                     select: {
                         id: true,
+                        // teacher_ID: true, // Temporarily commented out due to Prisma client type issue
                         teacher_name: true,
                         date_of_birth: true,
                         joining_date: true,
@@ -87,10 +88,30 @@ exports.teacherService = {
                 }),
                 prismaService_1.default.teachers.count({ where: whereClause })
             ]);
+            // Fetch teacher_ID separately using individual queries
+            const teacherIdMap = new Map();
+            for (const row of rows) {
+                try {
+                    const result = await prismaService_1.default.$queryRaw `
+            SELECT teacher_ID FROM teachers WHERE id = ${row.id}
+          `;
+                    if (Array.isArray(result) && result.length > 0) {
+                        teacherIdMap.set(row.id, result[0].teacher_ID);
+                    }
+                }
+                catch (error) {
+                    console.error(`Error fetching teacher_ID for id ${row.id}:`, error);
+                    teacherIdMap.set(row.id, null);
+                }
+            }
             return {
                 success: true,
                 message: 'Teachers retrieved successfully',
-                data: rows.map(r => this.transformRelationsForFrontend(r)),
+                data: rows.map(r => {
+                    const transformed = this.transformRelationsForFrontend(r);
+                    transformed.teacher_ID = teacherIdMap.get(r.id) || null;
+                    return transformed;
+                }),
                 pagination: {
                     page,
                     limit,
@@ -183,8 +204,28 @@ exports.teacherService = {
                 },
                 orderBy: { teacher_name: 'asc' }
             });
+            // Fetch teacher_IDs separately using individual queries
+            const teacherIdMap = new Map();
+            for (const teacher of teachers) {
+                try {
+                    const result = await prismaService_1.default.$queryRaw `
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `;
+                    if (Array.isArray(result) && result.length > 0) {
+                        teacherIdMap.set(teacher.id, result[0].teacher_ID);
+                    }
+                }
+                catch (error) {
+                    console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error);
+                    teacherIdMap.set(teacher.id, null);
+                }
+            }
             // Transform relation field names for frontend
-            return teachers.map(teacher => this.transformRelationsForFrontend(teacher));
+            return teachers.map(teacher => {
+                const transformed = this.transformRelationsForFrontend(teacher);
+                transformed.teacher_ID = teacherIdMap.get(teacher.id) || null;
+                return transformed;
+            });
         }
         catch (error) {
             console.error('Error fetching teachers by school:', error);
@@ -203,8 +244,19 @@ exports.teacherService = {
                 }
             });
             if (teacher) {
+                // Fetch teacher_ID separately using raw query
+                const teacherIdResult = await prismaService_1.default.$queryRaw `
+          SELECT teacher_ID FROM teachers WHERE id = ${id}
+        `;
+                // Extract teacher_ID from the result
+                let teacher_ID = null;
+                if (Array.isArray(teacherIdResult) && teacherIdResult.length > 0) {
+                    teacher_ID = teacherIdResult[0].teacher_ID;
+                }
                 // Transform database values back to frontend display values
-                return this.transformTeacherDataForFrontend(teacher);
+                const transformed = this.transformTeacherDataForFrontend(teacher);
+                transformed.teacher_ID = teacher_ID;
+                return transformed;
             }
             return teacher;
         }
@@ -231,8 +283,28 @@ exports.teacherService = {
                 },
                 orderBy: { teacher_name: 'asc' }
             });
+            // Fetch teacher_IDs separately using individual queries
+            const teacherIdMap = new Map();
+            for (const teacher of teachers) {
+                try {
+                    const result = await prismaService_1.default.$queryRaw `
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `;
+                    if (Array.isArray(result) && result.length > 0) {
+                        teacherIdMap.set(teacher.id, result[0].teacher_ID);
+                    }
+                }
+                catch (error) {
+                    console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error);
+                    teacherIdMap.set(teacher.id, null);
+                }
+            }
             // Transform relation field names for frontend
-            return teachers.map(teacher => this.transformRelationsForFrontend(teacher));
+            return teachers.map(teacher => {
+                const transformed = this.transformRelationsForFrontend(teacher);
+                transformed.teacher_ID = teacherIdMap.get(teacher.id) || null;
+                return transformed;
+            });
         }
         catch (error) {
             console.error('Error searching teachers:', error);
@@ -358,6 +430,8 @@ exports.teacherService = {
     transformTeacherData(data) {
         const transformed = {};
         // Map frontend field names to database field names
+        if (data.teacher_ID !== undefined)
+            transformed.teacher_ID = data.teacher_ID;
         if (data.teacher_name !== undefined)
             transformed.teacher_name = data.teacher_name;
         if (data.date_of_birth !== undefined) {
@@ -536,6 +610,8 @@ exports.teacherService = {
     transformTeacherDataForFrontend(data) {
         const transformed = {};
         // Map database field names to frontend field names
+        if (data.teacher_ID !== undefined)
+            transformed.teacher_ID = data.teacher_ID;
         if (data.teacher_name !== undefined)
             transformed.teacher_name = data.teacher_name;
         if (data.date_of_birth !== undefined) {

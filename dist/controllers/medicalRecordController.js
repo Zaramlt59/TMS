@@ -22,9 +22,25 @@ exports.medicalRecordController = {
         try {
             const { teacherId, ailmentName, severity, diagnosisDate, treatmentStatus, remarks, documents } = req.body;
             const enteredById = req.user.userId;
+            // Convert teacher_ID to database id if needed
+            let teacherDbId = teacherId;
+            if (typeof teacherId === 'string' && !teacherId.match(/^\d+$/)) {
+                // If teacherId is a teacher_ID (string), find the corresponding database id
+                const teacher = await prismaService_1.default.teachers.findFirst({
+                    where: { teacher_ID: teacherId },
+                    select: { id: true }
+                });
+                if (!teacher) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Teacher not found with the provided Teacher ID'
+                    });
+                }
+                teacherDbId = teacher.id;
+            }
             const record = await prismaService_1.default.medical_records.create({
                 data: {
-                    teacher_id: Number(teacherId),
+                    teacher_id: Number(teacherDbId),
                     ailment_name: ailmentName,
                     severity,
                     diagnosis_date: diagnosisDate ? new Date(diagnosisDate) : null,
@@ -63,6 +79,7 @@ exports.medicalRecordController = {
                                 id: true,
                                 teacher_name: true,
                                 school_id: true
+                                // teacher_ID: true // Temporarily commented out due to Prisma client type issues
                             }
                         }
                     },
@@ -74,10 +91,36 @@ exports.medicalRecordController = {
                     where: { deleted_at: null }
                 })
             ]);
+            // Fetch teacher_ID separately using individual queries
+            const teacherIdMap = new Map();
+            for (const record of records) {
+                if (record.teachers) {
+                    try {
+                        const result = await prismaService_1.default.$queryRaw `
+              SELECT teacher_ID FROM teachers WHERE id = ${record.teachers.id}
+            `;
+                        if (Array.isArray(result) && result.length > 0) {
+                            teacherIdMap.set(record.teachers.id, result[0].teacher_ID);
+                        }
+                    }
+                    catch (error) {
+                        console.error(`Error fetching teacher_ID for id ${record.teachers.id}:`, error);
+                        teacherIdMap.set(record.teachers.id, null);
+                    }
+                }
+            }
+            // Add teacher_ID to each record
+            const recordsWithTeacherId = records.map(record => ({
+                ...record,
+                teachers: record.teachers ? {
+                    ...record.teachers,
+                    teacher_ID: teacherIdMap.get(record.teachers.id) || null
+                } : null
+            }));
             const totalPages = Math.ceil(totalCount / limit);
             res.json({
                 success: true,
-                data: records,
+                data: recordsWithTeacherId,
                 pagination: {
                     page,
                     limit,
@@ -108,10 +151,32 @@ exports.medicalRecordController = {
                     id: true,
                     teacher_name: true,
                     school_id: true
+                    // teacher_ID: true // Temporarily commented out due to Prisma client type issues
                 },
                 orderBy: { teacher_name: 'asc' }
             });
-            res.json({ success: true, data: teachersWithoutRecords });
+            // Fetch teacher_ID separately using individual queries
+            const teacherIdMap = new Map();
+            for (const teacher of teachersWithoutRecords) {
+                try {
+                    const result = await prismaService_1.default.$queryRaw `
+            SELECT teacher_ID FROM teachers WHERE id = ${teacher.id}
+          `;
+                    if (Array.isArray(result) && result.length > 0) {
+                        teacherIdMap.set(teacher.id, result[0].teacher_ID);
+                    }
+                }
+                catch (error) {
+                    console.error(`Error fetching teacher_ID for id ${teacher.id}:`, error);
+                    teacherIdMap.set(teacher.id, null);
+                }
+            }
+            // Add teacher_ID to each teacher
+            const teachersWithId = teachersWithoutRecords.map(teacher => ({
+                ...teacher,
+                teacher_ID: teacherIdMap.get(teacher.id) || null
+            }));
+            res.json({ success: true, data: teachersWithId });
         }
         catch (e) {
             console.error('Error fetching teachers without medical records:', e);
@@ -123,20 +188,27 @@ exports.medicalRecordController = {
         if (!handleValidation(req, res))
             return;
         try {
-            const teacherId = Number(req.params.teacherId);
+            const teacherIdParam = req.params.teacherId;
+            // Convert teacher_ID to database id if needed
+            let teacherId = Number(teacherIdParam);
+            if (isNaN(teacherId)) {
+                // If teacherIdParam is a teacher_ID (string), find the corresponding database id
+                const teacher = await prismaService_1.default.teachers.findFirst({
+                    where: { teacher_ID: teacherIdParam },
+                    select: { id: true }
+                });
+                if (!teacher) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Teacher not found with the provided Teacher ID'
+                    });
+                }
+                teacherId = teacher.id;
+            }
             // For now, allow all authenticated users to view medical records
             // TODO: Implement proper permission system based on user-teacher relationship
             const records = await prismaService_1.default.medical_records.findMany({
                 where: { teacher_id: teacherId, deleted_at: null },
-                include: {
-                    teachers: {
-                        select: {
-                            id: true,
-                            teacher_name: true,
-                            school_id: true
-                        }
-                    }
-                },
                 orderBy: { created_at: 'desc' }
             });
             res.json({ success: true, data: records });

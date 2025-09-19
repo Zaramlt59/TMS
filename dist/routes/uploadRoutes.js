@@ -49,8 +49,21 @@ router.post('/medical-records', auth_1.authenticateToken, auth_1.requireAdmin, u
         }
     });
 });
-// Get uploaded file info
+// Serve medical record file directly (for viewing/downloading)
 router.get('/medical-records/:filename', auth_1.authenticateToken, (req, res) => {
+    const { filename } = req.params;
+    const filePath = path_1.default.join(baseDir, filename);
+    if (!fs_1.default.existsSync(filePath)) {
+        return res.status(404).json({ success: false, message: 'File not found' });
+    }
+    // Set appropriate headers for file download/viewing
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+    // Stream the file
+    res.sendFile(filePath);
+});
+// Get uploaded file info (metadata only)
+router.get('/medical-records/:filename/info', auth_1.authenticateToken, (req, res) => {
     const { filename } = req.params;
     const filePath = path_1.default.join(baseDir, filename);
     if (!fs_1.default.existsSync(filePath)) {

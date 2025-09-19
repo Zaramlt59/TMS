@@ -52,8 +52,25 @@ router.post('/medical-records', authenticateToken, requireAdmin, upload.single('
   })
 })
 
-// Get uploaded file info
+// Serve medical record file directly (for viewing/downloading)
 router.get('/medical-records/:filename', authenticateToken, (req, res) => {
+  const { filename } = req.params
+  const filePath = path.join(baseDir, filename)
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' })
+  }
+  
+  // Set appropriate headers for file download/viewing
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`)
+  res.setHeader('Content-Type', 'application/pdf')
+  
+  // Stream the file
+  res.sendFile(filePath)
+})
+
+// Get uploaded file info (metadata only)
+router.get('/medical-records/:filename/info', authenticateToken, (req, res) => {
   const { filename } = req.params
   const filePath = path.join(baseDir, filename)
   

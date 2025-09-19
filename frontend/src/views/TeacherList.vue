@@ -130,36 +130,36 @@
                   </div>
                 </td>
                 <td class="px-4 py-4 w-48">
-                  <div v-if="teacher.posting_history && teacher.posting_history.length > 0">
+                  <div v-if="teacher.posting_histories && teacher.posting_histories.length > 0">
                     <div class="text-sm text-gray-900 dark:text-gray-100 font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 group-hover:text-gray-700 dark:group-hover:text-gray-50" 
                          @click="togglePostingHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.posting_history.length} posting${teacher.posting_history.length > 1 ? 's' : ''}`">
-                      {{ teacher.posting_history.length }} Previous Posting{{ teacher.posting_history.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.posting_histories.length} posting${teacher.posting_histories.length > 1 ? 's' : ''}`">
+                      {{ teacher.posting_histories.length }} Previous Posting{{ teacher.posting_histories.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ teacher.posting_history[0].school_name }}
-                      <span v-if="teacher.posting_history.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.posting_history.length - 1 }} more
+                      {{ teacher.posting_histories[0].school_name }}
+                      <span v-if="teacher.posting_histories.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.posting_histories.length - 1 }} more
                       </span>
                     </div>
                     <div class="text-xs text-gray-400 dark:text-gray-500">
-                      {{ formatDate(teacher.posting_history[0].from_date) }} - {{ teacher.posting_history[0].to_date ? formatDate(teacher.posting_history[0].to_date) : 'Current' }}
-                      <span v-if="!teacher.posting_history[0].to_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                      {{ formatDate(teacher.posting_histories[0].from_date) }} - {{ teacher.posting_histories[0].to_date ? formatDate(teacher.posting_histories[0].to_date) : 'Current' }}
+                      <span v-if="!teacher.posting_histories[0].to_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                         Ongoing
                       </span>
-                      <span v-if="teacher.posting_history[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
-                            :class="teacher.posting_history[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
-                        {{ teacher.posting_history[0].status }}
+                      <span v-if="teacher.posting_histories[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
+                            :class="teacher.posting_histories[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
+                        {{ teacher.posting_histories[0].status }}
                       </span>
                     </div>
                     
                     <!-- Expanded Posting History Details -->
                     <div v-if="expandedPostingHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Posting History:</div>
-                      <div v-for="(posting, index) in teacher.posting_history" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                      <div v-for="(posting, index) in teacher.posting_histories" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                         <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ posting.school_name }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                           {{ posting.medium }} • {{ posting.management }} • {{ posting.district }}
@@ -182,107 +182,107 @@
                   </div>
                 </td>
                 <td class="px-4 py-4 w-48">
-                  <div v-if="teacher.deputation && teacher.deputation.length > 0">
+                  <div v-if="teacher.deputations && teacher.deputations.length > 0">
                     <div class="text-sm text-gray-900 dark:text-gray-100 font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 group-hover:text-gray-700 dark:group-hover:text-gray-50" 
                          @click="toggleDeputationHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.deputation.length} deputation${teacher.deputation.length > 1 ? 's' : ''}`">
-                      {{ teacher.deputation.length }} Deputation{{ teacher.deputation.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.deputations.length} deputations${teacher.deputations.length > 1 ? 's' : ''}`">
+                      {{ teacher.deputations.length }} Deputation{{ teacher.deputations.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ teacher.deputation[0].department_name }}
-                      <span v-if="teacher.deputation.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.deputation.length - 1 }} more
+                      {{ teacher.deputations[0].department_name }}
+                      <span v-if="teacher.deputations.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.deputations.length - 1 }} more
                       </span>
                     </div>
                     <div class="text-xs text-gray-400 dark:text-gray-500">
-                      {{ formatDate(teacher.deputation[0].joining_date) }} - {{ teacher.deputation[0].end_date ? formatDate(teacher.deputation[0].end_date) : 'Current' }}
-                      <span v-if="!teacher.deputation[0].end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                      {{ formatDate(teacher.deputations[0].joining_date) }} - {{ teacher.deputations[0].end_date ? formatDate(teacher.deputations[0].end_date) : 'Current' }}
+                      <span v-if="!teacher.deputations[0].end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                         Ongoing
                       </span>
-                      <span v-if="teacher.deputation[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
-                            :class="teacher.deputation[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
-                        {{ teacher.deputation[0].status }}
+                      <span v-if="teacher.deputations[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
+                            :class="teacher.deputations[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
+                        {{ teacher.deputations[0].status }}
                       </span>
                     </div>
                     
                     <!-- Expanded Deputation History Details -->
                     <div v-if="expandedDeputationHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Deputation History:</div>
-                      <div v-for="(deputation, index) in teacher.deputation" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ deputation.department_name }}</div>
+                      <div v-for="(deputations, index) in teacher.deputations" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ deputations.department_name }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
-                          {{ deputation.designation }}
+                          {{ deputations.designation }}
                         </div>
                         <div class="text-xs text-gray-400 dark:text-gray-500">
-                          {{ formatDate(deputation.joining_date) }} - {{ deputation.end_date ? formatDate(deputation.end_date) : 'Current' }}
-                          <span v-if="!deputation.end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                          {{ formatDate(deputations.joining_date) }} - {{ deputations.end_date ? formatDate(deputations.end_date) : 'Current' }}
+                          <span v-if="!deputations.end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                             Ongoing
                           </span>
-                          <span v-if="deputation.status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
-                                :class="deputation.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
-                            {{ deputation.status }}
+                          <span v-if="deputations.status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
+                                :class="deputations.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
+                            {{ deputations.status }}
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div v-else class="text-sm text-gray-400 dark:text-gray-500 italic">
-                    No deputation
+                    No deputations
                   </div>
                 </td>
                 <td class="px-4 py-4 w-48">
-                  <div v-if="teacher.attachment && teacher.attachment.length > 0">
+                  <div v-if="teacher.attachments && teacher.attachments.length > 0">
                     <div class="text-sm text-gray-900 dark:text-gray-100 font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 group-hover:text-gray-700 dark:group-hover:text-gray-50" 
                          @click="toggleAttachmentHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.attachment.length} attachment${teacher.attachment.length > 1 ? 's' : ''}`">
-                      {{ teacher.attachment.length }} Attachment{{ teacher.attachment.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.attachments.length} attachments${teacher.attachments.length > 1 ? 's' : ''}`">
+                      {{ teacher.attachments.length }} Attachment{{ teacher.attachments.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ teacher.attachment[0].department_name }}
-                      <span v-if="teacher.attachment.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.attachment.length - 1 }} more
+                      {{ teacher.attachments[0].department_name }}
+                      <span v-if="teacher.attachments.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.attachments.length - 1 }} more
                       </span>
                     </div>
                     <div class="text-xs text-gray-400 dark:text-gray-500">
-                      {{ formatDate(teacher.attachment[0].joining_date) }} - {{ teacher.attachment[0].end_date ? formatDate(teacher.attachment[0].end_date) : 'Current' }}
-                      <span v-if="!teacher.attachment[0].end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                      {{ formatDate(teacher.attachments[0].joining_date) }} - {{ teacher.attachments[0].end_date ? formatDate(teacher.attachments[0].end_date) : 'Current' }}
+                      <span v-if="!teacher.attachments[0].end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                         Ongoing
                       </span>
-                      <span v-if="teacher.attachment[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
-                            :class="teacher.attachment[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
-                        {{ teacher.attachment[0].status }}
+                      <span v-if="teacher.attachments[0].status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
+                            :class="teacher.attachments[0].status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
+                        {{ teacher.attachments[0].status }}
                       </span>
                     </div>
                     
                     <!-- Expanded Attachment History Details -->
                     <div v-if="expandedAttachmentHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Attachment History:</div>
-                      <div v-for="(attachment, index) in teacher.attachment" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ attachment.department_name }}</div>
+                      <div v-for="(attachments, index) in teacher.attachments" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ attachments.department_name }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
-                          {{ attachment.designation }}
+                          {{ attachments.designation }}
                         </div>
                         <div class="text-xs text-gray-400 dark:text-gray-500">
-                          {{ formatDate(attachment.joining_date) }} - {{ attachment.end_date ? formatDate(attachment.end_date) : 'Current' }}
-                          <span v-if="!attachment.end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                          {{ formatDate(attachments.joining_date) }} - {{ attachments.end_date ? formatDate(attachments.end_date) : 'Current' }}
+                          <span v-if="!attachments.end_date" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                             Ongoing
                           </span>
-                          <span v-if="attachment.status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
-                                :class="attachment.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
-                            {{ attachment.status }}
+                          <span v-if="attachments.status" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium" 
+                                :class="attachments.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'">
+                            {{ attachments.status }}
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div v-else class="text-sm text-gray-400 dark:text-gray-500 italic">
-                    No attachment
+                    No attachments
                   </div>
                 </td>
                 <td class="px-4 py-4 w-40">
@@ -323,7 +323,7 @@
                       Edit
                     </router-link>
                     <button
-                      @click="deleteTeacher(teacher.id!)"
+                      @click="deleteTeacher(teacher.teacher_ID || teacher.id!)"
                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md rounded-md transition-all duration-200 border border-red-200 dark:border-red-700"
                     >
                       <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -428,28 +428,28 @@
                 </div>
 
                 <!-- Posting History Summary -->
-                <div v-if="teacher.posting_history && teacher.posting_history.length > 0">
+                <div v-if="teacher.posting_histories && teacher.posting_histories.length > 0">
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Posting History</dt>
                   <dd class="space-y-2">
                     <div class="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 text-sm text-gray-900 dark:text-gray-100" 
                          @click="togglePostingHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.posting_history.length} posting${teacher.posting_history.length > 1 ? 's' : ''}`">
-                      {{ teacher.posting_history.length }} Previous Posting{{ teacher.posting_history.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.posting_histories.length} posting${teacher.posting_histories.length > 1 ? 's' : ''}`">
+                      {{ teacher.posting_histories.length }} Previous Posting{{ teacher.posting_histories.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-600 dark:text-gray-300">
-                      {{ teacher.posting_history[0].school_name }}
-                      <span v-if="teacher.posting_history.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.posting_history.length - 1 }} more
+                      {{ teacher.posting_histories[0].school_name }}
+                      <span v-if="teacher.posting_histories.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.posting_histories.length - 1 }} more
                       </span>
                     </div>
                     
                     <!-- Expanded Posting History Details -->
                     <div v-if="expandedPostingHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Posting History:</div>
-                      <div v-for="(posting, index) in teacher.posting_history" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                      <div v-for="(posting, index) in teacher.posting_histories" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                         <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ posting.school_name }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                           {{ posting.medium }} • {{ posting.management }} • {{ posting.district }}
@@ -466,32 +466,32 @@
                 </div>
 
                 <!-- Deputation History Summary -->
-                <div v-if="teacher.deputation && teacher.deputation.length > 0">
+                <div v-if="teacher.deputations && teacher.deputations.length > 0">
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Deputation History</dt>
                   <dd class="space-y-2">
                     <div class="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 text-sm text-gray-900 dark:text-gray-100" 
                          @click="toggleDeputationHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.deputation.length} deputation${teacher.deputation.length > 1 ? 's' : ''}`">
-                      {{ teacher.deputation.length }} Deputation{{ teacher.deputation.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.deputations.length} deputations${teacher.deputations.length > 1 ? 's' : ''}`">
+                      {{ teacher.deputations.length }} Deputation{{ teacher.deputations.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-600 dark:text-gray-300">
-                      {{ teacher.deputation[0].department_name }}
-                      <span v-if="teacher.deputation.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.deputation.length - 1 }} more
+                      {{ teacher.deputations[0].department_name }}
+                      <span v-if="teacher.deputations.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.deputations.length - 1 }} more
                       </span>
                     </div>
                     
                     <!-- Expanded Deputation History Details -->
                     <div v-if="expandedDeputationHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Deputation History:</div>
-                      <div v-for="(deputation, index) in teacher.deputation" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ deputation.department_name }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ deputation.designation }}</div>
+                      <div v-for="(deputations, index) in teacher.deputations" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ deputations.department_name }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ deputations.designation }}</div>
                         <div class="text-xs text-gray-400 dark:text-gray-500">
-                          {{ formatDate(deputation.joining_date) }} - {{ deputation.end_date ? formatDate(deputation.end_date) : 'Current' }}
+                          {{ formatDate(deputations.joining_date) }} - {{ deputations.end_date ? formatDate(deputations.end_date) : 'Current' }}
                         </div>
                       </div>
                     </div>
@@ -499,32 +499,32 @@
                 </div>
 
                 <!-- Attachment History Summary -->
-                <div v-if="teacher.attachment && teacher.attachment.length > 0">
+                <div v-if="teacher.attachments && teacher.attachments.length > 0">
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Attachment History</dt>
                   <dd class="space-y-2">
                     <div class="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-blue-400 text-sm text-gray-900 dark:text-gray-100" 
                          @click="toggleAttachmentHistory(teacher.id!)"
-                         :title="`Click to view ${teacher.attachment.length} attachment${teacher.attachment.length > 1 ? 's' : ''}`">
-                      {{ teacher.attachment.length }} Attachment{{ teacher.attachment.length > 1 ? 's' : '' }}
+                         :title="`Click to view ${teacher.attachments.length} attachments${teacher.attachments.length > 1 ? 's' : ''}`">
+                      {{ teacher.attachments.length }} Attachment{{ teacher.attachments.length > 1 ? 's' : '' }}
                       <svg class="inline w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
                     </div>
                     <div class="text-sm text-gray-600 dark:text-gray-300">
-                      {{ teacher.attachment[0].department_name }}
-                      <span v-if="teacher.attachment.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
-                        +{{ teacher.attachment.length - 1 }} more
+                      {{ teacher.attachments[0].department_name }}
+                      <span v-if="teacher.attachments.length > 1" class="text-xs text-gray-400 dark:text-gray-500">
+                        +{{ teacher.attachments.length - 1 }} more
                       </span>
                     </div>
                     
                     <!-- Expanded Attachment History Details -->
                     <div v-if="expandedAttachmentHistory === teacher.id" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Full Attachment History:</div>
-                      <div v-for="(attachment, index) in teacher.attachment" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ attachment.department_name }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ attachment.designation }}</div>
+                      <div v-for="(attachments, index) in teacher.attachments" :key="index" class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ index + 1 }}. {{ attachments.department_name }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ attachments.designation }}</div>
                         <div class="text-xs text-gray-400 dark:text-gray-500">
-                          {{ formatDate(attachment.joining_date) }} - {{ attachment.end_date ? formatDate(attachment.end_date) : 'Current' }}
+                          {{ formatDate(attachments.joining_date) }} - {{ attachments.end_date ? formatDate(attachments.end_date) : 'Current' }}
                         </div>
                       </div>
                     </div>
@@ -558,7 +558,7 @@
                     Edit
                   </router-link>
                   <button
-                    @click="deleteTeacher(teacher.id!)"
+                    @click="deleteTeacher(teacher.teacher_ID || teacher.id!)"
                     class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm dark:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 border border-red-200 dark:border-red-700"
                   >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -713,7 +713,7 @@
                         <label class="text-sm font-medium text-blue-700 dark:text-blue-300">Service Category</label>
                         <p class="mt-1 text-sm text-blue-900 dark:text-blue-100">
                           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
-                            {{ formatDisplayText(selectedTeacher.service_category) || 'Not specified' }}
+                            {{ formatDisplayText(selectedTeacher.service_category ?? '') || 'Not specified' }}
                           </span>
                         </p>
                       </div>
@@ -761,7 +761,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label class="text-sm font-medium text-purple-700 dark:text-purple-300">School Name</label>
-                        <p class="mt-1 text-sm text-purple-900 dark:text-purple-100">{{ selectedTeacher.current_school_name || selectedTeacher.school_name || 'Not specified' }}</p>
+                        <p class="mt-1 text-sm text-purple-900 dark:text-purple-100">{{ selectedTeacher.current_school_name || 'Not specified' }}</p>
                       </div>
                       <div>
                         <label class="text-sm font-medium text-purple-700 dark:text-purple-300">School ID</label>
@@ -865,7 +865,7 @@
                         <label class="text-sm font-medium text-indigo-700 dark:text-indigo-300">Habitation Category</label>
                         <p class="mt-1 text-sm text-indigo-900 dark:text-indigo-100">
                           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200">
-                            {{ formatDisplayText(selectedTeacher.habitation_category) || 'Not specified' }}
+                            {{ formatDisplayText(selectedTeacher.habitation_category ?? '') || 'Not specified' }}
                           </span>
                         </p>
                       </div>
@@ -917,25 +917,25 @@
                       Deputation History
                     </h4>
                     <div class="space-y-3">
-                      <div v-for="(deputation, index) in selectedTeacher.deputations" :key="index" class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-pink-200 dark:border-pink-700">
+                      <div v-for="(deputations, index) in selectedTeacher.deputations" :key="index" class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-pink-200 dark:border-pink-700">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                           <div>
                             <label class="text-sm font-medium text-pink-700 dark:text-pink-300">Department</label>
-                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ deputation.department_name }}</p>
+                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ deputations.department_name }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-pink-700 dark:text-pink-300">Designation</label>
-                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ deputation.designation }}</p>
+                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ deputations.designation }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-pink-700 dark:text-pink-300">Period</label>
-                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ formatDate(deputation.joining_date) }} - {{ deputation.end_date ? formatDate(deputation.end_date) : 'Current' }}</p>
+                            <p class="text-sm text-pink-900 dark:text-pink-100">{{ formatDate(deputations.joining_date) }} - {{ deputations.end_date ? formatDate(deputations.end_date) : 'Current' }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-pink-700 dark:text-pink-300">Status</label>
                             <p class="text-sm text-pink-900 dark:text-pink-100">
                               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
-                                {{ deputation.status || 'Active' }}
+                                {{ deputations.status || 'Active' }}
                               </span>
                             </p>
                           </div>
@@ -953,25 +953,25 @@
                       Attachment History
                     </h4>
                     <div class="space-y-3">
-                      <div v-for="(attachment, index) in selectedTeacher.attachments" :key="index" class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-teal-200 dark:border-teal-700">
+                      <div v-for="(attachments, index) in selectedTeacher.attachments" :key="index" class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-teal-200 dark:border-teal-700">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                           <div>
                             <label class="text-sm font-medium text-teal-700 dark:text-teal-300">Department</label>
-                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ attachment.department_name }}</p>
+                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ attachments.department_name }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-teal-700 dark:text-teal-300">Designation</label>
-                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ attachment.designation }}</p>
+                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ attachments.designation }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-teal-700 dark:text-teal-300">Period</label>
-                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ formatDate(attachment.joining_date) }} - {{ attachment.end_date ? formatDate(attachment.end_date) : 'Current' }}</p>
+                            <p class="text-sm text-teal-900 dark:text-teal-100">{{ formatDate(attachments.joining_date) }} - {{ attachments.end_date ? formatDate(attachments.end_date) : 'Current' }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-teal-700 dark:text-teal-300">Status</label>
                             <p class="text-sm text-teal-900 dark:text-teal-100">
                               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
-                                {{ attachment.status || 'Active' }}
+                                {{ attachments.status || 'Active' }}
                               </span>
                             </p>
                           </div>
@@ -1015,18 +1015,18 @@
                             <p class="text-sm text-red-900 dark:text-red-100">
                               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                     :class="{
-                                      'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200': record.severity === 'High',
-                                      'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200': record.severity === 'Medium',
-                                      'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200': record.severity === 'Low',
+                                      'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200': record.severity === 'Severe',
+                                      'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200': record.severity === 'Moderate',
+                                      'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200': record.severity === 'Mild',
                                       'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200': !record.severity
                                     }">
-                                {{ record.severity || 'Not specified' }}
+                                {{ record.severity ?? 'Not specified' }}
                               </span>
                             </p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-red-700 dark:text-red-300">Diagnosis Date</label>
-                            <p class="text-sm text-red-900 dark:text-red-100">{{ formatDate(record.diagnosis_date) }}</p>
+                            <p class="text-sm text-red-900 dark:text-red-100">{{ formatDate(record.diagnosis_date ?? '') }}</p>
                           </div>
                           <div>
                             <label class="text-sm font-medium text-red-700 dark:text-red-300">Treatment Status</label>
@@ -1075,7 +1075,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { teachersApi, medicalRecordsApi, type MedicalRecord } from '../services/api'
+import { teachersApi, medicalRecordsApi, cascadeApi, type MedicalRecord } from '../services/api'
 import type { Teacher, TeacherListResponse } from '../types'
 import * as XLSX from 'xlsx'
 
@@ -1182,11 +1182,13 @@ const viewTeacher = async (teacher: Teacher) => {
   selectedTeacher.value = teacher
   showTeacherModal.value = true
   
-  // Fetch medical records for this teacher
-  if (teacher.id) {
+  // Fetch medical records for this teacher using teacher_ID
+  if (teacher.teacher_ID || teacher.id) {
     loadingMedicalRecords.value = true
     try {
-      const resp = await medicalRecordsApi.getByTeacher(teacher.id)
+      const teacherIdentifier = teacher.teacher_ID || teacher.id
+      if (!teacherIdentifier) return
+      const resp = await medicalRecordsApi.getByTeacher(Number(teacherIdentifier))
       teacherMedicalRecords.value = (resp.data && (resp.data as any).data) ? (resp.data as any).data : []
     } catch (error) {
       console.error('Error fetching medical records:', error)
@@ -1253,24 +1255,64 @@ const fileUrl = (url?: string | null) => {
   if (!url) return '#'
   // If already absolute (starts with http/https), return as is
   if (/^https?:\/\//i.test(url)) return url
-  // If already starts with /uploads/, just prepend the base URL
-  if (url.startsWith('/uploads/')) return `http://localhost:5004${url}`
-  // Otherwise, prepend the API base URL with /uploads/
-  return `http://localhost:5004/uploads/${url}`
-}
-
-const deleteTeacher = async (teacherId: number) => {
-  if (!confirm('Are you sure you want to delete this teacher? This action cannot be undone.')) {
-    return
+  
+  // Extract filename from the URL
+  let filename = url
+  if (url.startsWith('/uploads/medical-records/')) {
+    filename = url.replace('/uploads/medical-records/', '')
+  } else if (url.startsWith('/uploads/')) {
+    filename = url.replace('/uploads/', '')
   }
   
+  // Use the API endpoint for authenticated file access
+  return `/api/uploads/medical-records/${filename}`
+}
+
+const deleteTeacher = async (teacherId: number | string) => {
   try {
-    const response = await teachersApi.delete(teacherId)
+    // First, check cascade information
+    const cascadeResponse = await cascadeApi.getTeacherCascadeInfo(Number(teacherId))
+    const cascadeInfo = cascadeResponse.data.data?.cascadeInfo
+    
+    if (!cascadeInfo) {
+      alert('Failed to get cascade information. Please try again.')
+      return
+    }
+    
+    const totalAffected = cascadeInfo.medicalRecords + cascadeInfo.attachments + 
+                         cascadeInfo.deputations + cascadeInfo.postingHistories
+
+    let confirmMessage = 'Are you sure you want to delete this teacher?'
+    if (totalAffected > 0) {
+      confirmMessage += `\n\nThis will also delete:\n`
+      if (cascadeInfo.medicalRecords > 0) confirmMessage += `• ${cascadeInfo.medicalRecords} medical record(s)\n`
+      if (cascadeInfo.attachments > 0) confirmMessage += `• ${cascadeInfo.attachments} attachments(s)\n`
+      if (cascadeInfo.deputations > 0) confirmMessage += `• ${cascadeInfo.deputations} deputations(s)\n`
+      if (cascadeInfo.postingHistories > 0) confirmMessage += `• ${cascadeInfo.postingHistories} posting histor(ies)\n`
+      confirmMessage += `\nThis action cannot be undone.`
+    } else {
+      confirmMessage += ' This action cannot be undone.'
+    }
+
+    if (!confirm(confirmMessage)) {
+      return
+    }
+    
+    // Use cascade API for safe deletion
+      const response = await cascadeApi.safeDeleteTeacher(Number(teacherId), true)
     if (response.data.success) {
       await loadTeachers(pagination.value.page)
+      alert('Teacher deleted successfully!')
+    } else {
+      alert(`Failed to delete teacher: ${response.data.message}`)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete teacher:', error)
+    if (error.response?.data?.message) {
+      alert(`Failed to delete teacher: ${error.response.data.message}`)
+    } else {
+      alert('Failed to delete teacher. Please try again.')
+    }
   }
 }
 
@@ -1392,9 +1434,9 @@ const exportToExcel = async () => {
       'School Phone': teacher.school_phone || '',
       
       // ===== HISTORY SUMMARY =====
-      'Total Posting Records': teacher.posting_history ? teacher.posting_history.length : 0,
-      'Total Deputation Records': teacher.deputation ? teacher.deputation.length : 0,
-      'Total Attachment Records': teacher.attachment ? teacher.attachment.length : 0,
+      'Total Posting Records': teacher.posting_histories ? teacher.posting_histories.length : 0,
+      'Total Deputation Records': teacher.deputations ? teacher.deputations.length : 0,
+      'Total Attachment Records': teacher.attachments ? teacher.attachments.length : 0,
 
       // ===== MEDICAL RECORDS SUMMARY =====
       'Medical Records Count': summaryByTeacherId[teacher.id as number]?.medicalRecordsCount ?? 0,
@@ -1403,32 +1445,32 @@ const exportToExcel = async () => {
       'Latest Medical Remarks': summaryByTeacherId[teacher.id as number]?.latestMedicalRemarks ?? '',
       
       // ===== LATEST POSTING DETAILS =====
-      'Latest Posting School': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].school_name : '',
-      'Latest Posting Type': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].school_type : '',
-      'Latest Posting Medium': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].medium : '',
-      'Latest Posting Management': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].management : '',
-      'Latest Posting District': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].district : '',
-      'Latest Posting Block Office': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].block_office : '',
-      'Latest Posting Start Date': teacher.posting_history && teacher.posting_history.length > 0 ? formatDate(teacher.posting_history[0].from_date) : '',
-      'Latest Posting End Date': teacher.posting_history && teacher.posting_history.length > 0 && teacher.posting_history[0].to_date ? formatDate(teacher.posting_history[0].to_date) : '',
-      'Latest Posting Status': teacher.posting_history && teacher.posting_history.length > 0 ? teacher.posting_history[0].status : '',
+      'Latest Posting School': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].school_name : '',
+      'Latest Posting Type': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].school_type : '',
+      'Latest Posting Medium': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].medium : '',
+      'Latest Posting Management': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].management : '',
+      'Latest Posting District': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].district : '',
+      'Latest Posting Block Office': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].block_office : '',
+      'Latest Posting Start Date': teacher.posting_histories && teacher.posting_histories.length > 0 ? formatDate(teacher.posting_histories[0].from_date) : '',
+      'Latest Posting End Date': teacher.posting_histories && teacher.posting_histories.length > 0 && teacher.posting_histories[0].to_date ? formatDate(teacher.posting_histories[0].to_date) : '',
+      'Latest Posting Status': teacher.posting_histories && teacher.posting_histories.length > 0 ? teacher.posting_histories[0].status : '',
       
       // ===== LATEST DEPUTATION DETAILS =====
-      'Latest Deputation Department': teacher.deputation && teacher.deputation.length > 0 ? teacher.deputation[0].department_name : '',
-      'Latest Deputation Designation': teacher.deputation && teacher.deputation.length > 0 ? teacher.deputation[0].designation : '',
-      'Latest Deputation Start Date': teacher.deputation && teacher.deputation.length > 0 ? formatDate(teacher.deputation[0].joining_date) : '',
-      'Latest Deputation End Date': teacher.deputation && teacher.deputation.length > 0 && teacher.deputation[0].end_date ? formatDate(teacher.deputation[0].end_date) : '',
-      'Latest Deputation Status': teacher.deputation && teacher.deputation.length > 0 ? teacher.deputation[0].status : '',
+      'Latest Deputation Department': teacher.deputations && teacher.deputations.length > 0 ? teacher.deputations[0].department_name : '',
+      'Latest Deputation Designation': teacher.deputations && teacher.deputations.length > 0 ? teacher.deputations[0].designation : '',
+      'Latest Deputation Start Date': teacher.deputations && teacher.deputations.length > 0 ? formatDate(teacher.deputations[0].joining_date) : '',
+      'Latest Deputation End Date': teacher.deputations && teacher.deputations.length > 0 && teacher.deputations[0].end_date ? formatDate(teacher.deputations[0].end_date) : '',
+      'Latest Deputation Status': teacher.deputations && teacher.deputations.length > 0 ? teacher.deputations[0].status : '',
       
       // ===== LATEST ATTACHMENT DETAILS =====
-      'Latest Attachment Department': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].department_name : '',
-      'Latest Attachment Designation': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].designation : '',
-              'Latest Attachment District': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].district : '',
-        'Latest Attachment RD Block': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].rd_block : '',
-        'Latest Attachment Habitation': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].habitation : '',
-        'Latest Attachment Start Date': teacher.attachment && teacher.attachment.length > 0 ? formatDate(teacher.attachment[0].joining_date) : '',
-      'Latest Attachment End Date': teacher.attachment && teacher.attachment.length > 0 && teacher.attachment[0].end_date ? formatDate(teacher.attachment[0].end_date) : '',
-      'Latest Attachment Status': teacher.attachment && teacher.attachment.length > 0 ? teacher.attachment[0].status : '',
+      'Latest Attachment Department': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].department_name : '',
+      'Latest Attachment Designation': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].designation : '',
+              'Latest Attachment District': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].district : '',
+        'Latest Attachment RD Block': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].rd_block : '',
+        'Latest Attachment Habitation': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].habitation : '',
+        'Latest Attachment Start Date': teacher.attachments && teacher.attachments.length > 0 ? formatDate(teacher.attachments[0].joining_date) : '',
+      'Latest Attachment End Date': teacher.attachments && teacher.attachments.length > 0 && teacher.attachments[0].end_date ? formatDate(teacher.attachments[0].end_date) : '',
+      'Latest Attachment Status': teacher.attachments && teacher.attachments.length > 0 ? teacher.attachments[0].status : '',
       
       // ===== SYSTEM INFORMATION =====
       'Record Created Date': teacher.created_at ? formatDate(teacher.created_at) : '',

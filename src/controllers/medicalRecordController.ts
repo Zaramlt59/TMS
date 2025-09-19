@@ -20,9 +20,26 @@ export const medicalRecordController = {
       
       const enteredById = req.user!.userId
 
+      // Convert teacher_ID to database id if needed
+      let teacherDbId = teacherId
+      if (typeof teacherId === 'string' && !teacherId.match(/^\d+$/)) {
+        // If teacherId is a teacher_ID (string), find the corresponding database id
+        const teacher = await prisma.teachers.findFirst({
+          where: { teacher_ID: teacherId },
+          select: { id: true }
+        })
+        if (!teacher) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Teacher not found with the provided Teacher ID' 
+          })
+        }
+        teacherDbId = teacher.id
+      }
+
       const record = await prisma.medical_records.create({
         data: {
-          teacher_id: Number(teacherId),
+          teacher_id: Number(teacherDbId),
           ailment_name: ailmentName,
           severity,
           diagnosis_date: diagnosisDate ? new Date(diagnosisDate) : null,
@@ -177,7 +194,24 @@ export const medicalRecordController = {
   async getByTeacher(req: Request, res: Response) {
     if (!handleValidation(req, res)) return
     try {
-      const teacherId = Number(req.params.teacherId)
+      const teacherIdParam = req.params.teacherId
+      
+      // Convert teacher_ID to database id if needed
+      let teacherId = Number(teacherIdParam)
+      if (isNaN(teacherId)) {
+        // If teacherIdParam is a teacher_ID (string), find the corresponding database id
+        const teacher = await prisma.teachers.findFirst({
+          where: { teacher_ID: teacherIdParam },
+          select: { id: true }
+        })
+        if (!teacher) {
+          return res.status(404).json({ 
+            success: false, 
+            message: 'Teacher not found with the provided Teacher ID' 
+          })
+        }
+        teacherId = teacher.id
+      }
 
       // For now, allow all authenticated users to view medical records
       // TODO: Implement proper permission system based on user-teacher relationship

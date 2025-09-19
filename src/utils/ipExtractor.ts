@@ -94,7 +94,7 @@ export function getClientIP(req: Request): string {
     const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/
     
     if (ipv4Regex.test(clientIP) || ipv6Regex.test(clientIP)) {
-      return clientIP
+        return clientIP
     }
   }
 

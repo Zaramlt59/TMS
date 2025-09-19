@@ -51,7 +51,7 @@ export function createApp() {
   const globalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false })
   app.use(globalLimiter)
   app.use(pinoHttp({ logger }))
-  app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], imgSrc: ["'self'", "data:", "https:"] } } }))
+  app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], imgSrc: ["'self'", "data:", "https:"], objectSrc: ["'self'"], mediaSrc: ["'self'"] } } }))
   app.use(cors({ origin: env.CORS_ORIGIN || 'http://localhost:3000', credentials: true }))
   app.use(cookieParser())
   app.use(compression())
