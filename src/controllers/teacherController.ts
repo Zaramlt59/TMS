@@ -289,23 +289,74 @@ export const teacherController = {
   async delete(req: Request, res: Response) {
     try {
       const idParam = req.params.id
+      console.log('🔍 Teacher delete - idParam:', idParam)
       
       // Convert teacher_ID to database id if needed
       let id = parseInt(idParam)
       if (isNaN(id)) {
         // If idParam is a teacher_ID (string), find the corresponding database id
+        console.log('🔍 Teacher delete - looking up teacher_ID:', idParam)
         const teacher = await prisma.teachers.findFirst({
-          where: { teacher_ID: idParam },
+          where: { 
+            teacher_ID: idParam,
+            deleted_at: null
+          } as any,
           select: { id: true }
         })
+        console.log('🔍 Teacher delete - found teacher:', teacher)
         if (!teacher) {
+          // Check if teacher exists but is already soft-deleted
+          const deletedTeacher = await prisma.teachers.findFirst({
+            where: { 
+              teacher_ID: idParam,
+              deleted_at: { not: null }
+            } as any,
+            select: { id: true, deleted_at: true } as any
+          })
+          if (deletedTeacher) {
+            return res.status(400).json({
+              success: false,
+              message: 'Teacher has already been deleted'
+            })
+          }
           return res.status(404).json({
             success: false,
             message: 'Teacher not found with the provided Teacher ID'
           })
         }
         id = teacher.id
+      } else {
+        // If it's a numeric ID, check if the teacher exists and is not soft-deleted
+        const teacher = await prisma.teachers.findFirst({
+          where: { 
+            id: id,
+            deleted_at: null
+          } as any,
+          select: { id: true }
+        })
+        if (!teacher) {
+          // Check if teacher exists but is already soft-deleted
+          const deletedTeacher = await prisma.teachers.findFirst({
+            where: { 
+              id: id,
+              deleted_at: { not: null }
+            } as any,
+            select: { id: true, deleted_at: true } as any
+          })
+          if (deletedTeacher) {
+            return res.status(400).json({
+              success: false,
+              message: 'Teacher has already been deleted'
+            })
+          }
+          return res.status(404).json({
+            success: false,
+            message: 'Teacher not found'
+          })
+        }
       }
+      
+      console.log('🔍 Teacher delete - using database id:', id)
       
       // Use safe deletion
       const { cascadeService } = await import('../services/cascadeService')

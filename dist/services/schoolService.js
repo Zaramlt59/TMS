@@ -62,7 +62,10 @@ exports.schoolService = {
     },
     // Build where clause for role-based filtering
     buildWhereClause(roleFilters) {
-        const whereClause = {};
+        const whereClause = {
+            // Exclude soft-deleted records
+            deleted_at: null
+        };
         if (roleFilters) {
             // Apply school_id filter
             if (roleFilters.school_id && roleFilters.school_id.trim() !== '') {
@@ -84,7 +87,8 @@ exports.schoolService = {
         try {
             const schools = await prismaService_1.default.schools.findMany({
                 where: {
-                    district: district
+                    district: district,
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -101,7 +105,8 @@ exports.schoolService = {
         try {
             const schools = await prismaService_1.default.schools.findMany({
                 where: {
-                    rd_block: rdBlock
+                    rd_block: rdBlock,
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -118,7 +123,8 @@ exports.schoolService = {
         try {
             const schools = await prismaService_1.default.schools.findMany({
                 where: {
-                    school_type: schoolType
+                    school_type: schoolType,
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -135,7 +141,8 @@ exports.schoolService = {
         try {
             const schools = await prismaService_1.default.schools.findMany({
                 where: {
-                    management: management
+                    management: management,
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -152,7 +159,8 @@ exports.schoolService = {
         try {
             const schools = await prismaService_1.default.schools.findMany({
                 where: {
-                    medium: medium
+                    medium: medium,
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -172,7 +180,8 @@ exports.schoolService = {
                     OR: [
                         { school_name: { contains: query } },
                         { school_id: { contains: query } }
-                    ]
+                    ],
+                    deleted_at: null
                 },
                 orderBy: { school_name: 'asc' }
             });
@@ -187,8 +196,11 @@ exports.schoolService = {
     // Get school by ID
     async getById(id) {
         try {
-            const school = await prismaService_1.default.schools.findUnique({
-                where: { id }
+            const school = await prismaService_1.default.schools.findFirst({
+                where: {
+                    id,
+                    deleted_at: null
+                }
             });
             if (school) {
                 // Transform database values back to frontend display values
@@ -204,8 +216,11 @@ exports.schoolService = {
     // Get school by school_id (business identifier)
     async getBySchoolId(schoolId) {
         try {
-            const school = await prismaService_1.default.schools.findUnique({
-                where: { school_id: schoolId }
+            const school = await prismaService_1.default.schools.findFirst({
+                where: {
+                    school_id: schoolId,
+                    deleted_at: null
+                }
             });
             if (school) {
                 // Transform database values back to frontend display values
@@ -256,11 +271,15 @@ exports.schoolService = {
             throw new Error('Failed to update school');
         }
     },
-    // Delete school
+    // Delete school (soft delete)
     async delete(id) {
         try {
-            return await prismaService_1.default.schools.delete({
-                where: { id }
+            return await prismaService_1.default.schools.update({
+                where: { id },
+                data: {
+                    deleted_at: new Date(),
+                    updated_at: new Date()
+                }
             });
         }
         catch (error) {
@@ -268,11 +287,15 @@ exports.schoolService = {
             throw new Error('Failed to delete school');
         }
     },
-    // Delete school by school_id (business identifier)
+    // Delete school by school_id (business identifier) - soft delete
     async deleteBySchoolId(schoolId) {
         try {
-            return await prismaService_1.default.schools.delete({
-                where: { school_id: schoolId }
+            return await prismaService_1.default.schools.update({
+                where: { school_id: schoolId },
+                data: {
+                    deleted_at: new Date(),
+                    updated_at: new Date()
+                }
             });
         }
         catch (error) {
@@ -284,8 +307,9 @@ exports.schoolService = {
     async getStats() {
         try {
             const [totalSchools, uniqueDistricts] = await Promise.all([
-                prismaService_1.default.schools.count(),
+                prismaService_1.default.schools.count({ where: { deleted_at: null } }),
                 prismaService_1.default.schools.findMany({
+                    where: { deleted_at: null },
                     select: { district: true },
                     distinct: ['district']
                 })
@@ -342,8 +366,20 @@ exports.schoolService = {
         if (data.habitation_category !== undefined)
             transformed.habitation_category = data.habitation_category;
         if (data.block_office !== undefined) {
-            // Convert spaces to underscores for enum values
-            transformed.block_office = data.block_office.replace(/\s+/g, '_');
+            // Handle special cases for Education Office entries
+            if (data.block_office === 'Education Office(CADC)') {
+                transformed.block_office = 'Education_Office_CADC_';
+            }
+            else if (data.block_office === 'Education Office (LADC)') {
+                transformed.block_office = 'Education_Office__LADC_';
+            }
+            else if (data.block_office === 'Education Office (MADC)') {
+                transformed.block_office = 'Education_Office__MADC_';
+            }
+            else {
+                // Convert spaces to underscores for other enum values
+                transformed.block_office = data.block_office.replace(/\s+/g, '_');
+            }
         }
         return transformed;
     },
@@ -389,8 +425,20 @@ exports.schoolService = {
         if (data.habitation_category !== undefined)
             transformed.habitation_category = data.habitation_category;
         if (data.block_office !== undefined) {
-            // Convert underscores to spaces for enum values
-            transformed.block_office = data.block_office.replace(/_/g, ' ');
+            // Handle special cases for Education Office entries
+            if (data.block_office === 'Education_Office_CADC_') {
+                transformed.block_office = 'Education Office(CADC)';
+            }
+            else if (data.block_office === 'Education_Office__LADC_') {
+                transformed.block_office = 'Education Office (LADC)';
+            }
+            else if (data.block_office === 'Education_Office__MADC_') {
+                transformed.block_office = 'Education Office (MADC)';
+            }
+            else {
+                // Convert underscores to spaces for other enum values
+                transformed.block_office = data.block_office.replace(/_/g, ' ');
+            }
         }
         return transformed;
     }

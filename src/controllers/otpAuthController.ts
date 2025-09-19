@@ -12,6 +12,12 @@ export const sendOTP = async (req: Request, res: Response) => {
   try {
     const { email, phone } = req.body
 
+    console.log('🔍 Send OTP Debug:', {
+      email,
+      phone,
+      body: req.body
+    })
+
     if (!email && !phone) {
       return res.status(400).json({
         success: false,
@@ -83,6 +89,13 @@ export const verifyOTPLogin = async (req: Request, res: Response) => {
   try {
     const { email, phone, otp } = req.body
 
+    console.log('🔍 OTP Verification Debug:', {
+      email,
+      phone,
+      otp: otp ? '***' : 'undefined',
+      body: req.body
+    })
+
     if (!otp) {
       return res.status(400).json({
         success: false,
@@ -107,16 +120,43 @@ export const verifyOTPLogin = async (req: Request, res: Response) => {
       })
     }
 
-    // Find teacher by email or phone
-    const teacher = await prisma.users.findFirst({
-      where: {
-        role: 'teacher',
-        is_active: true,
-        OR: [
-          ...(email ? [{ email }] : []),
-          ...(phone ? [{ phone }] : [])
-        ]
+    // Find teacher by email or phone number
+    let teacher = null;
+    
+    if (email) {
+      // Find user by email
+      teacher = await prisma.users.findFirst({
+        where: {
+          email: email,
+          role: 'teacher',
+          is_active: true
+        }
+      });
+    } else if (phone) {
+      // Find teacher by phone number in teachers table, then get corresponding user
+      const teacherRecord = await prisma.teachers.findFirst({
+        where: {
+          phone_number: phone
+        }
+      });
+      
+      if (teacherRecord) {
+        teacher = await prisma.users.findFirst({
+          where: {
+            role: 'teacher',
+            is_active: true
+          }
+        });
       }
+    }
+
+    console.log('🔍 Teacher lookup result:', {
+      phone,
+      email,
+      teacherFound: !!teacher,
+      teacherId: teacher?.id,
+      teacherRole: teacher?.role,
+      teacherActive: teacher?.is_active
     })
 
     if (!teacher) {
@@ -180,16 +220,32 @@ export const resendOTP = async (req: Request, res: Response) => {
     }
 
     // Check if teacher exists
-    const teacher = await prisma.users.findFirst({
-      where: {
-        role: 'teacher',
-        is_active: true,
-        OR: [
-          ...(email ? [{ email }] : []),
-          ...(phone ? [{ phone }] : [])
-        ]
+    let teacher = null;
+    
+    if (email) {
+      teacher = await prisma.users.findFirst({
+        where: {
+          email: email,
+          role: 'teacher',
+          is_active: true
+        }
+      });
+    } else if (phone) {
+      const teacherRecord = await prisma.teachers.findFirst({
+        where: {
+          phone_number: phone
+        }
+      });
+      
+      if (teacherRecord) {
+        teacher = await prisma.users.findFirst({
+          where: {
+            role: 'teacher',
+            is_active: true
+          }
+        });
       }
-    })
+    }
 
     // Debug logging for tests
     if (process.env.NODE_ENV === 'test') {

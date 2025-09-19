@@ -188,6 +188,8 @@
                  maxlength="11"
                  pattern="[0-9]{11}"
                  title="Please enter exactly 11 digits"
+                 @input="validateSchoolPhone"
+                 @keypress="allowOnlyNumbers"
                />
              </div>
             <div>
@@ -706,6 +708,21 @@ const validatePincode = (event: Event) => {
   
   // Update the form value with only numbers
   form.value.pincode = numericValue
+}
+
+// Validate school phone number to ensure it only contains numbers
+const validateSchoolPhone = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = target.value
+  
+  // Remove any non-numeric characters
+  const numericValue = value.replace(/[^0-9]/g, '')
+  
+  // Update the form value with only numbers
+  form.value.school_phone = numericValue
+  
+  // Update the input field value to show the limited result
+  target.value = numericValue
 }
 </script>
 

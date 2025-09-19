@@ -26,7 +26,16 @@ router.post('/', auth_1.requireAdmin, [
 ], medicalRecordController_1.medicalRecordController.create);
 // Get by teacher
 router.get('/:teacherId', [
-    (0, express_validator_1.param)('teacherId').isInt({ min: 1 }).withMessage('teacherId must be a positive integer')
+    (0, express_validator_1.param)('teacherId').custom((value) => {
+        // Allow both numeric IDs and teacher_ID strings
+        if (typeof value === 'string' && value.match(/^TC\d+$/)) {
+            return true; // Valid teacher_ID format
+        }
+        if (!isNaN(Number(value)) && Number(value) > 0) {
+            return true; // Valid numeric ID
+        }
+        throw new Error('teacherId must be a positive integer or valid teacher_ID (e.g., TC1001)');
+    })
 ], medicalRecordController_1.medicalRecordController.getByTeacher);
 // Update (admin only)
 router.put('/:id', auth_1.requireAdmin, [

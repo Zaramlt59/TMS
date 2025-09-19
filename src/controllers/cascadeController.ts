@@ -36,7 +36,18 @@ export const cascadeController = {
   getTeacherCascadeInfo: async (req: Request, res: Response) => {
     try {
       const { teacherId } = req.params;
-      const cascadeInfo = await cascadeService.getTeacherCascadeInfo(parseInt(teacherId));
+      
+      // Validate teacherId
+      const teacherIdNum = parseInt(teacherId);
+      if (isNaN(teacherIdNum) || teacherIdNum <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid teacher ID provided',
+          error: 'Teacher ID must be a valid positive number'
+        });
+      }
+      
+      const cascadeInfo = await cascadeService.getTeacherCascadeInfo(teacherIdNum);
       
       const totalAffected = cascadeInfo.medicalRecords + cascadeInfo.attachments + 
                            cascadeInfo.deputations + cascadeInfo.postingHistories;
@@ -45,7 +56,7 @@ export const cascadeController = {
         success: true,
         message: 'Cascade information retrieved successfully',
         data: {
-          teacherId: parseInt(teacherId),
+          teacherId: teacherIdNum,
           cascadeInfo,
           totalAffected,
           warning: totalAffected > 0 ? `Deleting this teacher will affect ${totalAffected} related records` : 'No related records will be affected'
@@ -133,7 +144,17 @@ export const cascadeController = {
       const { teacherId } = req.params;
       const force = req.query.force === 'true';
       
-      const result = await cascadeService.safeDeleteTeacher(parseInt(teacherId), force);
+      // Validate teacherId
+      const teacherIdNum = parseInt(teacherId);
+      if (isNaN(teacherIdNum) || teacherIdNum <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid teacher ID provided',
+          error: 'Teacher ID must be a valid positive number'
+        });
+      }
+      
+      const result = await cascadeService.safeDeleteTeacher(teacherIdNum, force);
       
       if (result.success) {
         res.json({

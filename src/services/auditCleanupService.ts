@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import * as fs from 'fs'
+import * as path from 'path'
 
 const prisma = new PrismaClient()
 
@@ -9,34 +11,48 @@ export class AuditCleanupService {
   static async cleanupOldLogs(retentionDays: number = 90): Promise<{
     deletedCount: number
     archivedCount: number
+    exportedCount: number
+    exportPath?: string
   }> {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
 
     try {
-      // First, archive important logs (security events, failed actions)
-      const importantLogs = await prisma.audit_logs.findMany({
+      // First, get all logs that will be deleted for CSV export
+      const logsToDelete = await prisma.audit_logs.findMany({
         where: {
-          created_at: { lt: cutoffDate },
-          OR: [
-            { success: false },
-            { action: { in: ['unauthorized_access', 'permission_denied', 'suspicious_activity', 'login_failed'] } }
-          ]
+          created_at: { lt: cutoffDate }
         },
-        select: {
-          id: true,
-          user_id: true,
-          action: true,
-          resource_type: true,
-          resource_id: true,
-          ip_address: true,
-          success: true,
-          error_message: true,
-          created_at: true
+        include: {
+          users: {
+            select: {
+              username: true,
+              email: true,
+              role: true
+            }
+          }
+        },
+        orderBy: {
+          created_at: 'asc'
         }
       })
 
-      // Archive important logs to a separate table or file
+      // Export logs to CSV before deletion
+      let exportPath: string | undefined
+      let exportedCount = 0
+      if (logsToDelete.length > 0) {
+        exportPath = await this.exportLogsToCSV(logsToDelete, cutoffDate)
+        exportedCount = logsToDelete.length
+        console.log(`Exported ${exportedCount} audit logs to CSV: ${exportPath}`)
+      }
+
+      // Archive important logs (security events, failed actions)
+      const importantLogs = logsToDelete.filter(log => 
+        !log.success || 
+        ['unauthorized_access', 'permission_denied', 'suspicious_activity', 'login_failed'].includes(log.action)
+      )
+
+      // Archive important logs to a separate table
       if (importantLogs.length > 0) {
         await this.archiveImportantLogs(importantLogs)
       }
@@ -50,10 +66,82 @@ export class AuditCleanupService {
 
       return {
         deletedCount: deleteResult.count,
-        archivedCount: importantLogs.length
+        archivedCount: importantLogs.length,
+        exportedCount,
+        exportPath
       }
     } catch (error) {
       console.error('Failed to cleanup audit logs:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Export audit logs to CSV file before deletion
+   */
+  private static async exportLogsToCSV(logs: any[], cutoffDate: Date): Promise<string> {
+    try {
+      // Create exports directory if it doesn't exist
+      const exportsDir = path.join(process.cwd(), 'exports', 'audit-logs')
+      if (!fs.existsSync(exportsDir)) {
+        fs.mkdirSync(exportsDir, { recursive: true })
+      }
+
+      // Generate filename with date range
+      const startDate = new Date(cutoffDate)
+      const endDate = new Date()
+      const filename = `audit-logs-${startDate.toISOString().split('T')[0]}-to-${endDate.toISOString().split('T')[0]}.csv`
+      const filePath = path.join(exportsDir, filename)
+
+      // CSV headers
+      const headers = [
+        'ID',
+        'User ID',
+        'Username',
+        'Email',
+        'Role',
+        'Action',
+        'Resource Type',
+        'Resource ID',
+        'IP Address',
+        'Success',
+        'Error Message',
+        'Created At',
+        'Details'
+      ]
+
+      // Convert logs to CSV format
+      const csvRows = [headers.join(',')]
+      
+      for (const log of logs) {
+        const row = [
+          log.id,
+          log.user_id || '',
+          log.users?.username || '',
+          log.users?.email || '',
+          log.users?.role || '',
+          log.action,
+          log.resource_type || '',
+          log.resource_id || '',
+          log.ip_address || '',
+          log.success ? 'Yes' : 'No',
+          log.error_message ? `"${log.error_message.replace(/"/g, '""')}"` : '',
+          log.created_at.toISOString(),
+          log.details ? `"${log.details.replace(/"/g, '""')}"` : ''
+        ]
+        csvRows.push(row.join(','))
+      }
+
+      // Write CSV file
+      fs.writeFileSync(filePath, csvRows.join('\n'), 'utf8')
+
+      // Log export completion
+      console.log(`Audit logs exported to: ${filePath}`)
+      console.log(`Total records exported: ${logs.length}`)
+
+      return filePath
+    } catch (error) {
+      console.error('Failed to export audit logs to CSV:', error)
       throw error
     }
   }
@@ -140,6 +228,75 @@ export class AuditCleanupService {
       logsLast30d,
       averageLogsPerDay,
       estimatedStorageMB
+    }
+  }
+
+  /**
+   * Manually export audit logs to CSV for a specific date range
+   */
+  static async exportLogsToCSVManual(startDate: Date, endDate: Date): Promise<{
+    exportPath: string
+    recordCount: number
+  }> {
+    try {
+      const logs = await prisma.audit_logs.findMany({
+        where: {
+          created_at: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        include: {
+          users: {
+            select: {
+              username: true,
+              email: true,
+              role: true
+            }
+          }
+        },
+        orderBy: {
+          created_at: 'asc'
+        }
+      })
+
+      if (logs.length === 0) {
+        throw new Error('No audit logs found for the specified date range')
+      }
+
+      const exportPath = await this.exportLogsToCSV(logs, startDate)
+      
+      return {
+        exportPath,
+        recordCount: logs.length
+      }
+    } catch (error) {
+      console.error('Failed to manually export audit logs:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get list of exported CSV files
+   */
+  static getExportedFiles(): string[] {
+    try {
+      const exportsDir = path.join(process.cwd(), 'exports', 'audit-logs')
+      if (!fs.existsSync(exportsDir)) {
+        return []
+      }
+
+      return fs.readdirSync(exportsDir)
+        .filter(file => file.endsWith('.csv'))
+        .map(file => path.join(exportsDir, file))
+        .sort((a, b) => {
+          const statA = fs.statSync(a)
+          const statB = fs.statSync(b)
+          return statB.mtime.getTime() - statA.mtime.getTime() // Sort by newest first
+        })
+    } catch (error) {
+      console.error('Failed to get exported files:', error)
+      return []
     }
   }
 

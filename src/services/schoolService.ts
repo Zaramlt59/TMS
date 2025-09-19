@@ -60,7 +60,10 @@ export const schoolService = {
 
   // Build where clause for role-based filtering
   buildWhereClause(roleFilters?: any) {
-    const whereClause: any = {};
+    const whereClause: any = {
+      // Exclude soft-deleted records
+      deleted_at: null
+    };
 
     if (roleFilters) {
       // Apply school_id filter
@@ -87,8 +90,9 @@ export const schoolService = {
     try {
       const schools = await prisma.schools.findMany({
         where: { 
-          district: district
-        },
+          district: district,
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -105,8 +109,9 @@ export const schoolService = {
     try {
       const schools = await prisma.schools.findMany({
         where: { 
-          rd_block: rdBlock
-        },
+          rd_block: rdBlock,
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -123,8 +128,9 @@ export const schoolService = {
     try {
       const schools = await prisma.schools.findMany({
         where: { 
-          school_type: schoolType
-        },
+          school_type: schoolType,
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -141,8 +147,9 @@ export const schoolService = {
     try {
       const schools = await prisma.schools.findMany({
         where: { 
-          management: management
-        },
+          management: management,
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -159,8 +166,9 @@ export const schoolService = {
     try {
       const schools = await prisma.schools.findMany({
         where: { 
-          medium: medium
-        },
+          medium: medium,
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -180,8 +188,9 @@ export const schoolService = {
           OR: [
             { school_name: { contains: query } },
             { school_id: { contains: query } }
-          ]
-        },
+          ],
+          deleted_at: null
+        } as any,
         orderBy: { school_name: 'asc' }
       })
       
@@ -196,8 +205,11 @@ export const schoolService = {
   // Get school by ID
   async getById(id: number): Promise<any | null> {
     try {
-      const school = await prisma.schools.findUnique({
-        where: { id }
+      const school = await prisma.schools.findFirst({
+        where: { 
+          id,
+          deleted_at: null
+        } as any
       })
       
       if (school) {
@@ -215,8 +227,11 @@ export const schoolService = {
   // Get school by school_id (business identifier)
   async getBySchoolId(schoolId: string): Promise<any | null> {
     try {
-      const school = await prisma.schools.findUnique({
-        where: { school_id: schoolId }
+      const school = await prisma.schools.findFirst({
+        where: { 
+          school_id: schoolId,
+          deleted_at: null
+        } as any
       })
       
       if (school) {
@@ -269,11 +284,15 @@ export const schoolService = {
     }
   },
 
-  // Delete school
+  // Delete school (soft delete)
   async delete(id: number): Promise<any> {
     try {
-      return await prisma.schools.delete({
-        where: { id }
+      return await prisma.schools.update({
+        where: { id },
+        data: { 
+          deleted_at: new Date(),
+          updated_at: new Date()
+        } as any
       })
     } catch (error) {
       console.error('Error deleting school:', error)
@@ -281,11 +300,15 @@ export const schoolService = {
     }
   },
 
-  // Delete school by school_id (business identifier)
+  // Delete school by school_id (business identifier) - soft delete
   async deleteBySchoolId(schoolId: string): Promise<any> {
     try {
-      return await prisma.schools.delete({
-        where: { school_id: schoolId }
+      return await prisma.schools.update({
+        where: { school_id: schoolId },
+        data: { 
+          deleted_at: new Date(),
+          updated_at: new Date()
+        } as any
       })
     } catch (error) {
       console.error('Error deleting school by school_id:', error)
@@ -297,14 +320,15 @@ export const schoolService = {
   async getStats(): Promise<any> {
     try {
       const [totalSchools, uniqueDistricts] = await Promise.all([
-        prisma.schools.count(),
+        prisma.schools.count({ where: { deleted_at: null } as any }),
         prisma.schools.findMany({
+          where: { deleted_at: null } as any,
           select: { district: true },
           distinct: ['district']
         })
       ])
 
-          return {
+      return {
         totalSchools,
         uniqueDistricts: uniqueDistricts.length
       }
@@ -344,8 +368,17 @@ export const schoolService = {
     if (data.habitation_class !== undefined) transformed.habitation_class = data.habitation_class
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
-      // Convert spaces to underscores for enum values
-      transformed.block_office = data.block_office.replace(/\s+/g, '_')
+      // Handle special cases for Education Office entries
+      if (data.block_office === 'Education Office(CADC)') {
+        transformed.block_office = 'Education_Office_CADC_'
+      } else if (data.block_office === 'Education Office (LADC)') {
+        transformed.block_office = 'Education_Office__LADC_'
+      } else if (data.block_office === 'Education Office (MADC)') {
+        transformed.block_office = 'Education_Office__MADC_'
+      } else {
+        // Convert spaces to underscores for other enum values
+        transformed.block_office = data.block_office.replace(/\s+/g, '_')
+      }
     }
     
     return transformed
@@ -381,8 +414,17 @@ export const schoolService = {
     if (data.habitation_class !== undefined) transformed.habitation_class = data.habitation_class
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
-      // Convert underscores to spaces for enum values
-      transformed.block_office = data.block_office.replace(/_/g, ' ')
+      // Handle special cases for Education Office entries
+      if (data.block_office === 'Education_Office_CADC_') {
+        transformed.block_office = 'Education Office(CADC)'
+      } else if (data.block_office === 'Education_Office__LADC_') {
+        transformed.block_office = 'Education Office (LADC)'
+      } else if (data.block_office === 'Education_Office__MADC_') {
+        transformed.block_office = 'Education Office (MADC)'
+      } else {
+        // Convert underscores to spaces for other enum values
+        transformed.block_office = data.block_office.replace(/_/g, ' ')
+      }
     }
     
     return transformed

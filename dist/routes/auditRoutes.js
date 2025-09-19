@@ -21,5 +21,13 @@ router.get('/stats', auditController_1.AuditController.getAuditStats);
 router.get('/logs/:id', auditController_1.AuditController.getAuditLogById);
 // Export audit logs to CSV
 router.get('/export', auditController_1.AuditController.exportAuditLogs);
+// Manual export audit logs to CSV for specific date range
+router.post('/export/manual', auditController_1.AuditController.exportAuditLogsManual);
+// Get list of exported CSV files
+router.get('/export/files', auditController_1.AuditController.getExportedFiles);
+// Download exported CSV file
+router.get('/export/files/:filename', auditController_1.AuditController.downloadExportedFile);
+// Delete exported CSV file
+router.delete('/export/files/:filename', auditController_1.AuditController.deleteExportedFile);
 exports.default = router;
 //# sourceMappingURL=auditRoutes.js.map

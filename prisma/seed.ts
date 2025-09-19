@@ -22,6 +22,24 @@ async function main() {
   } else {
     console.log('Seed: admin already exists, skipping')
   }
+
+  // Create test teacher for regular login (no phone needed)
+  const teacher = await prisma.users.findFirst({ where: { role: 'teacher' } })
+  if (!teacher) {
+    const password = await bcrypt.hash('teacher123', 12)
+    await prisma.users.create({
+      data: {
+        username: 'teacher',
+        email: 'teacher@tms.com',
+        password,
+        role: 'teacher',
+        is_active: true,
+      }
+    })
+    console.log('Seed: test teacher created (teacher/teacher123)')
+  } else {
+    console.log('Seed: teacher already exists, skipping')
+  }
 }
 
 main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1) })

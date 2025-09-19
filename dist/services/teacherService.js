@@ -127,7 +127,10 @@ exports.teacherService = {
     },
     // Build where clause for role-based filtering
     buildWhereClause(roleFilters) {
-        const whereClause = {};
+        const whereClause = {
+            // Exclude soft-deleted records
+            deleted_at: null
+        };
         if (roleFilters) {
             // Apply school_id filter
             if (roleFilters.school_id) {
@@ -149,7 +152,8 @@ exports.teacherService = {
         try {
             const teachers = await prismaService_1.default.teachers.findMany({
                 where: {
-                    district: district
+                    district: district,
+                    deleted_at: null
                 },
                 include: {
                     posting_histories: true,
@@ -173,7 +177,8 @@ exports.teacherService = {
                 where: {
                     subjects_taught: {
                         contains: subject
-                    }
+                    },
+                    deleted_at: null
                 },
                 include: {
                     posting_histories: true,
@@ -195,7 +200,8 @@ exports.teacherService = {
         try {
             const teachers = await prismaService_1.default.teachers.findMany({
                 where: {
-                    school_id: schoolId
+                    school_id: schoolId,
+                    deleted_at: null
                 },
                 include: {
                     posting_histories: true,
@@ -235,8 +241,11 @@ exports.teacherService = {
     // Get teacher by ID
     async getById(id) {
         try {
-            const teacher = await prismaService_1.default.teachers.findUnique({
-                where: { id },
+            const teacher = await prismaService_1.default.teachers.findFirst({
+                where: {
+                    id,
+                    deleted_at: null
+                },
                 include: {
                     posting_histories: true,
                     deputations: true,
@@ -268,13 +277,16 @@ exports.teacherService = {
     // Search teachers
     async search(query) {
         try {
+            console.log('🔍 Teacher search - query:', query);
             const teachers = await prismaService_1.default.teachers.findMany({
                 where: {
                     OR: [
                         { teacher_name: { contains: query } },
                         { phone_number: { contains: query } },
-                        { email: { contains: query } }
-                    ]
+                        { email: { contains: query } },
+                        { teacher_ID: { contains: query } }
+                    ],
+                    deleted_at: null
                 },
                 include: {
                     posting_histories: true,
@@ -399,11 +411,15 @@ exports.teacherService = {
             throw new Error('Failed to update teacher');
         }
     },
-    // Delete teacher
+    // Delete teacher (soft delete)
     async delete(id) {
         try {
-            return await prismaService_1.default.teachers.delete({
-                where: { id }
+            return await prismaService_1.default.teachers.update({
+                where: { id },
+                data: {
+                    deleted_at: new Date(),
+                    updated_at: new Date()
+                }
             });
         }
         catch (error) {
@@ -415,9 +431,9 @@ exports.teacherService = {
     async getStats() {
         try {
             const [total, male, female] = await Promise.all([
-                prismaService_1.default.teachers.count(),
-                prismaService_1.default.teachers.count({ where: { gender: 'Male' } }),
-                prismaService_1.default.teachers.count({ where: { gender: 'Female' } })
+                prismaService_1.default.teachers.count({ where: { deleted_at: null } }),
+                prismaService_1.default.teachers.count({ where: { gender: 'Male', deleted_at: null } }),
+                prismaService_1.default.teachers.count({ where: { gender: 'Female', deleted_at: null } })
             ]);
             return { total, male, female };
         }
@@ -669,8 +685,20 @@ exports.teacherService = {
         if (data.habitation_category !== undefined)
             transformed.habitation_category = data.habitation_category;
         if (data.block_office !== undefined) {
-            // Convert underscores back to spaces for enum values
-            transformed.block_office = data.block_office.replace(/_/g, ' ');
+            // Handle special cases for Education Office entries
+            if (data.block_office === 'Education_Office_CADC_') {
+                transformed.block_office = 'Education Office(CADC)';
+            }
+            else if (data.block_office === 'Education_Office__LADC_') {
+                transformed.block_office = 'Education Office (LADC)';
+            }
+            else if (data.block_office === 'Education_Office__MADC_') {
+                transformed.block_office = 'Education Office (MADC)';
+            }
+            else {
+                // Convert underscores back to spaces for other enum values
+                transformed.block_office = data.block_office.replace(/_/g, ' ');
+            }
         }
         // Preserve relations data
         if (data.posting_histories !== undefined)

@@ -1642,7 +1642,7 @@ const handleSubmit = async () => {
     'Social Group': form.value.social_group,
     'Religion': form.value.religion,
     'Gender': form.value.gender,
-    'Aadhaar Number': form.value.aadhaar_number,
+    // Aadhaar Number is optional, not included in required fields
 
     'Subjects Taught': form.value.subjects_taught,
     'Classes Taught': form.value.classes_taught,

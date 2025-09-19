@@ -1182,13 +1182,16 @@ const viewTeacher = async (teacher: Teacher) => {
   selectedTeacher.value = teacher
   showTeacherModal.value = true
   
-  // Fetch medical records for this teacher using teacher_ID
+  // Fetch medical records for this teacher using teacher_ID or id
   if (teacher.teacher_ID || teacher.id) {
     loadingMedicalRecords.value = true
     try {
+      // Use teacher_ID (string) if available, otherwise use id (number)
       const teacherIdentifier = teacher.teacher_ID || teacher.id
       if (!teacherIdentifier) return
-      const resp = await medicalRecordsApi.getByTeacher(Number(teacherIdentifier))
+      
+      // Pass the identifier as-is (string or number) - the API handles both
+      const resp = await medicalRecordsApi.getByTeacher(teacherIdentifier)
       teacherMedicalRecords.value = (resp.data && (resp.data as any).data) ? (resp.data as any).data : []
     } catch (error) {
       console.error('Error fetching medical records:', error)
@@ -1270,8 +1273,46 @@ const fileUrl = (url?: string | null) => {
 
 const deleteTeacher = async (teacherId: number | string) => {
   try {
+    console.log('🔍 Frontend deleteTeacher - teacherId:', teacherId, 'type:', typeof teacherId)
+    
+    // For teacher_ID strings like "TC1002", we need to find the numeric database ID
+    let numericId: number
+    
+    if (typeof teacherId === 'string' && isNaN(Number(teacherId))) {
+      // This is a teacher_ID string, we need to find the teacher first to get the numeric ID
+      console.log('🔍 Frontend deleteTeacher - looking up teacher by teacher_ID:', teacherId)
+      try {
+        const teacherResponse = await teachersApi.search(teacherId)
+        if (teacherResponse.data.success && teacherResponse.data.data && teacherResponse.data.data.length > 0) {
+          const teacher = teacherResponse.data.data.find(t => t.teacher_ID === teacherId)
+          if (teacher && teacher.id) {
+            numericId = Number(teacher.id)
+            console.log('🔍 Frontend deleteTeacher - found numeric ID:', numericId)
+          } else {
+            alert('Teacher not found. Cannot delete teacher.')
+            return
+          }
+        } else {
+          alert('Teacher not found. Cannot delete teacher.')
+          return
+        }
+      } catch (error) {
+        console.error('Error finding teacher:', error)
+        alert('Failed to find teacher. Cannot delete teacher.')
+        return
+      }
+    } else {
+      // This is already a numeric ID
+      numericId = Number(teacherId)
+    }
+    
+    if (isNaN(numericId) || numericId <= 0) {
+      alert('Invalid teacher ID. Cannot delete teacher.')
+      return
+    }
+    
     // First, check cascade information
-    const cascadeResponse = await cascadeApi.getTeacherCascadeInfo(Number(teacherId))
+    const cascadeResponse = await cascadeApi.getTeacherCascadeInfo(numericId)
     const cascadeInfo = cascadeResponse.data.data?.cascadeInfo
     
     if (!cascadeInfo) {
@@ -1299,7 +1340,7 @@ const deleteTeacher = async (teacherId: number | string) => {
     }
     
     // Use cascade API for safe deletion
-      const response = await cascadeApi.safeDeleteTeacher(Number(teacherId), true)
+      const response = await cascadeApi.safeDeleteTeacher(numericId, true)
     if (response.data.success) {
       await loadTeachers(pagination.value.page)
       alert('Teacher deleted successfully!')
@@ -1367,7 +1408,7 @@ type MedicalSummary = {
   latestMedicalDocumentUrl: string
 }
 
-const getMedicalSummary = async (teacherId?: number): Promise<MedicalSummary> => {
+const getMedicalSummary = async (teacherId?: number | string): Promise<MedicalSummary> => {
   if (!teacherId) {
     return { medicalRecordsCount: 0, latestMedicalAilment: '', latestMedicalSeverity: '', latestMedicalRemarks: '', latestMedicalDocumentUrl: '' }
   }

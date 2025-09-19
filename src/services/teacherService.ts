@@ -125,7 +125,10 @@ export const teacherService = {
 
   // Build where clause for role-based filtering
   buildWhereClause(roleFilters?: any) {
-    const whereClause: any = {};
+    const whereClause: any = {
+      // Exclude soft-deleted records
+      deleted_at: null
+    };
 
     if (roleFilters) {
       // Apply school_id filter
@@ -152,8 +155,9 @@ export const teacherService = {
     try {
       const teachers = await prisma.teachers.findMany({
         where: { 
-          district: district
-        },
+          district: district,
+          deleted_at: null
+        } as any,
         include: {
           posting_histories: true,
           deputations: true,
@@ -177,8 +181,9 @@ export const teacherService = {
         where: { 
           subjects_taught: {
             contains: subject
-          }
-        },
+          },
+          deleted_at: null
+        } as any,
         include: {
           posting_histories: true,
           deputations: true,
@@ -200,8 +205,9 @@ export const teacherService = {
     try {
       const teachers = await prisma.teachers.findMany({
         where: { 
-          school_id: schoolId
-        },
+          school_id: schoolId,
+          deleted_at: null
+        } as any,
         include: {
           posting_histories: true,
           deputations: true,
@@ -241,8 +247,11 @@ export const teacherService = {
   // Get teacher by ID
   async getById(id: number): Promise<any | null> {
     try {
-      const teacher = await prisma.teachers.findUnique({
-        where: { id },
+      const teacher = await prisma.teachers.findFirst({
+        where: { 
+          id,
+          deleted_at: null
+        } as any,
         include: {
           posting_histories: true,
           deputations: true,
@@ -279,14 +288,17 @@ export const teacherService = {
   // Search teachers
   async search(query: string): Promise<any[]> {
     try {
+      console.log('🔍 Teacher search - query:', query)
       const teachers = await prisma.teachers.findMany({
         where: {
           OR: [
             { teacher_name: { contains: query } },
             { phone_number: { contains: query } },
-            { email: { contains: query } }
-          ]
-        },
+            { email: { contains: query } },
+            { teacher_ID: { contains: query } }
+          ],
+          deleted_at: null
+        } as any,
         include: {
           posting_histories: true,
           deputations: true,
@@ -422,13 +434,17 @@ export const teacherService = {
     }
   },
 
-  // Delete teacher
+  // Delete teacher (soft delete)
   async delete(id: number): Promise<any> {
     try {
-      return await prisma.teachers.delete({
-        where: { id }
+      return await prisma.teachers.update({
+        where: { id },
+        data: { 
+          deleted_at: new Date(),
+          updated_at: new Date()
+        } as any
       })
-      } catch (error) {
+    } catch (error) {
       console.error('Error deleting teacher:', error)
       throw new Error('Failed to delete teacher')
     }
@@ -438,9 +454,9 @@ export const teacherService = {
   async getStats(): Promise<any> {
     try {
       const [total, male, female] = await Promise.all([
-        prisma.teachers.count(),
-        prisma.teachers.count({ where: { gender: 'Male' } }),
-        prisma.teachers.count({ where: { gender: 'Female' } })
+        prisma.teachers.count({ where: { deleted_at: null } as any }),
+        prisma.teachers.count({ where: { gender: 'Male', deleted_at: null } as any }),
+        prisma.teachers.count({ where: { gender: 'Female', deleted_at: null } as any })
       ])
 
       return { total, male, female }
@@ -656,8 +672,17 @@ export const teacherService = {
     if (data.habitation_class !== undefined) transformed.habitation_class = data.habitation_class
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
-      // Convert underscores back to spaces for enum values
-      transformed.block_office = data.block_office.replace(/_/g, ' ')
+      // Handle special cases for Education Office entries
+      if (data.block_office === 'Education_Office_CADC_') {
+        transformed.block_office = 'Education Office(CADC)'
+      } else if (data.block_office === 'Education_Office__LADC_') {
+        transformed.block_office = 'Education Office (LADC)'
+      } else if (data.block_office === 'Education_Office__MADC_') {
+        transformed.block_office = 'Education Office (MADC)'
+      } else {
+        // Convert underscores back to spaces for other enum values
+        transformed.block_office = data.block_office.replace(/_/g, ' ')
+      }
     }
     
     // Preserve relations data

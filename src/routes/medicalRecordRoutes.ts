@@ -27,7 +27,16 @@ router.post('/', requireAdmin, [
 
 // Get by teacher
 router.get('/:teacherId', [
-  param('teacherId').isInt({ min: 1 }).withMessage('teacherId must be a positive integer')
+  param('teacherId').custom((value) => {
+    // Allow both numeric IDs and teacher_ID strings
+    if (typeof value === 'string' && value.match(/^TC\d+$/)) {
+      return true // Valid teacher_ID format
+    }
+    if (!isNaN(Number(value)) && Number(value) > 0) {
+      return true // Valid numeric ID
+    }
+    throw new Error('teacherId must be a positive integer or valid teacher_ID (e.g., TC1001)')
+  })
 ], medicalRecordController.getByTeacher)
 
 // Update (admin only)

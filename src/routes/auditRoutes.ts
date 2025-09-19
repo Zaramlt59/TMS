@@ -24,4 +24,16 @@ router.get('/logs/:id', AuditController.getAuditLogById)
 // Export audit logs to CSV
 router.get('/export', AuditController.exportAuditLogs)
 
+// Manual export audit logs to CSV for specific date range
+router.post('/export/manual', AuditController.exportAuditLogsManual)
+
+// Get list of exported CSV files
+router.get('/export/files', AuditController.getExportedFiles)
+
+// Download exported CSV file
+router.get('/export/files/:filename', AuditController.downloadExportedFile)
+
+// Delete exported CSV file
+router.delete('/export/files/:filename', AuditController.deleteExportedFile)
+
 export default router

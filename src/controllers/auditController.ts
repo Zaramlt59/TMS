@@ -1,5 +1,8 @@
 import { Request, Response } from 'express'
 import { AuditService } from '../services/auditService'
+import { AuditCleanupService } from '../services/auditCleanupService'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export class AuditController {
   /**
@@ -185,6 +188,165 @@ export class AuditController {
       res.status(500).json({
         success: false,
         message: 'Failed to export audit logs',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+    }
+  }
+
+  /**
+   * Manually export audit logs to CSV for a specific date range
+   */
+  static async exportAuditLogsManual(req: Request, res: Response) {
+    try {
+      const { startDate, endDate } = req.body
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          success: false,
+          message: 'Start date and end date are required'
+        })
+      }
+
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid date format'
+        })
+      }
+
+      if (start >= end) {
+        return res.status(400).json({
+          success: false,
+          message: 'Start date must be before end date'
+        })
+      }
+
+      const result = await AuditCleanupService.exportLogsToCSVManual(start, end)
+
+      res.json({
+        success: true,
+        message: 'Audit logs exported successfully',
+        data: {
+          exportPath: result.exportPath,
+          recordCount: result.recordCount,
+          filename: path.basename(result.exportPath)
+        }
+      })
+    } catch (error) {
+      console.error('Failed to manually export audit logs:', error)
+      res.status(500).json({
+        success: false,
+        message: 'Failed to export audit logs',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+    }
+  }
+
+  /**
+   * Get list of exported CSV files
+   */
+  static async getExportedFiles(req: Request, res: Response) {
+    try {
+      const files = AuditCleanupService.getExportedFiles()
+      
+      const fileInfo = files.map(filePath => {
+        const stats = fs.statSync(filePath)
+        return {
+          filename: path.basename(filePath),
+          filePath: filePath,
+          size: stats.size,
+          created: stats.birthtime,
+          modified: stats.mtime
+        }
+      })
+
+      res.json({
+        success: true,
+        data: fileInfo
+      })
+    } catch (error) {
+      console.error('Failed to get exported files:', error)
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get exported files',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+    }
+  }
+
+  /**
+   * Download exported CSV file
+   */
+  static async downloadExportedFile(req: Request, res: Response) {
+    try {
+      const { filename } = req.params
+      
+      if (!filename || !filename.endsWith('.csv')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid filename'
+        })
+      }
+
+      const filePath = path.join(process.cwd(), 'exports', 'audit-logs', filename)
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'File not found'
+        })
+      }
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+      res.sendFile(filePath)
+    } catch (error) {
+      console.error('Failed to download exported file:', error)
+      res.status(500).json({
+        success: false,
+        message: 'Failed to download file',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+    }
+  }
+
+  /**
+   * Delete exported CSV file
+   */
+  static async deleteExportedFile(req: Request, res: Response) {
+    try {
+      const { filename } = req.params
+      
+      if (!filename || !filename.endsWith('.csv')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid filename'
+        })
+      }
+
+      const filePath = path.join(process.cwd(), 'exports', 'audit-logs', filename)
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'File not found'
+        })
+      }
+
+      fs.unlinkSync(filePath)
+
+      res.json({
+        success: true,
+        message: 'File deleted successfully'
+      })
+    } catch (error) {
+      console.error('Failed to delete exported file:', error)
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete file',
         error: error instanceof Error ? error.message : 'Unknown error'
       })
     }

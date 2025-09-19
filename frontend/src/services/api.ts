@@ -71,7 +71,7 @@ api.interceptors.response.use(
       isRefreshing = true
       try {
         const csrf = localStorage.getItem('csrf') || ''
-        const resp = await axios.post('/api/users/refresh', {}, { withCredentials: true, headers: { 'X-CSRF-Token': csrf } })
+        const resp = await axios.post('/api/auth/refresh', {}, { withCredentials: true, headers: { 'X-CSRF-Token': csrf } })
         const newToken = resp.data?.data?.token || ''
         const newCsrf = resp.data?.data?.csrf || ''
         if (newToken) localStorage.setItem('token', newToken)
@@ -162,7 +162,7 @@ export const medicalRecordsApi = {
   create: (data: { teacherId: number; ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; diagnosisDate?: string; treatmentStatus?: string; remarks?: string; documents?: string }) =>
     api.post<ApiResponse<MedicalRecord>>('/medical-records', data),
 
-  getByTeacher: (teacherId: number) =>
+  getByTeacher: (teacherId: number | string) =>
     api.get<ApiResponse<MedicalRecord[]>>(`/medical-records/${teacherId}`),
 
   update: (id: number, data: Partial<{ ailmentName: string; severity: 'Mild'|'Moderate'|'Severe'|'Critical'; diagnosisDate?: string; treatmentStatus?: string; remarks?: string; documents?: string }>) =>

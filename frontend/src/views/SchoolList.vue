@@ -579,7 +579,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { schoolsApi } from '../services/api'
+import { schoolsApi, cascadeApi } from '../services/api'
 import type { School, SchoolListResponse } from '../types'
 import * as XLSX from 'xlsx'
 import { useRoleGuard } from '../composables/useRoleGuard'
@@ -682,7 +682,7 @@ const closeSchoolModal = () => {
 }
 
 const getCompleteAddress = (school: School) => {
-  const addressParts = []
+  const addressParts: string[] = []
   
   if (school.habitation) addressParts.push(school.habitation)
   if (school.block_office) addressParts.push(school.block_office)
@@ -693,17 +693,54 @@ const getCompleteAddress = (school: School) => {
 }
 
 const deleteSchool = async (schoolId: string) => {
-  if (!confirm('Are you sure you want to delete this school? This action cannot be undone.')) {
-    return
-  }
-  
   try {
-    const response = await schoolsApi.deleteBySchoolId(schoolId)
+    console.log('🔍 Frontend deleteSchool - schoolId:', schoolId)
+    
+    // First, check cascade information
+    const cascadeResponse = await cascadeApi.getSchoolCascadeInfo(schoolId)
+    const cascadeInfo = cascadeResponse.data.data?.cascadeInfo
+    
+    if (!cascadeInfo) {
+      alert('Failed to get cascade information. Please try again.')
+      return
+    }
+    
+    const totalAffected = cascadeInfo.teachers + cascadeInfo.medicalRecords + 
+                         cascadeInfo.attachments + cascadeInfo.deputations + 
+                         cascadeInfo.postingHistories
+
+    let confirmMessage = 'Are you sure you want to delete this school?'
+    if (totalAffected > 0) {
+      confirmMessage += `\n\nThis will also delete:\n`
+      if (cascadeInfo.teachers > 0) confirmMessage += `• ${cascadeInfo.teachers} teacher(s)\n`
+      if (cascadeInfo.medicalRecords > 0) confirmMessage += `• ${cascadeInfo.medicalRecords} medical record(s)\n`
+      if (cascadeInfo.attachments > 0) confirmMessage += `• ${cascadeInfo.attachments} attachment(s)\n`
+      if (cascadeInfo.deputations > 0) confirmMessage += `• ${cascadeInfo.deputations} deputation(s)\n`
+      if (cascadeInfo.postingHistories > 0) confirmMessage += `• ${cascadeInfo.postingHistories} posting histor(ies)\n`
+      confirmMessage += `\nThis action cannot be undone.`
+    } else {
+      confirmMessage += ' This action cannot be undone.'
+    }
+
+    if (!confirm(confirmMessage)) {
+      return
+    }
+    
+    // Use cascade API for safe deletion
+    const response = await cascadeApi.safeDeleteSchool(schoolId, true)
     if (response.data.success) {
       await loadSchools(pagination.value.page)
+      alert('School deleted successfully!')
+    } else {
+      alert(`Failed to delete school: ${response.data.message}`)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete school:', error)
+    if (error.response?.data?.message) {
+      alert(`Failed to delete school: ${error.response.data.message}`)
+    } else {
+      alert('Failed to delete school. Please try again.')
+    }
   }
 }
 

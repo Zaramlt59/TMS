@@ -11,25 +11,25 @@ class CascadeService {
      */
     async getSchoolCascadeInfo(schoolId) {
         const [teachers, medicalRecords, attachments, deputations, postingHistories] = await Promise.all([
-            prismaService_1.default.teachers.count({ where: { school_id: schoolId } }),
+            prismaService_1.default.teachers.count({ where: { school_id: schoolId, deleted_at: null } }),
             prismaService_1.default.medical_records.count({
                 where: {
-                    teachers: { school_id: schoolId }
+                    teachers: { school_id: schoolId, deleted_at: null }
                 }
             }),
             prismaService_1.default.attachments.count({
                 where: {
-                    teachers: { school_id: schoolId }
+                    teachers: { school_id: schoolId, deleted_at: null }
                 }
             }),
             prismaService_1.default.deputations.count({
                 where: {
-                    teachers: { school_id: schoolId }
+                    teachers: { school_id: schoolId, deleted_at: null }
                 }
             }),
             prismaService_1.default.posting_histories.count({
                 where: {
-                    teachers: { school_id: schoolId }
+                    teachers: { school_id: schoolId, deleted_at: null }
                 }
             })
         ]);
@@ -78,20 +78,27 @@ class CascadeService {
      */
     async safeDeleteSchool(schoolId, force = false) {
         try {
+            console.log('🔍 safeDeleteSchool - schoolId:', schoolId, 'force:', force);
             const cascadeInfo = await this.getSchoolCascadeInfo(schoolId);
+            console.log('🔍 safeDeleteSchool - cascadeInfo:', cascadeInfo);
             const totalAffected = cascadeInfo.teachers + cascadeInfo.medicalRecords +
                 cascadeInfo.attachments + cascadeInfo.deputations +
                 cascadeInfo.postingHistories;
+            // For soft delete, we don't need to block deletion due to related records
+            // since we're not actually deleting the data, just marking it as deleted
             if (totalAffected > 0 && !force) {
-                return {
-                    success: false,
-                    message: 'School deletion will affect related records',
-                    cascadeInfo,
-                    error: `This will delete ${cascadeInfo.teachers} teachers, ${cascadeInfo.medicalRecords} medical records, ${cascadeInfo.attachments} attachments, ${cascadeInfo.deputations} deputations, and ${cascadeInfo.postingHistories} posting histories. Use force=true to proceed.`
-                };
+                console.log(`School deletion will affect ${totalAffected} related records, but proceeding with soft delete`);
             }
-            // Proceed with deletion
-            await prismaService_1.default.schools.delete({ where: { school_id: schoolId } });
+            // Proceed with soft deletion
+            console.log('🔍 safeDeleteSchool - proceeding with soft delete for schoolId:', schoolId);
+            const result = await prismaService_1.default.schools.update({
+                where: { school_id: schoolId },
+                data: {
+                    deleted_at: new Date(),
+                    updated_at: new Date()
+                }
+            });
+            console.log('🔍 safeDeleteSchool - soft delete result:', result);
             return {
                 success: true,
                 message: `School deleted successfully. ${totalAffected} related records were also deleted.`,
@@ -99,6 +106,7 @@ class CascadeService {
             };
         }
         catch (error) {
+            console.error('🔍 safeDeleteSchool - error:', error);
             return {
                 success: false,
                 message: 'Failed to delete school',
@@ -111,19 +119,26 @@ class CascadeService {
      */
     async safeDeleteTeacher(teacherId, force = false) {
         try {
+            console.log('🔍 safeDeleteTeacher - teacherId:', teacherId, 'force:', force);
             const cascadeInfo = await this.getTeacherCascadeInfo(teacherId);
+            console.log('🔍 safeDeleteTeacher - cascadeInfo:', cascadeInfo);
             const totalAffected = cascadeInfo.medicalRecords + cascadeInfo.attachments +
                 cascadeInfo.deputations + cascadeInfo.postingHistories;
+            // For soft delete, we don't need to block deletion due to related records
+            // since we're not actually deleting the data, just marking it as deleted
             if (totalAffected > 0 && !force) {
-                return {
-                    success: false,
-                    message: 'Teacher deletion will affect related records',
-                    cascadeInfo,
-                    error: `This will delete ${cascadeInfo.medicalRecords} medical records, ${cascadeInfo.attachments} attachments, ${cascadeInfo.deputations} deputations, and ${cascadeInfo.postingHistories} posting histories. Use force=true to proceed.`
-                };
+                console.log(`Teacher deletion will affect ${totalAffected} related records, but proceeding with soft delete`);
             }
-            // Proceed with deletion
-            await prismaService_1.default.teachers.delete({ where: { id: teacherId } });
+            // Proceed with soft deletion
+            console.log('🔍 safeDeleteTeacher - proceeding with soft delete for teacherId:', teacherId);
+            const result = await prismaService_1.default.teachers.update({
+                where: { id: teacherId },
+                data: {
+                    deleted_at: new Date(),
+                    updated_at: new Date()
+                }
+            });
+            console.log('🔍 safeDeleteTeacher - soft delete result:', result);
             return {
                 success: true,
                 message: `Teacher deleted successfully. ${totalAffected} related records were also deleted.`,
@@ -131,6 +146,7 @@ class CascadeService {
             };
         }
         catch (error) {
+            console.error('🔍 safeDeleteTeacher - error:', error);
             return {
                 success: false,
                 message: 'Failed to delete teacher',
@@ -218,8 +234,8 @@ class CascadeService {
                     rd_blocks: { district_id: districtId }
                 }
             }),
-            prismaService_1.default.schools.count({ where: { district: district.name } }),
-            prismaService_1.default.teachers.count({ where: { district: district.name } }),
+            prismaService_1.default.schools.count({ where: { district: district.name, deleted_at: null } }),
+            prismaService_1.default.teachers.count({ where: { district: district.name, deleted_at: null } }),
             prismaService_1.default.users.count({ where: { district: district.name } })
         ]);
         return {
@@ -244,8 +260,8 @@ class CascadeService {
         }
         const [villages, schools, teachers] = await Promise.all([
             prismaService_1.default.villages.count({ where: { rd_block_id: rdBlockId } }),
-            prismaService_1.default.schools.count({ where: { rd_block: rdBlock.name } }),
-            prismaService_1.default.teachers.count({ where: { rd_block: rdBlock.name } })
+            prismaService_1.default.schools.count({ where: { rd_block: rdBlock.name, deleted_at: null } }),
+            prismaService_1.default.teachers.count({ where: { rd_block: rdBlock.name, deleted_at: null } })
         ]);
         return {
             villages,
@@ -266,8 +282,8 @@ class CascadeService {
             throw new Error('Village not found');
         }
         const [schools, teachers] = await Promise.all([
-            prismaService_1.default.schools.count({ where: { habitation: village.name } }),
-            prismaService_1.default.teachers.count({ where: { habitation: village.name } })
+            prismaService_1.default.schools.count({ where: { habitation: village.name, deleted_at: null } }),
+            prismaService_1.default.teachers.count({ where: { habitation: village.name, deleted_at: null } })
         ]);
         return {
             schools,

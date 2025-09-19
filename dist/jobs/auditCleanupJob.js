@@ -50,6 +50,8 @@ class AuditCleanupJob {
             console.log('Audit cleanup completed:', {
                 deletedCount: result.deletedCount,
                 archivedCount: result.archivedCount,
+                exportedCount: result.exportedCount,
+                exportPath: result.exportPath,
                 retentionDays
             });
             // Get statistics after cleanup

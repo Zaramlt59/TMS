@@ -20,38 +20,73 @@ const storeOTP = async (identifier, otp) => {
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
     // Determine if identifier is email or phone
     const isEmail = identifier.includes('@');
-    await prisma.otp_verification.upsert({
-        where: isEmail ? { email: identifier } : { phone: identifier },
-        update: {
-            otp,
-            expires_at: expiresAt,
-            created_at: new Date()
-        },
-        create: {
-            ...(isEmail ? { email: identifier } : { phone: identifier }),
-            otp,
-            expires_at: expiresAt,
-            created_at: new Date()
-        }
-    });
+    if (isEmail) {
+        await prisma.otp_verification.upsert({
+            where: { email: identifier },
+            update: {
+                otp,
+                expires_at: expiresAt,
+                created_at: new Date()
+            },
+            create: {
+                email: identifier,
+                phone: null,
+                otp,
+                expires_at: expiresAt,
+                created_at: new Date()
+            }
+        });
+    }
+    else {
+        await prisma.otp_verification.upsert({
+            where: { phone: identifier },
+            update: {
+                otp,
+                expires_at: expiresAt,
+                created_at: new Date()
+            },
+            create: {
+                email: null,
+                phone: identifier,
+                otp,
+                expires_at: expiresAt,
+                created_at: new Date()
+            }
+        });
+    }
 };
 exports.storeOTP = storeOTP;
 // Verify OTP
 const verifyOTP = async (identifier, otp) => {
     // Determine if identifier is email or phone
     const isEmail = identifier.includes('@');
-    const otpRecord = await prisma.otp_verification.findUnique({
-        where: isEmail ? { email: identifier } : { phone: identifier }
-    });
+    let otpRecord;
+    if (isEmail) {
+        otpRecord = await prisma.otp_verification.findUnique({
+            where: { email: identifier }
+        });
+    }
+    else {
+        otpRecord = await prisma.otp_verification.findUnique({
+            where: { phone: identifier }
+        });
+    }
     if (!otpRecord) {
         return false;
     }
     // Check if OTP is expired
     if (new Date() > otpRecord.expires_at) {
         // Clean up expired OTP
-        await prisma.otp_verification.delete({
-            where: isEmail ? { email: identifier } : { phone: identifier }
-        });
+        if (isEmail) {
+            await prisma.otp_verification.delete({
+                where: { email: identifier }
+            });
+        }
+        else {
+            await prisma.otp_verification.delete({
+                where: { phone: identifier }
+            });
+        }
         return false;
     }
     // Check if OTP matches
@@ -59,9 +94,16 @@ const verifyOTP = async (identifier, otp) => {
         return false;
     }
     // OTP is valid, clean it up
-    await prisma.otp_verification.delete({
-        where: isEmail ? { email: identifier } : { phone: identifier }
-    });
+    if (isEmail) {
+        await prisma.otp_verification.delete({
+            where: { email: identifier }
+        });
+    }
+    else {
+        await prisma.otp_verification.delete({
+            where: { phone: identifier }
+        });
+    }
     return true;
 };
 exports.verifyOTP = verifyOTP;

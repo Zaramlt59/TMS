@@ -12,25 +12,25 @@ export class CascadeService {
     postingHistories: number;
   }> {
     const [teachers, medicalRecords, attachments, deputations, postingHistories] = await Promise.all([
-      prisma.teachers.count({ where: { school_id: schoolId } }),
+      prisma.teachers.count({ where: { school_id: schoolId, deleted_at: null } as any }),
       prisma.medical_records.count({ 
         where: { 
-          teachers: { school_id: schoolId } 
+          teachers: { school_id: schoolId, deleted_at: null } as any 
         } 
       }),
       prisma.attachments.count({ 
         where: { 
-          teachers: { school_id: schoolId } 
+          teachers: { school_id: schoolId, deleted_at: null } as any 
         } 
       }),
       prisma.deputations.count({ 
         where: { 
-          teachers: { school_id: schoolId } 
+          teachers: { school_id: schoolId, deleted_at: null } as any 
         } 
       }),
       prisma.posting_histories.count({ 
         where: { 
-          teachers: { school_id: schoolId } 
+          teachers: { school_id: schoolId, deleted_at: null } as any 
         } 
       })
     ]);
@@ -99,22 +99,29 @@ export class CascadeService {
     error?: string;
   }> {
     try {
+      console.log('🔍 safeDeleteSchool - schoolId:', schoolId, 'force:', force)
       const cascadeInfo = await this.getSchoolCascadeInfo(schoolId);
+      console.log('🔍 safeDeleteSchool - cascadeInfo:', cascadeInfo)
       const totalAffected = cascadeInfo.teachers + cascadeInfo.medicalRecords + 
                            cascadeInfo.attachments + cascadeInfo.deputations + 
                            cascadeInfo.postingHistories;
 
+      // For soft delete, we don't need to block deletion due to related records
+      // since we're not actually deleting the data, just marking it as deleted
       if (totalAffected > 0 && !force) {
-        return {
-          success: false,
-          message: 'School deletion will affect related records',
-          cascadeInfo,
-          error: `This will delete ${cascadeInfo.teachers} teachers, ${cascadeInfo.medicalRecords} medical records, ${cascadeInfo.attachments} attachments, ${cascadeInfo.deputations} deputations, and ${cascadeInfo.postingHistories} posting histories. Use force=true to proceed.`
-        };
+        console.log(`School deletion will affect ${totalAffected} related records, but proceeding with soft delete`);
       }
 
-      // Proceed with deletion
-      await prisma.schools.delete({ where: { school_id: schoolId } });
+      // Proceed with soft deletion
+      console.log('🔍 safeDeleteSchool - proceeding with soft delete for schoolId:', schoolId)
+      const result = await prisma.schools.update({ 
+        where: { school_id: schoolId },
+        data: { 
+          deleted_at: new Date(),
+          updated_at: new Date()
+        } as any
+      });
+      console.log('🔍 safeDeleteSchool - soft delete result:', result)
 
       return {
         success: true,
@@ -122,6 +129,7 @@ export class CascadeService {
         cascadeInfo
       };
     } catch (error: any) {
+      console.error('🔍 safeDeleteSchool - error:', error)
       return {
         success: false,
         message: 'Failed to delete school',
@@ -140,21 +148,28 @@ export class CascadeService {
     error?: string;
   }> {
     try {
+      console.log('🔍 safeDeleteTeacher - teacherId:', teacherId, 'force:', force)
       const cascadeInfo = await this.getTeacherCascadeInfo(teacherId);
+      console.log('🔍 safeDeleteTeacher - cascadeInfo:', cascadeInfo)
       const totalAffected = cascadeInfo.medicalRecords + cascadeInfo.attachments + 
                            cascadeInfo.deputations + cascadeInfo.postingHistories;
 
+      // For soft delete, we don't need to block deletion due to related records
+      // since we're not actually deleting the data, just marking it as deleted
       if (totalAffected > 0 && !force) {
-        return {
-          success: false,
-          message: 'Teacher deletion will affect related records',
-          cascadeInfo,
-          error: `This will delete ${cascadeInfo.medicalRecords} medical records, ${cascadeInfo.attachments} attachments, ${cascadeInfo.deputations} deputations, and ${cascadeInfo.postingHistories} posting histories. Use force=true to proceed.`
-        };
+        console.log(`Teacher deletion will affect ${totalAffected} related records, but proceeding with soft delete`);
       }
 
-      // Proceed with deletion
-      await prisma.teachers.delete({ where: { id: teacherId } });
+      // Proceed with soft deletion
+      console.log('🔍 safeDeleteTeacher - proceeding with soft delete for teacherId:', teacherId)
+      const result = await prisma.teachers.update({ 
+        where: { id: teacherId },
+        data: { 
+          deleted_at: new Date(),
+          updated_at: new Date()
+        } as any
+      });
+      console.log('🔍 safeDeleteTeacher - soft delete result:', result)
 
       return {
         success: true,
@@ -162,6 +177,7 @@ export class CascadeService {
         cascadeInfo
       };
     } catch (error: any) {
+      console.error('🔍 safeDeleteTeacher - error:', error)
       return {
         success: false,
         message: 'Failed to delete teacher',
@@ -269,8 +285,8 @@ export class CascadeService {
           rd_blocks: { district_id: districtId } 
         } 
       }),
-      prisma.schools.count({ where: { district: district.name } }),
-      prisma.teachers.count({ where: { district: district.name } }),
+      prisma.schools.count({ where: { district: district.name, deleted_at: null } as any }),
+      prisma.teachers.count({ where: { district: district.name, deleted_at: null } as any }),
       prisma.users.count({ where: { district: district.name } })
     ]);
 
@@ -303,8 +319,8 @@ export class CascadeService {
 
     const [villages, schools, teachers] = await Promise.all([
       prisma.villages.count({ where: { rd_block_id: rdBlockId } }),
-      prisma.schools.count({ where: { rd_block: rdBlock.name } }),
-      prisma.teachers.count({ where: { rd_block: rdBlock.name } })
+      prisma.schools.count({ where: { rd_block: rdBlock.name, deleted_at: null } as any }),
+      prisma.teachers.count({ where: { rd_block: rdBlock.name, deleted_at: null } as any })
     ]);
 
     return {
@@ -332,8 +348,8 @@ export class CascadeService {
     }
 
     const [schools, teachers] = await Promise.all([
-      prisma.schools.count({ where: { habitation: village.name } }),
-      prisma.teachers.count({ where: { habitation: village.name } })
+      prisma.schools.count({ where: { habitation: village.name, deleted_at: null } as any }),
+      prisma.teachers.count({ where: { habitation: village.name, deleted_at: null } as any })
     ]);
 
     return {
