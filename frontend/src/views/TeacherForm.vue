@@ -142,15 +142,14 @@
               </select>
             </div>
             <div>
-              <label class="form-label">Aadhaar Number *</label>
+              <label class="form-label">Aadhaar Number</label>
               <input
                 id="aadhaar-number"
                 name="aadhaar-number"
                 v-model="form.aadhaar_number"
                 type="text"
-                required
                 class="form-input"
-                placeholder="Enter Aadhaar number"
+                placeholder="Enter Aadhaar number (optional)"
                 maxlength="12"
                 pattern="[0-9]{12}"
                 title="Please enter exactly 12 digits"
@@ -1607,10 +1606,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!form.value.aadhaar_number) {
-    alert('Aadhaar number is required')
-    return
-  }
+  // Aadhaar number is optional, no validation needed
 
   if (!form.value.teacher_ID || form.value.teacher_ID.trim() === '') {
     alert('Teacher ID is required')
@@ -1631,8 +1627,8 @@ const handleSubmit = async () => {
     return
   }
 
-  // Validate Aadhaar number format (12 digits)
-  if (!/^[0-9]{12}$/.test(form.value.aadhaar_number)) {
+  // Validate Aadhaar number format (12 digits) only if provided
+  if (form.value.aadhaar_number && !/^[0-9]{12}$/.test(form.value.aadhaar_number)) {
     alert('Aadhaar number must be exactly 12 digits')
     return
   }

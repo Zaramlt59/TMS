@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { AuditService } from '../services/auditService'
+import { OptimizedAuditService } from '../services/optimizedAuditService'
 
 // Extend Request interface to include audit data
 declare global {
@@ -64,7 +64,7 @@ export const logApiRequest = (action: string, resourceType: string) => {
     res.send = function(data) {
       if (res.statusCode >= 200 && res.statusCode < 300 && req.user?.id) {
         // Log successful action
-        AuditService.logDataAccess(
+        OptimizedAuditService.logDataAccess(
           req.user.id,
           action as any,
           resourceType,
@@ -83,7 +83,7 @@ export const logApiRequest = (action: string, resourceType: string) => {
     res.json = function(data) {
       if (res.statusCode >= 400 && req.user?.id) {
         // Log failed action
-        AuditService.logDataAccess(
+        OptimizedAuditService.logDataAccess(
           req.user.id,
           action as any,
           resourceType,
@@ -115,7 +115,7 @@ export const logAuthEvent = (action: 'login' | 'logout' | 'login_failed') => {
     res.send = function(data) {
       if (req.user?.id) {
         const success = res.statusCode >= 200 && res.statusCode < 300
-        AuditService.logAuth(
+        OptimizedAuditService.logAuth(
           req.user.id,
           action,
           req.auditData?.details?.ipAddress,
@@ -142,7 +142,7 @@ export const logUserManagement = (action: 'user_create' | 'user_update' | 'user_
         const success = res.statusCode >= 200 && res.statusCode < 300
         const targetUserId = req.params.id || req.body?.id || req.body?.userId
         
-        AuditService.logUserManagement(
+        OptimizedAuditService.logUserManagement(
           req.user.id,
           action,
           parseInt(targetUserId) || 0,
@@ -172,7 +172,7 @@ export const logSecurityEvent = (action: 'unauthorized_access' | 'permission_den
     const originalSend = res.send
     res.send = function(data) {
       if (req.user?.id) {
-        AuditService.logSecurity(
+        OptimizedAuditService.logSecurity(
           req.user.id,
           action,
           req.auditData?.resourceType || 'unknown',
@@ -207,7 +207,7 @@ export const logFailedAuth = (req: Request, res: Response, next: NextFunction) =
       // Create a temporary user ID for failed auth attempts
       const tempUserId = 0 // Use 0 for failed auth attempts
       
-      AuditService.logAuth(
+      OptimizedAuditService.logAuth(
         tempUserId,
         'login_failed',
         req.auditData?.details?.ipAddress,

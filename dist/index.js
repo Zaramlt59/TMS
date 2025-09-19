@@ -40,6 +40,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const Sentry = __importStar(require("@sentry/node"));
 const profiling_node_1 = require("@sentry/profiling-node");
 const app_1 = require("./app");
+const auditCleanupJob_1 = require("./jobs/auditCleanupJob");
 // Load environment variables
 dotenv_1.default.config();
 const app = (0, app_1.createApp)();
@@ -100,10 +101,24 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down server...');
+    try {
+        await auditCleanupJob_1.AuditCleanupJob.shutdown();
+        console.log('✅ Audit cleanup jobs stopped gracefully');
+    }
+    catch (error) {
+        console.error('❌ Error during audit cleanup shutdown:', error);
+    }
     process.exit(0);
 });
 process.on('SIGTERM', async () => {
     console.log('\n🛑 Shutting down server...');
+    try {
+        await auditCleanupJob_1.AuditCleanupJob.shutdown();
+        console.log('✅ Audit cleanup jobs stopped gracefully');
+    }
+    catch (error) {
+        console.error('❌ Error during audit cleanup shutdown:', error);
+    }
     process.exit(0);
 });
 startServer();

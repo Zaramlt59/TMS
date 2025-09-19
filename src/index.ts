@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 import { createApp } from './app';
+import { AuditCleanupJob } from './jobs/auditCleanupJob';
 
 // Load environment variables
 dotenv.config();
@@ -67,11 +68,23 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down server...');
+  try {
+    await AuditCleanupJob.shutdown();
+    console.log('✅ Audit cleanup jobs stopped gracefully');
+  } catch (error) {
+    console.error('❌ Error during audit cleanup shutdown:', error);
+  }
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('\n🛑 Shutting down server...');
+  try {
+    await AuditCleanupJob.shutdown();
+    console.log('✅ Audit cleanup jobs stopped gracefully');
+  } catch (error) {
+    console.error('❌ Error during audit cleanup shutdown:', error);
+  }
   process.exit(0);
 });
 

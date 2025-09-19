@@ -37,6 +37,7 @@ const rolesRoutes_1 = __importDefault(require("./routes/rolesRoutes"));
 const sessionRoutes_1 = __importDefault(require("./routes/sessionRoutes"));
 const cascadeRoutes_1 = __importDefault(require("./routes/cascadeRoutes"));
 const env_1 = require("./utils/env");
+const auditCleanupJob_1 = require("./jobs/auditCleanupJob");
 function createApp() {
     const app = (0, express_1.default)();
     const env = (0, env_1.loadEnv)();
@@ -126,6 +127,9 @@ function createApp() {
     app.use('/api/roles', rolesRoutes_1.default);
     app.use('/api/sessions', sessionRoutes_1.default);
     app.use('/api/cascade', cascadeRoutes_1.default);
+    // Start audit cleanup jobs
+    auditCleanupJob_1.AuditCleanupJob.start();
+    logger.info('Audit cleanup jobs started');
     app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
     app.use(express_1.default.static(path_1.default.join(__dirname, '../frontend/dist')));
     app.get('*', (req, res) => {

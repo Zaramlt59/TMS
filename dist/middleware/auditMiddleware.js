@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logFailedAuth = exports.logSecurityEvent = exports.logUserManagement = exports.logAuthEvent = exports.logApiRequest = exports.extractClientInfo = void 0;
-const auditService_1 = require("../services/auditService");
+const optimizedAuditService_1 = require("../services/optimizedAuditService");
 /**
  * Middleware to extract client information for audit logging
  */
@@ -47,7 +47,7 @@ const logApiRequest = (action, resourceType) => {
         res.send = function (data) {
             if (res.statusCode >= 200 && res.statusCode < 300 && req.user?.id) {
                 // Log successful action
-                auditService_1.AuditService.logDataAccess(req.user.id, action, resourceType, req.auditData?.resourceId, req.auditData?.details, req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, true).catch(console.error);
+                optimizedAuditService_1.OptimizedAuditService.logDataAccess(req.user.id, action, resourceType, req.auditData?.resourceId, req.auditData?.details, req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, true).catch(console.error);
             }
             return originalSend.call(this, data);
         };
@@ -56,7 +56,7 @@ const logApiRequest = (action, resourceType) => {
         res.json = function (data) {
             if (res.statusCode >= 400 && req.user?.id) {
                 // Log failed action
-                auditService_1.AuditService.logDataAccess(req.user.id, action, resourceType, req.auditData?.resourceId, {
+                optimizedAuditService_1.OptimizedAuditService.logDataAccess(req.user.id, action, resourceType, req.auditData?.resourceId, {
                     ...req.auditData?.details,
                     error: data.message || 'Unknown error',
                     statusCode: res.statusCode
@@ -77,7 +77,7 @@ const logAuthEvent = (action) => {
         res.send = function (data) {
             if (req.user?.id) {
                 const success = res.statusCode >= 200 && res.statusCode < 300;
-                auditService_1.AuditService.logAuth(req.user.id, action, req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, success, success ? undefined : data.message).catch(console.error);
+                optimizedAuditService_1.OptimizedAuditService.logAuth(req.user.id, action, req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, success, success ? undefined : data.message).catch(console.error);
             }
             return originalSend.call(this, data);
         };
@@ -95,7 +95,7 @@ const logUserManagement = (action) => {
             if (req.user?.id) {
                 const success = res.statusCode >= 200 && res.statusCode < 300;
                 const targetUserId = req.params.id || req.body?.id || req.body?.userId;
-                auditService_1.AuditService.logUserManagement(req.user.id, action, parseInt(targetUserId) || 0, {
+                optimizedAuditService_1.OptimizedAuditService.logUserManagement(req.user.id, action, parseInt(targetUserId) || 0, {
                     ...req.auditData?.details,
                     requestBody: req.body,
                     responseData: success ? data : undefined
@@ -115,7 +115,7 @@ const logSecurityEvent = (action) => {
         const originalSend = res.send;
         res.send = function (data) {
             if (req.user?.id) {
-                auditService_1.AuditService.logSecurity(req.user.id, action, req.auditData?.resourceType || 'unknown', req.auditData?.resourceId, {
+                optimizedAuditService_1.OptimizedAuditService.logSecurity(req.user.id, action, req.auditData?.resourceType || 'unknown', req.auditData?.resourceId, {
                     ...req.auditData?.details,
                     error: data.message || 'Security event',
                     statusCode: res.statusCode
@@ -138,7 +138,7 @@ const logFailedAuth = (req, res, next) => {
             const username = req.body?.username || req.body?.email || 'unknown';
             // Create a temporary user ID for failed auth attempts
             const tempUserId = 0; // Use 0 for failed auth attempts
-            auditService_1.AuditService.logAuth(tempUserId, 'login_failed', req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, false, data.message || 'Authentication failed').catch(console.error);
+            optimizedAuditService_1.OptimizedAuditService.logAuth(tempUserId, 'login_failed', req.auditData?.details?.ipAddress, req.auditData?.details?.userAgent, false, data.message || 'Authentication failed').catch(console.error);
         }
         return originalSend.call(this, data);
     };

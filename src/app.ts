@@ -33,6 +33,7 @@ import rolesRoutes from './routes/rolesRoutes'
 import sessionRoutes from './routes/sessionRoutes'
 import cascadeRoutes from './routes/cascadeRoutes'
 import { loadEnv } from './utils/env'
+import { AuditCleanupJob } from './jobs/auditCleanupJob'
 
 export function createApp() {
   const app = express()
@@ -128,6 +129,10 @@ export function createApp() {
   app.use('/api/roles', rolesRoutes)
   app.use('/api/sessions', sessionRoutes)
   app.use('/api/cascade', cascadeRoutes)
+
+  // Start audit cleanup jobs
+  AuditCleanupJob.start()
+  logger.info('Audit cleanup jobs started')
 
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
   app.use(express.static(path.join(__dirname, '../frontend/dist')))

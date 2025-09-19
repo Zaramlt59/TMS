@@ -132,7 +132,7 @@ export interface Teacher {
   social_group: string
   religion: string
   gender: string
-  aadhaar_number: string
+  aadhaar_number?: string
 
   subjects_taught: string // JSON string from database
   classes_taught: string // JSON string from database
