@@ -57,233 +57,45 @@
       </div>
     </div>
     
-    <!-- Navigation -->
-    <nav v-if="$route.path !== '/login' && $route.path !== '/otp-login'" class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <img src="/src/assests/TMS logo 1.svg" alt="TMS Logo" class="h-8 w-auto" />
+    <!-- Main Layout with Sidebar -->
+    <div v-if="$route.path !== '/login' && $route.path !== '/otp-login'" class="flex" style="height: calc(100vh - 48px); position: absolute; top: 48px; left: 0; right: 0; overflow: hidden;">
+      <!-- Desktop Sidebar -->
+      <div class="hidden lg:flex lg:flex-shrink-0">
+        <Sidebar />
             </div>
-            <div class="hidden md:ml-6 md:flex md:space-x-8">
-              <!-- Dashboard - Always visible -->
-              <router-link
-                to="/"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path === '/' ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Dashboard
-              </router-link>
-              
-              <!-- Schools - Visible to all except basic users -->
-              <router-link
-                v-if="canManageSchools || isTeacher"
-                to="/schools"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/schools') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Schools
-              </router-link>
-              
-              <!-- Teachers - Visible to all except basic users -->
-              <router-link
-                v-if="canManageTeachers || isTeacher"
-                to="/teachers"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/teachers') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Teachers
-              </router-link>
-              
-              <!-- Medical Records - For users who can manage medical records -->
-              <router-link
-                v-if="canManageMedicalRecords"
-                to="/medical-records"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/medical-records') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Medical Records
-              </router-link>
-              
-              <!-- Reports - For users who can view reports -->
-              <router-link
-                v-if="canViewReports"
-                to="/reports"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/reports') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Reports
-              </router-link>
-              
-              <!-- User Management - Only for super admins -->
-              <router-link
-                v-if="isSuperAdmin"
-                to="/user-management"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/user-management') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                User Management
-              </router-link>
-              
-              <!-- Audit Logs - Only for super admins -->
-              <router-link
-                v-if="isSuperAdmin"
-                to="/audit-logs"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path.startsWith('/audit-logs') ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Audit Logs
-              </router-link>
-              
-              <!-- Settings - For users who can access settings -->
-              <router-link
-                v-if="showSettings"
-                to="/settings"
-                class="text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                :class="[$route.path === '/settings' ? 'border-primary-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600']"
-              >
-                Settings
-              </router-link>
-            </div>
-          </div>
-          
-          <!-- Desktop User Menu and Logout -->
-          <div class="hidden md:flex items-center space-x-4">
-            <div class="text-sm text-gray-700 dark:text-gray-300">
-              Welcome, <span class="font-medium">{{ currentUser?.username }}</span>
-            </div>
-                   <button
-                     @click="handleLogout"
-                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-500 transition-colors duration-150"
-                   >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
-              Logout
-            </button>
-          </div>
 
-          <!-- Mobile menu button -->
-          <div class="md:hidden flex items-center space-x-2">
-            <DarkModeToggle />
-            <div class="text-sm text-gray-700 dark:text-gray-300">
-              {{ currentUser?.username }}
-            </div>
-            <button
-              @click="mobileMenuOpen = !mobileMenuOpen"
-              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-              aria-expanded="false"
-            >
-              <span class="sr-only">Open main menu</span>
-              <!-- Hamburger icon -->
-              <svg v-if="!mobileMenuOpen" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <!-- Close icon -->
-              <svg v-else class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Mobile menu -->
-        <div v-if="mobileMenuOpen" class="md:hidden">
-          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200 dark:border-gray-700">
-            <router-link
-              to="/"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path === '/' ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Dashboard
-            </router-link>
-            <router-link
-              v-if="canManageSchools || isTeacher"
-              to="/schools"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/schools') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Schools
-            </router-link>
-            <router-link
-              v-if="canManageTeachers || isTeacher"
-              to="/teachers"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/teachers') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Teachers
-            </router-link>
-            <router-link
-              v-if="canManageMedicalRecords"
-              to="/medical-records"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/medical-records') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Medical Records
-            </router-link>
-            <router-link
-              v-if="canViewReports"
-              to="/reports"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/reports') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Reports
-            </router-link>
-            <router-link
-              v-if="isSuperAdmin"
-              to="/user-management"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/user-management') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              User Management
-            </router-link>
-            <router-link
-              v-if="isSuperAdmin"
-              to="/audit-logs"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path.startsWith('/audit-logs') ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Audit Logs
-            </router-link>
-            <router-link
-              v-if="showSettings"
-              to="/settings"
-              @click="closeMobileMenu"
-              class="text-gray-900 dark:text-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              :class="[$route.path === '/settings' ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']"
-            >
-              Settings
-            </router-link>
-            <div class="border-t border-gray-200 dark:border-gray-700 pt-4 pb-3">
-              <div class="px-3 mb-3">
-                <div class="text-base font-medium text-gray-800 dark:text-gray-200">Welcome, {{ currentUser?.username }}</div>
-              </div>
-                     <button
-                       @click="handleLogout"
-                       class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
-                     >
-                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                Logout
-              </button>
-            </div>
-          </div>
+      <!-- Mobile Sidebar Overlay -->
+      <div v-if="sidebarOpen" class="fixed inset-0 z-40 lg:hidden">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="closeSidebar"></div>
+        <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800" style="top: 48px; height: calc(100vh - 48px);">
+          <Sidebar />
         </div>
       </div>
-    </nav>
+          
+      <!-- Main Content Area -->
+      <div class="flex-1 flex flex-col">
+        <!-- Mobile Toggle Button (Fixed Position) -->
+        <div class="fixed top-16 left-4 z-50 lg:hidden">
+          <SidebarToggle :is-open="sidebarOpen" @toggle="toggleSidebar" />
+        </div>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Main Content -->
+        <main class="flex-1 bg-gray-50 dark:bg-gray-900" style="overflow-y: auto; height: calc(100vh - 48px);">
+          <div class="py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+            <!-- Mobile spacing for toggle button -->
+            <div class="lg:hidden h-12"></div>
+            <router-view />
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Login/OTP Pages (Full Screen) -->
+    <div v-else class="h-screen flex flex-col">
+      <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
       <router-view />
     </main>
+    </div>
   </div>
 </template>
 
@@ -391,12 +203,14 @@ main, nav {
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { themeStore } from './stores/theme'
 import { useFontSizeStore } from './stores/fontSize'
 import DarkModeToggle from './components/DarkModeToggle.vue'
+import Sidebar from './components/Sidebar.vue'
+import SidebarToggle from './components/SidebarToggle.vue'
 import { useRoleGuard } from './composables/useRoleGuard'
 
 const route = useRoute()
@@ -427,8 +241,17 @@ const isSuperAdmin = computed(() => {
   return currentUser.value?.role === 'super_admin'
 })
 
-// Mobile menu state
-const mobileMenuOpen = ref(false)
+// Sidebar state
+const sidebarOpen = ref(false)
+
+// Sidebar controls
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
 
 // Initialize font size on mount
 onMounted(() => {
@@ -437,14 +260,19 @@ onMounted(() => {
 
 const handleLogout = async () => {
   await auth.logout()
-  mobileMenuOpen.value = false
+  sidebarOpen.value = false
   router.push('/login')
 }
 
-// Close mobile menu when route changes
-const closeMobileMenu = () => {
-  mobileMenuOpen.value = false
+// Close sidebar when route changes (mobile)
+const closeSidebarOnRouteChange = () => {
+  sidebarOpen.value = false
 }
+
+// Watch for route changes to close sidebar on mobile
+watch(() => route.path, () => {
+  closeSidebarOnRouteChange()
+})
 
 onMounted(() => {
   // Initialize theme

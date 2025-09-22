@@ -2,17 +2,17 @@
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+        <h1 class="text-lg sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
+        <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
           Manage master data for the system
         </p>
       </div>
     </div>
 
     <!-- Settings Tabs -->
-    <div class="mt-8">
+    <div class="mt-6 sm:mt-8">
       <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto">
+        <nav class="-mb-px flex space-x-1 sm:space-x-8 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <button
             v-for="tab in tabs"
             :key="tab.id"
@@ -21,21 +21,22 @@
               activeTab === tab.id
                 ? 'border-primary-500 text-primary-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
-              'whitespace-nowrap py-2 px-1 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0'
+              'whitespace-nowrap py-2 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0 min-w-0 touch-manipulation'
             ]"
           >
-            {{ tab.name }}
+            <span class="hidden sm:inline">{{ tab.name }}</span>
+            <span class="sm:hidden text-center block">{{ tab.name.split(' ')[0] }}</span>
           </button>
         </nav>
       </div>
 
       <!-- Tab Content -->
-      <div class="mt-8">
+      <div class="mt-6 sm:mt-8">
         <!-- Districts Tab -->
-        <div v-if="activeTab === 'districts'" class="space-y-6">
+        <div v-if="activeTab === 'districts'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Districts</h3>
-            <button @click="openModal('districts')" class="btn-primary w-full sm:w-auto">
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Districts</h3>
+            <button @click="openModal('districts')" class="btn-primary w-full sm:w-auto text-sm">
               Add District
             </button>
           </div>
@@ -277,7 +278,7 @@
           </div>
           <div>
             <label class="form-label">Classes Taught *</label>
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <label v-for="classItem in CLASSES" :key="classItem" class="flex items-center">
                 <input
                   type="checkbox"
@@ -285,7 +286,7 @@
                   v-model="formData.classes"
                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
-                <span class="ml-2 text-sm text-gray-700">{{ classItem }}</span>
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ classItem }}</span>
               </label>
             </div>
           </div>
@@ -399,7 +400,7 @@
     </Modal>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="top: 48px;">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
         <div 
@@ -409,34 +410,34 @@
         ></div>
 
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
               <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
                   Delete Confirmation
                 </h3>
                 <div class="mt-4">
-                  <p class="mb-6 text-gray-600">
+                  <p class="mb-6 text-gray-600 dark:text-gray-300">
                     Do you really want to delete <strong>{{ itemToDelete?.name }}</strong> permanently?
                   </p>
                   
-                  <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div class="flex flex-col gap-3">
                     <button 
                       @click="confirmDelete(true)" 
-                      class="btn-danger flex-1"
+                      class="btn-danger w-full"
                     >
                       Yes, Delete Permanently
                     </button>
                     <button 
                       @click="confirmDelete(false)" 
-                      class="btn-secondary flex-1"
+                      class="btn-secondary w-full"
                     >
                       No, Just Set Inactive
                     </button>
                   </div>
                   
-                  <div class="mt-4 text-sm text-gray-500">
+                  <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
                     <p><strong>Delete Permanently:</strong> Item will be completely removed from the database</p>
                     <p><strong>Set Inactive:</strong> Item will remain but won't appear in forms (you can reactivate later)</p>
                   </div>
@@ -444,11 +445,11 @@
               </div>
             </div>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6">
             <button
               type="button"
               @click="showDeleteModal = false"
-              class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:ml-3 sm:w-auto sm:text-sm"
+              class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:text-sm"
             >
               Cancel
             </button>
@@ -1265,5 +1266,99 @@ onMounted(() => {
   color: #9CA3AF; /* Light gray for readonly fields */
   opacity: 0.5; /* Faded for readonly fields */
   font-style: normal; /* Normal style for readonly fields */
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Custom scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
+  
+  /* Ensure modals are properly positioned on mobile */
+  .fixed.inset-0 {
+    top: 48px !important;
+    height: calc(100vh - 48px) !important;
+  }
+  
+  /* Better spacing for mobile tabs */
+  .space-x-1 > * + * {
+    margin-left: 0.25rem;
+  }
+  
+  /* Improve button spacing on mobile */
+  .gap-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  /* Reduce padding on mobile for better space utilization */
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Better mobile typography */
+  h1 {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+}
+
+/* Dark mode improvements for mobile */
+@media (max-width: 640px) {
+  .dark .form-input,
+  .dark .form-select {
+    background-color: #374151;
+    border-color: #4B5563;
+    color: #F9FAFB;
+  }
+  
+  .dark .form-input::placeholder,
+  .dark .form-select::placeholder {
+    color: #9CA3AF;
+  }
 }
 </style>
