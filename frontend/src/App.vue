@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Government Header -->
-    <div class="text-white shadow-sm" style="background-color: #220A06;">
+    <div class="text-white shadow-sm font-size-fixed fixed-header" style="background-color: #220A06;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-1 sm:py-0 sm:h-12">
           <div class="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-0">
@@ -11,12 +11,35 @@
           <div class="flex flex-wrap items-center gap-1 sm:gap-4 text-[10px] sm:text-sm leading-none w-full sm:w-auto">
             <span class="cursor-pointer hover:text-amber-200 truncate max-w-[140px] sm:max-w-none">Skip to Main Content</span>
             <div class="flex items-center space-x-1 leading-none">
-              <span class="px-0.5 sm:px-2 py-0.5 rounded cursor-pointer hover:bg-amber-700 text-xs">A⁻</span>
-              <span class="px-0.5 sm:px-2 py-0.5 rounded bg-amber-700 text-xs">A</span>
-              <span class="px-0.5 sm:px-2 py-0.5 rounded cursor-pointer hover:bg-amber-700 text-xs">A⁺</span>
+              <button 
+                @click="decreaseFontSize"
+                :disabled="!canDecrease"
+                class="px-0.5 sm:px-2 py-0.5 rounded cursor-pointer hover:bg-amber-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                :class="canDecrease ? 'hover:bg-amber-700' : ''"
+                title="Decrease font size"
+              >
+                A⁻
+              </button>
+              <button 
+                @click="resetFontSize"
+                class="px-0.5 sm:px-2 py-0.5 rounded bg-amber-700 text-xs cursor-pointer hover:bg-amber-600 transition-colors duration-200"
+                title="Reset font size"
+              >
+                A
+              </button>
+              <button 
+                @click="increaseFontSize"
+                :disabled="!canIncrease"
+                class="px-0.5 sm:px-2 py-0.5 rounded cursor-pointer hover:bg-amber-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                :class="canIncrease ? 'hover:bg-amber-700' : ''"
+                title="Increase font size"
+              >
+                A⁺
+              </button>
             </div>
-            <div class="w-4 h-4 sm:w-6 sm:h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center flex-shrink-0">
-              <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-white"></div>
+            <div class="flex items-center justify-center flex-shrink-0">
+              <!-- Dark Mode Toggle -->
+              <DarkModeToggle />
             </div>
             <div class="w-4 h-4 sm:w-6 sm:h-6 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center flex-shrink-0">
               <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +149,6 @@
           
           <!-- Desktop User Menu and Logout -->
           <div class="hidden md:flex items-center space-x-4">
-            <DarkModeToggle />
             <div class="text-sm text-gray-700 dark:text-gray-300">
               Welcome, <span class="font-medium">{{ currentUser?.username }}</span>
             </div>
@@ -265,18 +287,129 @@
   </div>
 </template>
 
+<style>
+/* Global font scaling using CSS custom property */
+:root {
+  --font-scale: 1;
+}
+
+/* Apply font scaling to main content and navigation only */
+main, nav {
+  font-size: calc(1rem * var(--font-scale, 1));
+}
+
+/* Completely isolate government header from any font scaling */
+.font-size-fixed {
+  font-size: 16px !important;
+  zoom: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* Fixed header size - completely unaffected by font scaling */
+.fixed-header {
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+.font-size-fixed * {
+  font-size: inherit !important;
+  zoom: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* Force specific font sizes for all text elements in government header */
+.font-size-fixed .text-xs {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.font-size-fixed .text-sm {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.font-size-fixed .text-base {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.font-size-fixed .text-lg {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.font-size-fixed .text-xl {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+/* Reset any potential scaling on buttons and spans */
+.font-size-fixed button,
+.font-size-fixed span,
+.font-size-fixed div {
+  font-size: inherit !important;
+  zoom: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* Ensure fixed header elements maintain their size */
+.fixed-header .h-5 {
+  height: 1.25rem !important;
+}
+
+.fixed-header .h-6 {
+  height: 1.5rem !important;
+}
+
+.fixed-header .w-4 {
+  width: 1rem !important;
+}
+
+.fixed-header .w-5 {
+  width: 1.25rem !important;
+}
+
+.fixed-header .w-6 {
+  width: 1.5rem !important;
+}
+
+.fixed-header .w-7 {
+  width: 1.75rem !important;
+}
+
+.fixed-header .h-4 {
+  height: 1rem !important;
+}
+
+.fixed-header .h-7 {
+  height: 1.75rem !important;
+}
+</style>
+
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { themeStore } from './stores/theme'
+import { useFontSizeStore } from './stores/fontSize'
 import DarkModeToggle from './components/DarkModeToggle.vue'
 import { useRoleGuard } from './composables/useRoleGuard'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const fontSizeStore = useFontSizeStore()
 const currentUser = computed(() => auth.currentUser)
+
+// Font size controls
+const { canDecrease, canIncrease } = fontSizeStore
+const decreaseFontSize = () => fontSizeStore.decreaseFontSize()
+const increaseFontSize = () => fontSizeStore.increaseFontSize()
+const resetFontSize = () => fontSizeStore.resetFontSize()
 
 // Role guard
 const { 
@@ -296,6 +429,11 @@ const isSuperAdmin = computed(() => {
 
 // Mobile menu state
 const mobileMenuOpen = ref(false)
+
+// Initialize font size on mount
+onMounted(() => {
+  fontSizeStore.loadFontSize()
+})
 
 const handleLogout = async () => {
   await auth.logout()

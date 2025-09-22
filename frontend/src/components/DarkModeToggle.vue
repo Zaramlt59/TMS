@@ -1,7 +1,7 @@
 <template>
   <button
     @click="toggleTheme"
-    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-colors duration-200"
+    class="w-5 h-5 sm:w-7 sm:h-7 cursor-pointer hover:bg-amber-700 rounded flex items-center justify-center flex-shrink-0 text-white transition-colors duration-200"
     :title="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
   >
     <span class="sr-only">{{ isDarkMode ? 'Switch to light mode' : 'Switch to dark mode' }}</span>
@@ -9,7 +9,7 @@
     <!-- Sun icon (shown in dark mode) -->
     <svg
       v-if="isDarkMode"
-      class="h-5 w-5"
+      class="w-3 h-3 sm:w-4 sm:h-4"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -26,7 +26,7 @@
     <!-- Moon icon (shown in light mode) -->
     <svg
       v-else
-      class="h-5 w-5"
+      class="w-3 h-3 sm:w-4 sm:h-4"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
