@@ -154,15 +154,15 @@
           </div>
         </div>
         <div class="ml-3 flex-1 min-w-0">
-          <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ currentUser?.username }}</p>
+          <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">Welcome</p>
           <p class="text-xs text-gray-500 dark:text-gray-400 capitalize mt-1">{{ currentUser?.role?.replace('_', ' ') }}</p>
         </div>
       </div>
       <button
         @click="handleLogout"
-        class="w-full flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group"
+        class="flex items-center text-red-600 hover:text-red-700 text-sm font-medium ml-3"
       >
-        <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
         </svg>
         Logout

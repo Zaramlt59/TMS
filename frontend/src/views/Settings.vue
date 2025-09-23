@@ -12,7 +12,7 @@
     <!-- Settings Tabs -->
     <div class="mt-6 sm:mt-8">
       <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="-mb-px flex space-x-1 sm:space-x-8 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+        <nav class="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <button
             v-for="tab in tabs"
             :key="tab.id"
@@ -21,11 +21,11 @@
               activeTab === tab.id
                 ? 'border-primary-500 text-primary-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
-              'whitespace-nowrap py-2 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0 min-w-0 touch-manipulation'
+              'whitespace-nowrap py-2 px-3 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0 min-w-0 touch-manipulation'
             ]"
           >
             <span class="hidden sm:inline">{{ tab.name }}</span>
-            <span class="sm:hidden text-center block">{{ tab.name.split(' ')[0] }}</span>
+            <span class="sm:hidden text-center block text-xs font-medium">{{ getMobileTabText(tab.name) }}</span>
           </button>
         </nav>
       </div>
@@ -50,9 +50,9 @@
         </div>
 
         <!-- RD Blocks Tab -->
-        <div v-if="activeTab === 'rdBlocks'" class="space-y-6">
+        <div v-if="activeTab === 'rdBlocks'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">RD Blocks</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">RD Blocks</h3>
             <button @click="openModal('rdBlocks')" class="btn-primary w-full sm:w-auto">
               Add RD Block
             </button>
@@ -67,9 +67,9 @@
         </div>
 
         <!-- Habitations Tab -->
-        <div v-if="activeTab === 'habitations'" class="space-y-6">
+        <div v-if="activeTab === 'habitations'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Habitations</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Habitations</h3>
             <button @click="openModal('habitations')" class="btn-primary w-full sm:w-auto">
               Add Habitation
             </button>
@@ -84,9 +84,9 @@
         </div>
 
         <!-- Block Offices Tab -->
-        <div v-if="activeTab === 'blockOffices'" class="space-y-6">
+        <div v-if="activeTab === 'blockOffices'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Block Offices</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Block Offices</h3>
             <button @click="openModal('blockOffices')" class="btn-primary w-full sm:w-auto">
               Add Block Office
             </button>
@@ -101,9 +101,9 @@
         </div>
 
         <!-- Subjects Tab -->
-        <div v-if="activeTab === 'subjects'" class="space-y-6">
+        <div v-if="activeTab === 'subjects'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Subjects Taught</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Subjects Taught</h3>
             <button @click="openModal('subjects')" class="btn-primary w-full sm:w-auto">
               Add Subject
             </button>
@@ -118,9 +118,9 @@
         </div>
 
         <!-- Mediums Tab -->
-        <div v-if="activeTab === 'mediums'" class="space-y-6">
+        <div v-if="activeTab === 'mediums'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mediums</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Mediums</h3>
             <button @click="openModal('mediums')" class="btn-primary w-full sm:w-auto">
               Add Medium
             </button>
@@ -135,9 +135,9 @@
         </div>
 
         <!-- School Types Tab -->
-        <div v-if="activeTab === 'schoolTypes'" class="space-y-6">
+        <div v-if="activeTab === 'schoolTypes'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">School Types</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">School Types</h3>
             <button @click="openModal('schoolTypes')" class="btn-primary w-full sm:w-auto">
               Add School Type
             </button>
@@ -152,9 +152,9 @@
         </div>
 
         <!-- Management Types Tab -->
-        <div v-if="activeTab === 'managementTypes'" class="space-y-6">
+        <div v-if="activeTab === 'managementTypes'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Management Types</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Management Types</h3>
             <button @click="openModal('managementTypes')" class="btn-primary w-full sm:w-auto">
               Add Management Type
             </button>
@@ -169,9 +169,9 @@
         </div>
 
         <!-- Religions Tab -->
-        <div v-if="activeTab === 'religions'" class="space-y-6">
+        <div v-if="activeTab === 'religions'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Religions</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Religions</h3>
             <button @click="openModal('religions')" class="btn-primary w-full sm:w-auto">
               Add Religion
             </button>
@@ -186,9 +186,9 @@
         </div>
 
         <!-- Service Categories Tab -->
-        <div v-if="activeTab === 'serviceCategories'" class="space-y-6">
+        <div v-if="activeTab === 'serviceCategories'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Service Categories</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Service Categories</h3>
             <button @click="openModal('serviceCategories')" class="btn-primary w-full sm:w-auto">
               Add Service Category
             </button>
@@ -410,7 +410,7 @@
         ></div>
 
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full max-w-none mx-2">
           <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
               <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
@@ -628,6 +628,22 @@ const blockOfficeColumns = [
 ]
 
 // Methods
+const getMobileTabText = (tabName: string): string => {
+  const mobileTextMap: Record<string, string> = {
+    'Districts': 'Districts',
+    'RD Blocks': 'RD Blocks', 
+    'Habitations': 'Habitations',
+    'Block Offices': 'Offices',
+    'Subjects': 'Subjects',
+    'Mediums': 'Mediums',
+    'School Types': 'Types',
+    'Management Types': 'Management',
+    'Religions': 'Religions',
+    'Service Categories': 'Services'
+  }
+  return mobileTextMap[tabName] || tabName.split(' ')[0]
+}
+
 const loadData = async () => {
   loading.value = true
   try {

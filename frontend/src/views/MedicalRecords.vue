@@ -67,7 +67,7 @@
             Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.page * pagination.limit, pagination.totalCount) }} of {{ pagination.totalCount }} records
           </div>
           <!-- Desktop Table View -->
-          <div class="hidden md:block overflow-x-auto">
+          <div class="hidden md:block overflow-x-auto -mx-4 sm:mx-0">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
               <thead class="bg-gray-50 dark:bg-gray-800">
                 <tr>
@@ -180,11 +180,11 @@
             </div>
             
             <div v-if="isAdmin" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <div class="flex space-x-3">
-                <button @click="openEdit(rec)" class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 border border-blue-200 dark:border-blue-700">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button @click="openEdit(rec)" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 border border-blue-200 dark:border-blue-700">
                   Edit
                 </button>
-                <button @click="remove(rec.id)" class="flex-1 inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 border border-red-200 dark:border-red-700">
+                <button @click="remove(rec.id)" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium rounded-md text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 border border-red-200 dark:border-red-700">
                   Delete
                 </button>
               </div>
