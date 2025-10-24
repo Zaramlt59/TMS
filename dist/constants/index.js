@@ -19,7 +19,7 @@ exports.BLOCK_OFFICES = [
     'SDEO Aizawl East', 'SDEO Aizawl South', 'SDEO Aizawl West', 'SDEO Champhai',
     'SDEO Darlawn', 'SDEO Hnahthial', 'SDEO Kawnpui', 'SDEO Kawrthah', 'SDEO Khawzawl',
     'SDEO Kolasib', 'SDEO Lunglei North', 'SDEO Lunglei South', 'SDEO Lungsen', 'SDEO Mamit',
-    'SDEO North Vanlaiphai', 'SDEO Saitual', 'SDEO Serchhip', 'SDEO Thenzawl', 'SDEO West Phaileng'
+    'SDEO North Vanlaiphai', 'SDEO Ngopa', 'SDEO Saitual', 'SDEO Serchhip', 'SDEO Thenzawl', 'SDEO West Phaileng'
 ];
 exports.SUBJECTS = [
     'Maths', 'Mizo', 'English', 'Social Science', 'Science', 'Hindi', 'W.E'

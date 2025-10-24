@@ -14,7 +14,7 @@ export interface School {
   habitation?: string;
   habitation_class?: 'Rural' | 'Urban';
   habitation_category?: 'City' | 'Town' | 'Village';
-  block_office: 'DEO Aizawl' | 'DEO Champhai' | 'DEO Hnahthial' | 'DEO Khawzawl' | 'DEO Kolasib' | 'DEO Lawngtlai' | 'DEO Lunglei' | 'DEO Mamit' | 'DEO Saitual' | 'DEO Serchhip' | 'DEO Siaha' | 'Education Office(CADC)' | 'Education Office (LADC)' | 'Education Office (MADC)' | 'SDEO Aizawl East' | 'SDEO Aizawl South' | 'SDEO Aizawl West' | 'SDEO Champhai' | 'SDEO Darlawn' | 'SDEO Hnahthial' | 'SDEO Kawnpui' | 'SDEO Kawrthah' | 'SDEO Khawzawl' | 'SDEO Kolasib' | 'SDEO Lunglei North' | 'SDEO Lunglei South' | 'SDEO Lungsen' | 'SDEO Mamit' | 'SDEO North Vanlaiphai' | 'SDEO Saitual' | 'SDEO Serchhip' | 'SDEO Thenzawl' | 'SDEO West Phaileng';
+  block_office: 'DEO Aizawl' | 'DEO Champhai' | 'DEO Hnahthial' | 'DEO Khawzawl' | 'DEO Kolasib' | 'DEO Lawngtlai' | 'DEO Lunglei' | 'DEO Mamit' | 'DEO Saitual' | 'DEO Serchhip' | 'DEO Siaha' | 'Education Office(CADC)' | 'Education Office (LADC)' | 'Education Office (MADC)' | 'SDEO Aizawl East' | 'SDEO Aizawl South' | 'SDEO Aizawl West' | 'SDEO Champhai' | 'SDEO Darlawn' | 'SDEO Hnahthial' | 'SDEO Kawnpui' | 'SDEO Kawrthah' | 'SDEO Khawzawl' | 'SDEO Kolasib' | 'SDEO Lunglei North' | 'SDEO Lunglei South' | 'SDEO Lungsen' | 'SDEO Mamit' | 'SDEO North Vanlaiphai' | 'SDEO Ngopa' | 'SDEO Saitual' | 'SDEO Serchhip' | 'SDEO Thenzawl' | 'SDEO West Phaileng';
   created_at?: Date;
   updated_at?: Date;
 }
@@ -45,7 +45,7 @@ export interface Teacher {
   school_phone?: string;
   habitation_class?: 'Rural' | 'Urban';
   habitation_category?: 'City' | 'Town' | 'Village';
-  block_office: 'DEO Aizawl' | 'DEO Champhai' | 'DEO Hnahthial' | 'DEO Khawzawl' | 'DEO Kolasib' | 'DEO Lawngtlai' | 'DEO Lunglei' | 'DEO Mamit' | 'DEO Saitual' | 'DEO Serchhip' | 'DEO Siaha' | 'Education Office(CADC)' | 'Education Office (LADC)' | 'Education Office (MADC)' | 'SDEO Aizawl East' | 'SDEO Aizawl South' | 'SDEO Aizawl West' | 'SDEO Champhai' | 'SDEO Darlawn' | 'SDEO Hnahthial' | 'SDEO Kawnpui' | 'SDEO Kawrthah' | 'SDEO Khawzawl' | 'SDEO Kolasib' | 'SDEO Lunglei North' | 'SDEO Lunglei South' | 'SDEO Lungsen' | 'SDEO Mamit' | 'SDEO North Vanlaiphai' | 'SDEO Saitual' | 'SDEO Serchhip' | 'SDEO Thenzawl' | 'SDEO West Phaileng';
+  block_office: 'DEO Aizawl' | 'DEO Champhai' | 'DEO Hnahthial' | 'DEO Khawzawl' | 'DEO Kolasib' | 'DEO Lawngtlai' | 'DEO Lunglei' | 'DEO Mamit' | 'DEO Saitual' | 'DEO Serchhip' | 'DEO Siaha' | 'Education Office(CADC)' | 'Education Office (LADC)' | 'Education Office (MADC)' | 'SDEO Aizawl East' | 'SDEO Aizawl South' | 'SDEO Aizawl West' | 'SDEO Champhai' | 'SDEO Darlawn' | 'SDEO Hnahthial' | 'SDEO Kawnpui' | 'SDEO Kawrthah' | 'SDEO Khawzawl' | 'SDEO Kolasib' | 'SDEO Lunglei North' | 'SDEO Lunglei South' | 'SDEO Lungsen' | 'SDEO Mamit' | 'SDEO North Vanlaiphai' | 'SDEO Ngopa' | 'SDEO Saitual' | 'SDEO Serchhip' | 'SDEO Thenzawl' | 'SDEO West Phaileng';
   deputation: Deputation[];
   attachment: Attachment[];
   posting_history: PostingHistory[];
