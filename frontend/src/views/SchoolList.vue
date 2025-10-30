@@ -329,7 +329,8 @@
 
     <!-- Pagination -->
     <div v-if="pagination.totalPages > 1" class="mt-8 flex items-center justify-between">
-      <div class="flex-1 flex justify-between sm:hidden">
+      <div class="flex-1 flex flex-col gap-3 sm:hidden">
+        <div class="flex justify-between">
         <button
           @click="changePage(pagination.page - 1)"
           :disabled="pagination.page === 1"
@@ -344,6 +345,25 @@
         >
           Next
         </button>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-700">
+            Page <span class="font-medium">{{ pagination.page }}</span> of <span class="font-medium">{{ pagination.totalPages }}</span>
+          </p>
+          <div class="flex items-center gap-2">
+            <label for="goto-page-mobile" class="text-sm text-gray-700">Go to page:</label>
+            <input
+              id="goto-page-mobile"
+              type="number"
+              min="1"
+              :max="pagination.totalPages"
+              v-model.number="goToPageInput"
+              @keyup.enter="goToPage"
+              class="form-input w-20"
+            />
+            <button @click="goToPage" class="btn-secondary">Go</button>
+          </div>
+        </div>
       </div>
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
@@ -357,7 +377,7 @@
             results
           </p>
         </div>
-        <div>
+        <div class="flex items-center gap-4">
           <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
             <button
               @click="changePage(pagination.page - 1)"
@@ -387,6 +407,19 @@
               Next
             </button>
           </nav>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-700">Go to page:</span>
+            <input
+              id="goto-page-desktop"
+              type="number"
+              min="1"
+              :max="pagination.totalPages"
+              v-model.number="goToPageInput"
+              @keyup.enter="goToPage"
+              class="form-input w-24"
+            />
+            <button @click="goToPage" class="btn-secondary">Go</button>
+          </div>
         </div>
       </div>
     </div>
@@ -578,7 +611,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { schoolsApi, cascadeApi } from '../services/api'
 import type { School, SchoolListResponse } from '../types'
 import * as XLSX from 'xlsx'
@@ -670,6 +703,30 @@ const changePage = (page: number) => {
 }
 
 
+// Go To Page feature
+const goToPageInput = ref<number | null>(1)
+
+const goToPage = () => {
+  if (goToPageInput.value == null) return
+  let target = Number(goToPageInput.value)
+  if (!Number.isFinite(target)) return
+  if (target < 1) target = 1
+  if (pagination.value.totalPages > 0 && target > pagination.value.totalPages) {
+    target = pagination.value.totalPages
+  }
+  goToPageInput.value = target
+  changePage(target)
+}
+
+watch(
+  () => pagination.value.page,
+  (newPage) => {
+    goToPageInput.value = newPage
+  },
+  { immediate: true }
+)
+
+
 
 const viewSchool = (school: School) => {
   selectedSchool.value = school
@@ -749,10 +806,29 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
 }
 
-const exportToExcel = () => {
+const exportToExcel = async () => {
   try {
+    loading.value = true
+
+    // Fetch ALL schools from backend (ignore current pagination)
+    const allSchools: School[] = []
+    const exportLimit = 100 // server caps at 100; use max to minimize requests
+    let page = 1
+    let totalPages = 1
+
+    do {
+      const resp = await schoolsApi.getAll(page, exportLimit)
+      if (resp.data?.success) {
+        allSchools.push(...(resp.data.data || []))
+        totalPages = resp.data.pagination?.totalPages || 1
+        page += 1
+      } else {
+        break
+      }
+    } while (page <= totalPages)
+
     // Prepare data for export - Organized in logical groups
-    const exportData = schools.value.map(school => ({
+    const exportData = (allSchools.length ? allSchools : schools.value).map(school => ({
       // ===== BASIC SCHOOL INFORMATION =====
       'School ID': school.school_id || '',
       'School Name': school.school_name || '',
@@ -806,6 +882,8 @@ const exportToExcel = () => {
   } catch (error) {
     console.error('Error exporting to Excel:', error)
     alert('Failed to export Excel file. Please try again.')
+  } finally {
+    loading.value = false
   }
 }
 
