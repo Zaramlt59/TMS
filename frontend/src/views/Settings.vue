@@ -70,12 +70,29 @@
         <div v-if="activeTab === 'habitations'" class="space-y-4 sm:space-y-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
             <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Habitations</h3>
-            <button @click="openModal('habitations')" class="btn-primary w-full sm:w-auto">
-              Add Habitation
-            </button>
+            <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:items-center">
+              <div class="relative sm:mr-2 flex-1 sm:flex-none">
+                <input
+                  id="habitation-search"
+                  name="habitation-search"
+                  v-model="habitationSearchQuery"
+                  type="text"
+                  placeholder="Search habitation by name..."
+                  class="form-input w-full sm:w-64 pl-10"
+                />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <button @click="openModal('habitations')" class="btn-primary w-full sm:w-auto">
+                Add Habitation
+              </button>
+            </div>
           </div>
           <DataTable
-            :data="habitations"
+            :data="filteredHabitations"
             :columns="habitationColumns"
             :loading="loading"
             @edit="editItem('habitations', $event)"
@@ -643,6 +660,14 @@ const getMobileTabText = (tabName: string): string => {
   }
   return mobileTextMap[tabName] || tabName.split(' ')[0]
 }
+
+// Habitation search
+const habitationSearchQuery = ref('')
+const filteredHabitations = computed(() => {
+  const query = habitationSearchQuery.value.trim().toLowerCase()
+  if (!query) return habitations.value
+  return habitations.value.filter(h => (h.name || '').toLowerCase().includes(query))
+})
 
 const loadData = async () => {
   loading.value = true
