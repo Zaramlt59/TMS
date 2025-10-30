@@ -162,12 +162,15 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="form-label">School *</label>
-              <select v-model="selectedSchoolId" required class="form-select" @change="onSchoolChange()">
-                <option value="">Select school</option>
-                <option v-for="school in schools" :key="school.school_id" :value="school.school_id">
-                  {{ school.school_name }} ({{ school.school_id }})
-                </option>
-              </select>
+              <v-select
+                v-model="selectedSchoolId"
+                :options="schools"
+                :reduce="s => s.school_id"
+                :get-option-label="formatSchoolOption"
+                placeholder="Select school"
+                @input="onSchoolChange()"
+                class="form-input"
+              />
             </div>
             <div>
               <label class="form-label">Service Category</label>
@@ -835,6 +838,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
 import { useRoute, useRouter } from 'vue-router'
 import { teachersApi, schoolsApi, subjectsApi, locationsApi } from '../services/api'
 import { useMasterDataStore } from '../stores/masterData'
@@ -1061,11 +1066,22 @@ const postingVillages = ref<{id: number, name: string}[][]>([])
 
 const loadSchools = async () => {
   try {
-    const response = await schoolsApi.getAll(1, 1000) // Load all schools
-    if (response.data.success) {
-      // Schools are now pre-transformed by the backend
-      schools.value = response.data.data || []
-    }
+    // Load ALL schools across pages to ensure full dropdown list
+    const all: School[] = []
+    const pageLimit = 100
+    let page = 1
+    let totalPages = 1
+    do {
+      const response = await schoolsApi.getAll(page, pageLimit)
+      if (response.data.success) {
+        all.push(...(response.data.data || []))
+        totalPages = response.data.pagination?.totalPages || 1
+        page += 1
+      } else {
+        break
+      }
+    } while (page <= totalPages)
+    schools.value = all
   } catch (error) {
     console.error('Failed to load schools:', error)
   }
@@ -1193,6 +1209,9 @@ const onSchoolChange = async () => {
     }
   }
 }
+
+// Provide a combined label for school options
+const formatSchoolOption = (s: any) => s && s.school_name ? `${s.school_name} (${s.school_id})` : ''
 
 const loadTeacher = async (teacherId: number) => {
   try {
@@ -1793,6 +1812,8 @@ const onPostingSchoolChange = async (posting: any) => {
   
   if (selectedSchool) {
     console.log('Selected school:', selectedSchool)
+    // Keep both fields for backend compatibility
+    posting.school_name = selectedSchool.school_name
     
     // Auto-fill school details
     posting.school_type = selectedSchool.school_type ? selectedSchool.school_type.replace(/_/g, '-') : ''
@@ -2192,4 +2213,19 @@ onMounted(() => {
   opacity: 0.5; /* Faded for readonly fields */
   font-style: normal; /* Normal style for readonly fields */
 }
+
+  /* Make vue-select use only the outer border (avoid double lines) */
+  .form-input :deep(.vs__dropdown-toggle) {
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .form-input :deep(.vs__selected),
+  .form-input :deep(.vs__search) {
+    margin: 0;
+    padding: 0;
+  }
+  .form-input :deep(.vs__actions) { margin-right: 0; }
 </style>
