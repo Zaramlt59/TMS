@@ -29,6 +29,9 @@ router.get('/search', [
 // Get teacher statistics
 router.get('/stats', teacherController.getStats)
 
+// Export all teachers (with role-based filtering)
+router.get('/export', authenticateToken, addRoleBasedFilters, teacherController.exportAll)
+
 // Get teacher by ID
 router.get('/:id', [
   param('id').isInt({ min: 1 }).withMessage('Teacher ID must be a positive integer')

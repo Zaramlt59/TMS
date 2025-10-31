@@ -149,6 +149,8 @@ export const teachersApi = {
     api.get<ApiResponse<Teacher[]>>(`/teachers/search?q=${encodeURIComponent(query)}`),
   getStats: () =>
     api.get<ApiResponse>(`/teachers/stats`),
+  exportAll: () =>
+    api.get<ApiResponse<Teacher[]>>(`/teachers/export`),
 }
 
 // Medical Records API

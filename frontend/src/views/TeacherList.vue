@@ -10,10 +10,10 @@
              <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex space-x-3">
          <button
            @click="exportToExcel"
-           :disabled="loading || teachers.length === 0"
+           :disabled="loading || exporting"
            class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
          >
-           Export to Excel
+           {{ exporting ? 'Exporting...' : 'Export to Excel' }}
          </button>
          <router-link
            to="/teachers/new"
@@ -585,21 +585,41 @@
 
     <!-- Pagination -->
     <div v-if="pagination.totalPages > 1" class="mt-8 flex items-center justify-between">
-      <div class="flex-1 flex justify-between sm:hidden">
-        <button
-          @click="changePage(pagination.page - 1)"
-          :disabled="pagination.page === 1"
-          class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Previous
-        </button>
-        <button
-          @click="changePage(pagination.page + 1)"
-          :disabled="pagination.page === pagination.totalPages"
-          class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next
-        </button>
+      <div class="flex-1 flex justify-between sm:hidden flex-col gap-4">
+        <div class="flex justify-between">
+          <button
+            @click="changePage(pagination.page - 1)"
+            :disabled="pagination.page === 1"
+            class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <button
+            @click="changePage(pagination.page + 1)"
+            :disabled="pagination.page === pagination.totalPages"
+            class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-700">
+            Page <span class="font-medium">{{ pagination.page }}</span> of <span class="font-medium">{{ pagination.totalPages }}</span>
+          </p>
+          <div class="flex items-center gap-2">
+            <label for="goto-page-mobile" class="text-sm text-gray-700">Go to page:</label>
+            <input
+              id="goto-page-mobile"
+              type="number"
+              min="1"
+              :max="pagination.totalPages"
+              v-model.number="goToPageInput"
+              @keyup.enter="goToPage"
+              class="form-input w-20"
+            />
+            <button @click="goToPage" class="btn-secondary">Go</button>
+          </div>
+        </div>
       </div>
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
@@ -613,7 +633,7 @@
             results
           </p>
         </div>
-        <div>
+        <div class="flex items-center gap-4">
           <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
             <button
               @click="changePage(pagination.page - 1)"
@@ -643,6 +663,19 @@
               Next
             </button>
           </nav>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-700">Go to page:</span>
+            <input
+              id="goto-page-desktop"
+              type="number"
+              min="1"
+              :max="pagination.totalPages"
+              v-model.number="goToPageInput"
+              @keyup.enter="goToPage"
+              class="form-input w-24"
+            />
+            <button @click="goToPage" class="btn-secondary">Go</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1074,13 +1107,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { teachersApi, medicalRecordsApi, cascadeApi, type MedicalRecord } from '../services/api'
 import type { Teacher, TeacherListResponse } from '../types'
 import * as XLSX from 'xlsx'
 
 const teachers = ref<Teacher[]>([])
 const loading = ref(false)
+const exporting = ref(false)
 const searchQuery = ref('')
 const searchTimeout = ref<NodeJS.Timeout>()
 const showTeacherModal = ref(false)
@@ -1177,6 +1211,29 @@ const changePage = (page: number) => {
     loadTeachers(page)
   }
 }
+
+// Go To Page feature
+const goToPageInput = ref<number | null>(1)
+
+const goToPage = () => {
+  if (goToPageInput.value == null) return
+  let target = Number(goToPageInput.value)
+  if (!Number.isFinite(target)) return
+  if (target < 1) target = 1
+  if (pagination.value.totalPages > 0 && target > pagination.value.totalPages) {
+    target = pagination.value.totalPages
+  }
+  goToPageInput.value = target
+  changePage(target)
+}
+
+watch(
+  () => pagination.value.page,
+  (newPage) => {
+    goToPageInput.value = newPage
+  },
+  { immediate: true }
+)
 
 const viewTeacher = async (teacher: Teacher) => {
   selectedTeacher.value = teacher
@@ -1430,15 +1487,29 @@ const getMedicalSummary = async (teacherId?: number | string): Promise<MedicalSu
 
 const exportToExcel = async () => {
   try {
-    // Fetch medical summaries for current teacher list
-    const summariesArray = await Promise.all(teachers.value.map(t => getMedicalSummary(t.id)))
+    // Set exporting state
+    exporting.value = true
+    console.log('Fetching all teachers from database for export...')
+    
+    // Fetch ALL teachers from backend (not just current page)
+    const response = await teachersApi.exportAll()
+    const allTeachers: Teacher[] = response.data?.data || []
+    
+    if (allTeachers.length === 0) {
+      alert('No teachers found to export.')
+      exporting.value = false
+      return
+    }
+    
+    // Fetch medical summaries for all teachers
+    const summariesArray = await Promise.all(allTeachers.map(t => getMedicalSummary(t.id)))
     const summaryByTeacherId: Record<number, MedicalSummary> = {}
-    teachers.value.forEach((t, i) => {
+    allTeachers.forEach((t, i) => {
       if (typeof t.id === 'number') summaryByTeacherId[t.id] = summariesArray[i]
     })
 
     // Prepare data for export
-    const exportData = teachers.value.map(teacher => ({
+    const exportData = allTeachers.map(teacher => ({
       // ===== BASIC TEACHER INFORMATION =====
       'Teacher Name': teacher.teacher_name || '',
       'Date of Birth': formatDate(teacher.date_of_birth) || '',
@@ -1533,16 +1604,22 @@ const exportToExcel = async () => {
 
     // Generate filename with current date
     const currentDate = new Date().toISOString().split('T')[0]
-    const filename = `teachers_report_${currentDate}.xlsx`
+    const filename = `teachers_report_${currentDate}_all_${allTeachers.length}_teachers.xlsx`
 
     // Save the file
     XLSX.writeFile(workbook, filename)
 
     // Show success message
-    alert(`Excel file "${filename}" has been downloaded successfully!`)
+    alert(`Excel file "${filename}" has been downloaded successfully!\n\nTotal teachers exported: ${allTeachers.length}`)
+    
+    // Reset exporting state
+    exporting.value = false
   } catch (error) {
     console.error('Error exporting to Excel:', error)
     alert('Failed to export Excel file. Please try again.')
+    
+    // Reset exporting state on error
+    exporting.value = false
   }
 }
 

@@ -192,7 +192,7 @@
           </div>
 
           <!-- Pagination Controls -->
-          <div v-if="shouldShowPagination" class="mt-6 flex items-center justify-between">
+          <div v-if="shouldShowPagination" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center">
               <label class="text-sm text-gray-700 dark:text-gray-300 mr-2">Records per page:</label>
               <select v-model="pageSize" @change="changePageSize" class="form-select w-20">
@@ -203,40 +203,56 @@
               </select>
             </div>
             
-            <div class="flex items-center space-x-2">
-              <button
-                @click="goToPage(1)"
-                :disabled="!pagination.hasPrevPage"
-                class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                First
-              </button>
-              <button
-                @click="goToPage(pagination.page - 1)"
-                :disabled="!pagination.hasPrevPage"
-                class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Previous
-              </button>
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <div class="flex items-center space-x-2">
+                <button
+                  @click="goToPage(1)"
+                  :disabled="!pagination.hasPrevPage"
+                  class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  First
+                </button>
+                <button
+                  @click="goToPage(pagination.page - 1)"
+                  :disabled="!pagination.hasPrevPage"
+                  class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Previous
+                </button>
+                
+                <span class="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+                  Page {{ pagination.page }} of {{ pagination.totalPages }}
+                </span>
+                
+                <button
+                  @click="goToPage(pagination.page + 1)"
+                  :disabled="!pagination.hasNextPage"
+                  class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Next
+                </button>
+                <button
+                  @click="goToPage(pagination.totalPages)"
+                  :disabled="!pagination.hasNextPage"
+                  class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Last
+                </button>
+              </div>
               
-              <span class="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
-                Page {{ pagination.page }} of {{ pagination.totalPages }}
-              </span>
-              
-              <button
-                @click="goToPage(pagination.page + 1)"
-                :disabled="!pagination.hasNextPage"
-                class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Next
-              </button>
-              <button
-                @click="goToPage(pagination.totalPages)"
-                :disabled="!pagination.hasNextPage"
-                class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Last
-              </button>
+              <div class="flex items-center gap-2">
+                <label for="goto-page-medical" class="text-sm text-gray-700 dark:text-gray-300">Go to page:</label>
+                <input
+                  id="goto-page-medical"
+                  type="number"
+                  min="1"
+                  :max="pagination.totalPages"
+                  v-model.number="goToPageInput"
+                  @keyup.enter="handleGoToPage"
+                  class="form-input w-20 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                />
+                <button @click="handleGoToPage" class="btn-secondary">Go</button>
+              </div>
             </div>
           </div>
           </div>
@@ -382,6 +398,7 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const pagination = ref<any>(null)
+const goToPageInput = ref<number | null>(1)
 
 // Check if we should show all records (when accessed from main navigation)
 const showAllRecords = computed(() => route.name === 'MedicalRecords' || !teacherId.value || teacherId.value === 0)
@@ -585,6 +602,29 @@ const goToPage = (page: number) => {
     loadRecords()
   }
 }
+
+const handleGoToPage = () => {
+  if (goToPageInput.value == null) return
+  let target = Number(goToPageInput.value)
+  if (!Number.isFinite(target)) return
+  if (target < 1) target = 1
+  if (pagination.value?.totalPages > 0 && target > pagination.value.totalPages) {
+    target = pagination.value.totalPages
+  }
+  goToPageInput.value = target
+  goToPage(target)
+}
+
+// Watch for pagination changes to sync the input field
+watch(
+  () => pagination.value?.page,
+  (newPage) => {
+    if (newPage) {
+      goToPageInput.value = newPage
+    }
+  },
+  { immediate: true }
+)
 
 const changePageSize = () => {
   currentPage.value = 1 // Reset to first page when changing page size
