@@ -427,6 +427,107 @@ exports.teacherService = {
             throw new Error('Failed to delete teacher');
         }
     },
+    // Get all teachers for export (no pagination, respects role filters)
+    async getAllForExport(roleFilters) {
+        try {
+            // Build where clause with role-based filters
+            const whereClause = this.buildWhereClause(roleFilters);
+            const rows = await prismaService_1.default.teachers.findMany({
+                where: whereClause,
+                orderBy: { teacher_name: 'asc' },
+                select: {
+                    id: true,
+                    teacher_name: true,
+                    date_of_birth: true,
+                    joining_date: true,
+                    phone_number: true,
+                    email: true,
+                    social_group: true,
+                    religion: true,
+                    gender: true,
+                    aadhaar_number: true,
+                    subjects_taught: true,
+                    classes_taught: true,
+                    school_id: true,
+                    current_school_name: true,
+                    school_level: true,
+                    management: true,
+                    medium: true,
+                    service_category: true,
+                    habitation: true,
+                    pincode: true,
+                    district: true,
+                    rd_block: true,
+                    school_phone: true,
+                    habitation_class: true,
+                    habitation_category: true,
+                    block_office: true,
+                    created_at: true,
+                    updated_at: true,
+                    posting_histories: {
+                        select: {
+                            school_name: true,
+                            school_type: true,
+                            medium: true,
+                            management: true,
+                            block_office: true,
+                            district: true,
+                            from_date: true,
+                            to_date: true,
+                            status: true
+                        }
+                    },
+                    deputations: {
+                        select: {
+                            department_name: true,
+                            designation: true,
+                            joining_date: true,
+                            end_date: true,
+                            status: true
+                        }
+                    },
+                    attachments: {
+                        select: {
+                            department_name: true,
+                            designation: true,
+                            district: true,
+                            rd_block: true,
+                            habitation: true,
+                            joining_date: true,
+                            end_date: true,
+                            status: true
+                        }
+                    }
+                }
+            });
+            // Fetch teacher_ID separately using individual queries
+            const teacherIdMap = new Map();
+            for (const row of rows) {
+                try {
+                    const result = await prismaService_1.default.$queryRaw `
+            SELECT teacher_ID FROM teachers WHERE id = ${row.id}
+          `;
+                    if (Array.isArray(result) && result.length > 0) {
+                        teacherIdMap.set(row.id, result[0].teacher_ID);
+                    }
+                }
+                catch (error) {
+                    console.error(`Error fetching teacher_ID for id ${row.id}:`, error);
+                    teacherIdMap.set(row.id, null);
+                }
+            }
+            // Transform relation field names for frontend
+            return rows.map(r => {
+                const transformed = this.transformRelationsForFrontend(r);
+                transformed.teacher_ID = teacherIdMap.get(r.id) || null;
+                return transformed;
+            });
+        }
+        catch (error) {
+            console.error('Error fetching all teachers for export:', error);
+            throw new Error('Failed to fetch teachers for export');
+        }
+    },
     // Get teacher statistics
     async getStats() {
         try {

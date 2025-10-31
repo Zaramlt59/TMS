@@ -25,6 +25,8 @@ router.get('/search', [
 ], teacherController_1.teacherController.search);
 // Get teacher statistics
 router.get('/stats', teacherController_1.teacherController.getStats);
+// Export all teachers (with role-based filtering)
+router.get('/export', auth_1.authenticateToken, roleBasedFiltering_1.addRoleBasedFilters, teacherController_1.teacherController.exportAll);
 // Get teacher by ID
 router.get('/:id', [
     (0, express_validator_1.param)('id').isInt({ min: 1 }).withMessage('Teacher ID must be a positive integer')

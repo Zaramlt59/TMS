@@ -422,6 +422,25 @@ exports.teacherController = {
                 error: error.message
             });
         }
+    },
+    // Export all teachers to Excel
+    async exportAll(req, res) {
+        try {
+            // Pass role filters to the service to respect permissions
+            const teachers = await teacherService_1.teacherService.getAllForExport(req.roleFilters);
+            res.json({
+                success: true,
+                message: 'Teachers retrieved successfully for export',
+                data: teachers
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to export teachers',
+                error: error.message
+            });
+        }
     }
 };
 //# sourceMappingURL=teacherController.js.map
