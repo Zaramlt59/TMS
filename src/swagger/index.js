@@ -4,6 +4,8 @@ const otpAuthentication = require('./otp-authentication')
 const sessionManagement = require('./session-management')
 const userProfile = require('./user-profile')
 const userManagement = require('./user-management')
+const roles = require('./roles')
+const audit = require('./audit')
 const schools = require('./schools')
 const teachers = require('./teachers')
 const medicalRecords = require('./medical-records')
@@ -48,6 +50,7 @@ const swaggerSpec = {
     { name: '📱 OTP Authentication', description: 'OTP-based authentication for teachers' },
     { name: '🛡️ Session Management', description: 'User session management and security' },
     { name: '👥 User Profile', description: 'User profile management and password operations' },
+    { name: '🔐 Roles & Permissions', description: 'Role and permission management' },
 
     // 2. User Management (Super Admin Only)
     { name: '👑 User Management', description: 'User management operations for super administrators' },
@@ -74,7 +77,8 @@ const swaggerSpec = {
     // 6. System Features & Utilities
     { name: '🔗 Cascade Protection', description: 'Safe deletion with cascade warnings' },
     { name: '📁 File Uploads', description: 'File upload and management' },
-    { name: '📊 Reports', description: 'Reporting and analytics' }
+    { name: '📊 Reports', description: 'Reporting and analytics' },
+    { name: '📋 Audit Logs', description: 'Audit logging and security monitoring' }
   ],
   paths: {
     // Merge all path specifications from all focused modules
@@ -83,6 +87,8 @@ const swaggerSpec = {
     ...sessionManagement.paths,
     ...userProfile.paths,
     ...userManagement.paths,
+    ...roles.paths,
+    ...audit.paths,
     ...schools.paths,
     ...teachers.paths,
     ...medicalRecords.paths,
@@ -108,6 +114,8 @@ const swaggerSpec = {
       ...sessionManagement.schemas,
       ...userProfile.schemas,
       ...userManagement.schemas,
+      ...roles.schemas,
+      ...audit.schemas,
       ...schools.schemas,
       ...teachers.schemas,
       ...medicalRecords.schemas,

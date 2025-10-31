@@ -293,17 +293,17 @@ The Docker setup includes:
 
 ## 📖 API Documentation
 
-The project features a **modular Swagger/OpenAPI documentation system** with 21 focused modules:
+The project features a **modular Swagger/OpenAPI documentation system** with **23 focused modules**:
 
 ### Documentation Structure
-- **62 total endpoints** across all categories
-- **18 data schemas** for comprehensive type definitions
+- **70+ total endpoints** across all categories
+- **20+ data schemas** for comprehensive type definitions
 - **Organized by domain** with emoji-categorized tags
 - **Interactive Swagger UI** at `/api/docs`
 
 ### Module Categories
-1. **Authentication & Security** (4 modules)
-   - Core authentication, OTP auth, session management, user profiles
+1. **Authentication & Security** (5 modules)
+   - Core authentication, OTP auth, session management, user profiles, roles & permissions
 2. **User Management** (1 module)
    - Super admin user operations
 3. **Core Educational Entities** (3 modules)
@@ -312,8 +312,8 @@ The project features a **modular Swagger/OpenAPI documentation system** with 21 
    - Districts, RD blocks, habitations, block offices
 5. **Reference Data** (6 modules)
    - Management types, school types, subjects, religions, mediums, service categories
-6. **System Features** (3 modules)
-   - Cascade protection, file uploads, reports & analytics
+6. **System Features** (4 modules)
+   - Cascade protection, file uploads, reports & analytics, audit logs
 
 ## 📱 Features
 
