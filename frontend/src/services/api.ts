@@ -32,7 +32,7 @@ export type PaginationInfo = {
 }
 
 const api = axios.create({
-  baseURL: 'http://localhost:5004/api',
+  baseURL: 'https://entry.tms.msegs.in/api',
   headers: {
     'Content-Type': 'application/json',
   },
