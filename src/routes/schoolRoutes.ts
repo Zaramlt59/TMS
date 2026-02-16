@@ -45,19 +45,21 @@ router.get('/:id', [
   param('id').notEmpty().withMessage('School ID is required')
 ], schoolController.getById)
 
-// Create new school
-router.post('/', [
-  body('id').notEmpty().withMessage('School ID is required'),
-  body('schoolName').notEmpty().withMessage('School name is required')
+// Create new school (requires login)
+router.post('/', authenticateToken, [
+  body('id').optional(),
+  body('school_id').optional(),
+  body('school_name').optional(),
+  body('schoolName').optional()
 ], schoolController.create)
 
 // Update school by school_id (business identifier)
-router.put('/school-id/:schoolId', [
+router.put('/school-id/:schoolId', authenticateToken, [
   param('schoolId').notEmpty().withMessage('School ID is required')
 ], schoolController.updateBySchoolId)
 
 // Update school
-router.put('/:id', [
+router.put('/:id', authenticateToken, [
   param('id').notEmpty().withMessage('School ID is required')
 ], schoolController.update)
 

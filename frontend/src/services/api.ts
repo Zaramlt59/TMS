@@ -96,6 +96,13 @@ api.interceptors.response.use(
         isRefreshing = false
         pendingRequests = []
         localStorage.removeItem('token')
+        localStorage.removeItem('isAuthenticated')
+        localStorage.removeItem('currentUser')
+        localStorage.removeItem('csrf')
+        // Redirect to login on live so user isn't stuck on a broken page
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/otp-login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(error)
       }
     }

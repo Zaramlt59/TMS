@@ -605,7 +605,8 @@ const handleSubmit = async () => {
     }
   } catch (error: any) {
     console.error('Form submission failed:', error)
-    alert(error.response?.data?.message || 'Operation failed')
+    const msg = error.response?.data?.message ?? error.response?.data?.error ?? error.message ?? 'Operation failed'
+    alert(msg)
   } finally {
     loading.value = false
   }
