@@ -252,9 +252,11 @@ export const schoolService = {
       return await prisma.schools.create({
         data: this.transformSchoolData(data)
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating school:', error)
-      throw new Error('Failed to create school')
+      const msg = error?.message || 'Failed to create school'
+      if (msg.startsWith('Please select')) throw error
+      throw new Error(msg)
     }
   },
 
@@ -265,9 +267,11 @@ export const schoolService = {
         where: { id },
         data: this.transformSchoolData(data)
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating school:', error)
-      throw new Error('Failed to update school')
+      const msg = error?.message || 'Failed to update school'
+      if (msg.startsWith('Please select')) throw error
+      throw new Error(msg)
     }
   },
 
@@ -278,9 +282,11 @@ export const schoolService = {
         where: { school_id: schoolId },
         data: this.transformSchoolData(data)
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating school by school_id:', error)
-      throw new Error('Failed to update school')
+      const msg = error?.message || 'Failed to update school'
+      if (msg.startsWith('Please select')) throw error
+      throw new Error(msg)
     }
   },
 
@@ -341,22 +347,28 @@ export const schoolService = {
   // Transform frontend data to match database schema
   transformSchoolData(data: any): any {
     const transformed: any = {}
-    
+
+    const str = (v: any) => (v !== undefined && v !== null && typeof v === 'string' ? v : '')
+    const placeholderManagement = /^Select\s+management\s+type$/i
+    const placeholderBlockOffice = /^Select\s+block\s+office$/i
+
     // Map frontend field names to database field names
     if (data.school_id !== undefined) transformed.school_id = data.school_id
     if (data.school_name !== undefined) transformed.school_name = data.school_name
     if (data.school_type !== undefined) {
-      // Convert frontend enum values to database enum values
       if (data.school_type === 'Co-educational') {
         transformed.school_type = 'Co_educational'
-          } else {
+      } else {
         transformed.school_type = data.school_type
       }
     }
     if (data.school_level !== undefined) transformed.school_level = data.school_level
     if (data.management !== undefined) {
-      // Convert spaces to underscores for enum values
-      transformed.management = data.management.replace(/\s+/g, '_')
+      const m = str(data.management)
+      if (!m || placeholderManagement.test(m)) {
+        throw new Error('Please select a management type.')
+      }
+      transformed.management = m.replace(/\s+/g, '_')
     }
     if (data.medium !== undefined) transformed.medium = data.medium
     if (data.pincode !== undefined) transformed.pincode = data.pincode
@@ -368,7 +380,10 @@ export const schoolService = {
     if (data.habitation_class !== undefined) transformed.habitation_class = data.habitation_class
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
-      // Handle special cases for Education Office entries
+      const b = str(data.block_office)
+      if (!b || placeholderBlockOffice.test(b)) {
+        throw new Error('Please select a block office.')
+      }
       if (data.block_office === 'Education Office(CADC)') {
         transformed.block_office = 'Education_Office_CADC_'
       } else if (data.block_office === 'Education Office (LADC)') {
@@ -376,11 +391,10 @@ export const schoolService = {
       } else if (data.block_office === 'Education Office (MADC)') {
         transformed.block_office = 'Education_Office__MADC_'
       } else {
-        // Convert spaces to underscores for other enum values
-        transformed.block_office = data.block_office.replace(/\s+/g, '_')
+        transformed.block_office = b.replace(/\s+/g, '_')
       }
     }
-    
+
     return transformed
   },
 

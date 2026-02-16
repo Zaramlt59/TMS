@@ -31,8 +31,19 @@ export type PaginationInfo = {
   hasPrevPage: boolean
 }
 
+// Use /api when running on localhost (dev or built app); otherwise production URL or VITE_API_BASE_URL
+function getApiBaseURL(): string {
+  const meta = import.meta as unknown as { env?: { DEV?: boolean; VITE_API_BASE_URL?: string } }
+  if (meta.env?.VITE_API_BASE_URL) return meta.env.VITE_API_BASE_URL
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') return '/api'
+  }
+  return meta.env?.DEV ? '/api' : 'https://entry.tms.msegs.in/api'
+}
+
 const api = axios.create({
-  baseURL: 'https://entry.tms.msegs.in/api',
+  baseURL: getApiBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

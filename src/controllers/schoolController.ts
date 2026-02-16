@@ -253,7 +253,7 @@ export const schoolController = {
   async create(req: Request, res: Response) {
     try {
       const schoolData = req.body
-      
+
       if (!schoolData.school_id || !schoolData.school_name) {
         return res.status(400).json({
           success: false,
@@ -268,10 +268,12 @@ export const schoolController = {
         data: school
       })
     } catch (error: any) {
-      res.status(500).json({
+      const msg = error?.message || 'Failed to create school'
+      const isValidation = typeof msg === 'string' && msg.startsWith('Please select')
+      res.status(isValidation ? 400 : 500).json({
         success: false,
-        message: 'Failed to create school',
-        error: error.message
+        message: msg,
+        error: msg
       })
     }
   },
@@ -314,19 +316,21 @@ export const schoolController = {
           message: 'School ID parameter is required'
         })
       }
-      
+
       const school = await schoolService.updateBySchoolId(schoolId, req.body)
-      
+
       res.json({
         success: true,
         message: 'School updated successfully',
         data: school
       })
     } catch (error: any) {
-      res.status(500).json({
+      const msg = error?.message || 'Failed to update school'
+      const isValidation = typeof msg === 'string' && msg.startsWith('Please select')
+      res.status(isValidation ? 400 : 500).json({
         success: false,
-        message: 'Failed to update school',
-        error: error.message
+        message: msg,
+        error: msg
       })
     }
   },

@@ -5,6 +5,7 @@ import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 import { createApp } from './app';
 import { AuditCleanupJob } from './jobs/auditCleanupJob';
+import prisma from './services/prismaService';
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Start server
 async function startServer() {
   try {
+    // Connect to database before accepting requests (fail fast if DB is down)
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+
     // Start listening
     app.listen(PORT, () => {
       console.log(`🚀 Monolithic TMS Server running on port ${PORT}`);
@@ -60,13 +65,22 @@ async function startServer() {
       console.log(`👤 Users API: http://localhost:${PORT}/api/users`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
+    if (error && typeof (error as any).message === 'string') {
+      const msg = (error as Error).message;
+      if (msg.includes('connect') || msg.includes('ECONNREFUSED') || msg.includes('Unknown database')) {
+        console.error('\n💡 Database may not be running or DATABASE_URL is wrong. Check:');
+        console.error('   - MySQL is running (e.g. port 3306)');
+        console.error('   - .env has DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/ttms_db');
+        console.error('   - Database "ttms_db" exists (run: npx prisma db push  or  migrate)');
+      }
+    }
     process.exit(1);
   }
 }
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
+async function shutdown() {
   console.log('\n🛑 Shutting down server...');
   try {
     await AuditCleanupJob.shutdown();
@@ -74,18 +88,16 @@ process.on('SIGINT', async () => {
   } catch (error) {
     console.error('❌ Error during audit cleanup shutdown:', error);
   }
+  try {
+    await prisma.$disconnect();
+    console.log('✅ Database disconnected');
+  } catch (error) {
+    console.error('❌ Error disconnecting database:', error);
+  }
   process.exit(0);
-});
+}
 
-process.on('SIGTERM', async () => {
-  console.log('\n🛑 Shutting down server...');
-  try {
-    await AuditCleanupJob.shutdown();
-    console.log('✅ Audit cleanup jobs stopped gracefully');
-  } catch (error) {
-    console.error('❌ Error during audit cleanup shutdown:', error);
-  }
-  process.exit(0);
-});
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 startServer();
