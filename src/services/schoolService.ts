@@ -384,7 +384,7 @@ export const schoolService = {
       if (!b || placeholderBlockOffice.test(b)) {
         throw new Error('Please select a block office.')
       }
-      if (data.block_office === 'Education Office(CADC)') {
+      if (data.block_office === 'Education Office (CADC)') {
         transformed.block_office = 'Education_Office_CADC_'
       } else if (data.block_office === 'Education Office (LADC)') {
         transformed.block_office = 'Education_Office__LADC_'
