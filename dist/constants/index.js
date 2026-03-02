@@ -15,7 +15,7 @@ exports.HABITATION_CATEGORIES = ['City', 'Town', 'Village'];
 exports.BLOCK_OFFICES = [
     'DEO Aizawl', 'DEO Champhai', 'DEO Hnahthial', 'DEO Khawzawl', 'DEO Kolasib',
     'DEO Lawngtlai', 'DEO Lunglei', 'DEO Mamit', 'DEO Saitual', 'DEO Serchhip',
-    'DEO Siaha', 'Education Office(CADC)', 'Education Office (LADC)', 'Education Office (MADC)',
+    'DEO Siaha', 'Education Office (CADC)', 'Education Office (LADC)', 'Education Office (MADC)',
     'SDEO Aizawl East', 'SDEO Aizawl South', 'SDEO Aizawl West', 'SDEO Champhai',
     'SDEO Darlawn', 'SDEO Hnahthial', 'SDEO Kawnpui', 'SDEO Kawrthah', 'SDEO Khawzawl',
     'SDEO Kolasib', 'SDEO Lunglei North', 'SDEO Lunglei South', 'SDEO Lungsen', 'SDEO Mamit',

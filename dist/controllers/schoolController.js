@@ -282,10 +282,12 @@ exports.schoolController = {
             });
         }
         catch (error) {
-            res.status(500).json({
+            const msg = error?.message || 'Failed to create school';
+            const isValidation = typeof msg === 'string' && msg.startsWith('Please select');
+            res.status(isValidation ? 400 : 500).json({
                 success: false,
-                message: 'Failed to create school',
-                error: error.message
+                message: msg,
+                error: msg
             });
         }
     },
@@ -308,10 +310,12 @@ exports.schoolController = {
             });
         }
         catch (error) {
-            res.status(500).json({
+            const msg = error?.message || 'Failed to update school';
+            const isValidation = typeof msg === 'string' && msg.startsWith('Please select');
+            res.status(isValidation ? 400 : 500).json({
                 success: false,
-                message: 'Failed to update school',
-                error: error.message
+                message: msg,
+                error: msg
             });
         }
     },
@@ -333,10 +337,12 @@ exports.schoolController = {
             });
         }
         catch (error) {
-            res.status(500).json({
+            const msg = error?.message || 'Failed to update school';
+            const isValidation = typeof msg === 'string' && msg.startsWith('Please select');
+            res.status(isValidation ? 400 : 500).json({
                 success: false,
-                message: 'Failed to update school',
-                error: error.message
+                message: msg,
+                error: msg
             });
         }
     },

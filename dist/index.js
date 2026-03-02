@@ -41,6 +41,7 @@ const Sentry = __importStar(require("@sentry/node"));
 const profiling_node_1 = require("@sentry/profiling-node");
 const app_1 = require("./app");
 const auditCleanupJob_1 = require("./jobs/auditCleanupJob");
+const prismaService_1 = __importDefault(require("./services/prismaService"));
 // Load environment variables
 dotenv_1.default.config();
 const app = (0, app_1.createApp)();
@@ -74,6 +75,9 @@ app.use((err, req, res, next) => {
 // Start server
 async function startServer() {
     try {
+        // Connect to database before accepting requests (fail fast if DB is down)
+        await prismaService_1.default.$connect();
+        console.log('✅ Database connected successfully');
         // Start listening
         app.listen(PORT, () => {
             console.log(`🚀 Monolithic TMS Server running on port ${PORT}`);
@@ -94,12 +98,21 @@ async function startServer() {
         });
     }
     catch (error) {
-        console.error('Failed to start server:', error);
+        console.error('❌ Failed to start server:', error);
+        if (error && typeof error.message === 'string') {
+            const msg = error.message;
+            if (msg.includes('connect') || msg.includes('ECONNREFUSED') || msg.includes('Unknown database')) {
+                console.error('\n💡 Database may not be running or DATABASE_URL is wrong. Check:');
+                console.error('   - MySQL is running (e.g. port 3306)');
+                console.error('   - .env has DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/ttms_db');
+                console.error('   - Database "ttms_db" exists (run: npx prisma db push  or  migrate)');
+            }
+        }
         process.exit(1);
     }
 }
 // Graceful shutdown
-process.on('SIGINT', async () => {
+async function shutdown() {
     console.log('\n🛑 Shutting down server...');
     try {
         await auditCleanupJob_1.AuditCleanupJob.shutdown();
@@ -108,18 +121,16 @@ process.on('SIGINT', async () => {
     catch (error) {
         console.error('❌ Error during audit cleanup shutdown:', error);
     }
-    process.exit(0);
-});
-process.on('SIGTERM', async () => {
-    console.log('\n🛑 Shutting down server...');
     try {
-        await auditCleanupJob_1.AuditCleanupJob.shutdown();
-        console.log('✅ Audit cleanup jobs stopped gracefully');
+        await prismaService_1.default.$disconnect();
+        console.log('✅ Database disconnected');
     }
     catch (error) {
-        console.error('❌ Error during audit cleanup shutdown:', error);
+        console.error('❌ Error disconnecting database:', error);
     }
     process.exit(0);
-});
+}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 startServer();
 //# sourceMappingURL=index.js.map

@@ -37,17 +37,19 @@ router.get('/school-id/:schoolId', [
 router.get('/:id', [
     (0, express_validator_1.param)('id').notEmpty().withMessage('School ID is required')
 ], schoolController_1.schoolController.getById);
-// Create new school
-router.post('/', [
-    (0, express_validator_1.body)('id').notEmpty().withMessage('School ID is required'),
-    (0, express_validator_1.body)('schoolName').notEmpty().withMessage('School name is required')
+// Create new school (requires login)
+router.post('/', auth_1.authenticateToken, [
+    (0, express_validator_1.body)('id').optional(),
+    (0, express_validator_1.body)('school_id').optional(),
+    (0, express_validator_1.body)('school_name').optional(),
+    (0, express_validator_1.body)('schoolName').optional()
 ], schoolController_1.schoolController.create);
 // Update school by school_id (business identifier)
-router.put('/school-id/:schoolId', [
+router.put('/school-id/:schoolId', auth_1.authenticateToken, [
     (0, express_validator_1.param)('schoolId').notEmpty().withMessage('School ID is required')
 ], schoolController_1.schoolController.updateBySchoolId);
 // Update school
-router.put('/:id', [
+router.put('/:id', auth_1.authenticateToken, [
     (0, express_validator_1.param)('id').notEmpty().withMessage('School ID is required')
 ], schoolController_1.schoolController.update);
 // Delete school by school_id (business identifier)
