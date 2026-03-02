@@ -616,44 +616,39 @@ export const teacherService = {
     if (data.habitation_category !== undefined) transformed.habitation_category = data.habitation_category
     if (data.block_office !== undefined) {
       // Convert specific block office values to match enum
-      if (/Education\s+Office.*CADC/i.test(data.block_office)) {
-        transformed.block_office = 'Education_Office_CADC_'
-      } else if (/Education\s+Office.*LADC/i.test(data.block_office)) {
-        transformed.block_office = 'Education_Office__LADC_'
-      } else if (/Education\s+Office.*MADC/i.test(data.block_office)) {
-        transformed.block_office = 'Education_Office__MADC_'
-      } else {
-        transformed.block_office = data.block_office === 'DEO Aizawl' ? 'DEO_Aizawl' :
-                                  data.block_office === 'DEO Champhai' ? 'DEO_Champhai' :
-                                  data.block_office === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
-                                  data.block_office === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
-                                  data.block_office === 'DEO Kolasib' ? 'DEO_Kolasib' :
-                                  data.block_office === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
-                                  data.block_office === 'DEO Lunglei' ? 'DEO_Lunglei' :
-                                  data.block_office === 'DEO Mamit' ? 'DEO_Mamit' :
-                                  data.block_office === 'DEO Saitual' ? 'DEO_Saitual' :
-                                  data.block_office === 'DEO Serchhip' ? 'DEO_Serchhip' :
-                                  data.block_office === 'DEO Siaha' ? 'DEO_Siaha' :
-                                  data.block_office === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
-                                  data.block_office === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
-                                  data.block_office === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
-                                  data.block_office === 'SDEO Champhai' ? 'SDEO_Champhai' :
-                                  data.block_office === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
-                                  data.block_office === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
-                                  data.block_office === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
-                                  data.block_office === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
-                                  data.block_office === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
-                                  data.block_office === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
-                                  data.block_office === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
-                                  data.block_office === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
-                                  data.block_office === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
-                                  data.block_office === 'SDEO Mamit' ? 'SDEO_Mamit' :
-                                  data.block_office === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
-                                  data.block_office === 'SDEO Saitual' ? 'SDEO_Saitual' :
-                                  data.block_office === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
-                                  data.block_office === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
-                                  data.block_office === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : data.block_office
-      }
+      transformed.block_office = data.block_office === 'DEO Aizawl' ? 'DEO_Aizawl' :
+                                data.block_office === 'DEO Champhai' ? 'DEO_Champhai' :
+                                data.block_office === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
+                                data.block_office === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
+                                data.block_office === 'DEO Kolasib' ? 'DEO_Kolasib' :
+                                data.block_office === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
+                                data.block_office === 'DEO Lunglei' ? 'DEO_Lunglei' :
+                                data.block_office === 'DEO Mamit' ? 'DEO_Mamit' :
+                                data.block_office === 'DEO Saitual' ? 'DEO_Saitual' :
+                                data.block_office === 'DEO Serchhip' ? 'DEO_Serchhip' :
+                                data.block_office === 'DEO Siaha' ? 'DEO_Siaha' :
+                                data.block_office === 'Education Office(CADC)' ? 'Education_Office_CADC_' :
+                                data.block_office === 'Education Office (LADC)' ? 'Education_Office__LADC_' :
+                                data.block_office === 'Education Office (MADC)' ? 'Education_Office__MADC_' :
+                                data.block_office === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
+                                data.block_office === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
+                                data.block_office === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
+                                data.block_office === 'SDEO Champhai' ? 'SDEO_Champhai' :
+                                data.block_office === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
+                                data.block_office === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
+                                data.block_office === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
+                                data.block_office === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
+                                data.block_office === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
+                                data.block_office === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
+                                data.block_office === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
+                                data.block_office === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
+                                data.block_office === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
+                                data.block_office === 'SDEO Mamit' ? 'SDEO_Mamit' :
+                                data.block_office === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
+                                data.block_office === 'SDEO Saitual' ? 'SDEO_Saitual' :
+                                data.block_office === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
+                                data.block_office === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
+                                data.block_office === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : data.block_office
     }
     
     // Handle related data arrays
@@ -667,42 +662,39 @@ export const teacherService = {
                    posting.management === 'Deficit Mission' ? 'Deficit_Mission' :
                    posting.management === 'Local Body' ? 'Local_Body' :
                    posting.management === 'Lumpsum Aided' ? 'Lumpsum_Aided' : posting.management,
-        block_office: (() => {
-          const bo = posting.block_office;
-          if (/Education\s+Office.*CADC/i.test(bo)) return 'Education_Office_CADC_';
-          if (/Education\s+Office.*LADC/i.test(bo)) return 'Education_Office__LADC_';
-          if (/Education\s+Office.*MADC/i.test(bo)) return 'Education_Office__MADC_';
-          return bo === 'DEO Aizawl' ? 'DEO_Aizawl' :
-                 bo === 'DEO Champhai' ? 'DEO_Champhai' :
-                 bo === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
-                 bo === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
-                 bo === 'DEO Kolasib' ? 'DEO_Kolasib' :
-                 bo === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
-                 bo === 'DEO Lunglei' ? 'DEO_Lunglei' :
-                 bo === 'DEO Mamit' ? 'DEO_Mamit' :
-                 bo === 'DEO Saitual' ? 'DEO_Saitual' :
-                 bo === 'DEO Serchhip' ? 'DEO_Serchhip' :
-                 bo === 'DEO Siaha' ? 'DEO_Siaha' :
-                 bo === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
-                 bo === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
-                 bo === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
-                 bo === 'SDEO Champhai' ? 'SDEO_Champhai' :
-                 bo === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
-                 bo === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
-                 bo === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
-                 bo === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
-                 bo === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
-                 bo === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
-                 bo === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
-                 bo === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
-                 bo === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
-                 bo === 'SDEO Mamit' ? 'SDEO_Mamit' :
-                 bo === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
-                 bo === 'SDEO Saitual' ? 'SDEO_Saitual' :
-                 bo === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
-                 bo === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
-                 bo === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : bo;
-        })(),
+        block_office: posting.block_office === 'DEO Aizawl' ? 'DEO_Aizawl' :
+                     posting.block_office === 'DEO Champhai' ? 'DEO_Champhai' :
+                     posting.block_office === 'DEO Hnahthial' ? 'DEO_Hnahthial' :
+                     posting.block_office === 'DEO Khawzawl' ? 'DEO_Khawzawl' :
+                     posting.block_office === 'DEO Kolasib' ? 'DEO_Kolasib' :
+                     posting.block_office === 'DEO Lawngtlai' ? 'DEO_Lawngtlai' :
+                     posting.block_office === 'DEO Lunglei' ? 'DEO_Lunglei' :
+                     posting.block_office === 'DEO Mamit' ? 'DEO_Mamit' :
+                     posting.block_office === 'DEO Saitual' ? 'DEO_Saitual' :
+                     posting.block_office === 'DEO Serchhip' ? 'DEO_Serchhip' :
+                     posting.block_office === 'DEO Siaha' ? 'DEO_Siaha' :
+                     posting.block_office === 'Education Office(CADC)' ? 'Education_Office_CADC_' :
+                     posting.block_office === 'Education Office (LADC)' ? 'Education_Office__LADC_' :
+                     posting.block_office === 'Education Office (MADC)' ? 'Education_Office__MADC_' :
+                     posting.block_office === 'SDEO Aizawl East' ? 'SDEO_Aizawl_East' :
+                     posting.block_office === 'SDEO Aizawl South' ? 'SDEO_Aizawl_South' :
+                     posting.block_office === 'SDEO Aizawl West' ? 'SDEO_Aizawl_West' :
+                     posting.block_office === 'SDEO Champhai' ? 'SDEO_Champhai' :
+                     posting.block_office === 'SDEO Darlawn' ? 'SDEO_Darlawn' :
+                     posting.block_office === 'SDEO Hnahthial' ? 'SDEO_Hnahthial' :
+                     posting.block_office === 'SDEO Kawnpui' ? 'SDEO_Kawnpui' :
+                     posting.block_office === 'SDEO Kawrthah' ? 'SDEO_Kawrthah' :
+                     posting.block_office === 'SDEO Khawzawl' ? 'SDEO_Khawzawl' :
+                     posting.block_office === 'SDEO Kolasib' ? 'SDEO_Kolasib' :
+                     posting.block_office === 'SDEO Lunglei North' ? 'SDEO_Lunglei_North' :
+                     posting.block_office === 'SDEO Lunglei South' ? 'SDEO_Lunglei_South' :
+                     posting.block_office === 'SDEO Lungsen' ? 'SDEO_Lungsen' :
+                     posting.block_office === 'SDEO Mamit' ? 'SDEO_Mamit' :
+                     posting.block_office === 'SDEO North Vanlaiphai' ? 'SDEO_North_Vanlaiphai' :
+                     posting.block_office === 'SDEO Saitual' ? 'SDEO_Saitual' :
+                     posting.block_office === 'SDEO Serchhip' ? 'SDEO_Serchhip' :
+                     posting.block_office === 'SDEO Thenzawl' ? 'SDEO_Thenzawl' :
+                     posting.block_office === 'SDEO West Phaileng' ? 'SDEO_West_Phaileng' : posting.block_office,
         district: posting.district,
         rd_block: posting.rd_block,
         pincode: posting.pincode,

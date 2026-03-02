@@ -384,13 +384,13 @@ exports.schoolService = {
             if (!b || placeholderBlockOffice.test(b)) {
                 throw new Error('Please select a block office.');
             }
-            if (/Education\s+Office.*CADC/i.test(b)) {
+            if (data.block_office === 'Education Office(CADC)') {
                 transformed.block_office = 'Education_Office_CADC_';
             }
-            else if (/Education\s+Office.*LADC/i.test(b)) {
+            else if (data.block_office === 'Education Office (LADC)') {
                 transformed.block_office = 'Education_Office__LADC_';
             }
-            else if (/Education\s+Office.*MADC/i.test(b)) {
+            else if (data.block_office === 'Education Office (MADC)') {
                 transformed.block_office = 'Education_Office__MADC_';
             }
             else {
