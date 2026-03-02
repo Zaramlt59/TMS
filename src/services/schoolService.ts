@@ -384,11 +384,11 @@ export const schoolService = {
       if (!b || placeholderBlockOffice.test(b)) {
         throw new Error('Please select a block office.')
       }
-      if (data.block_office === 'Education Office (CADC)') {
+      if (/Education\s+Office.*CADC/i.test(b)) {
         transformed.block_office = 'Education_Office_CADC_'
-      } else if (data.block_office === 'Education Office (LADC)') {
+      } else if (/Education\s+Office.*LADC/i.test(b)) {
         transformed.block_office = 'Education_Office__LADC_'
-      } else if (data.block_office === 'Education Office (MADC)') {
+      } else if (/Education\s+Office.*MADC/i.test(b)) {
         transformed.block_office = 'Education_Office__MADC_'
       } else {
         transformed.block_office = b.replace(/\s+/g, '_')
