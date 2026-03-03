@@ -1,19 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
-import SchoolList from '../views/SchoolList.vue'
-import SchoolForm from '../views/SchoolForm.vue'
-import TeacherList from '../views/TeacherList.vue'
-import TeacherForm from '../views/TeacherForm.vue'
-import Settings from '../views/Settings.vue'
-import Login from '../views/Login.vue'
+const Dashboard = () => import('../views/Dashboard.vue')
+const SchoolList = () => import('../views/SchoolList.vue')
+const SchoolForm = () => import('../views/SchoolForm.vue')
+const TeacherList = () => import('../views/TeacherList.vue')
+const TeacherForm = () => import('../views/TeacherForm.vue')
+const Settings = () => import('../views/Settings.vue')
+const Login = () => import('../views/Login.vue')
+const ForgotPassword = () => import('../views/ForgotPassword.vue')
+const ResetPassword = () => import('../views/ResetPassword.vue')
+const MedicalRecords = () => import('../views/MedicalRecords.vue')
+const UserManagement = () => import('../views/UserManagement.vue')
+const OTPLogin = () => import('../views/OTPLogin.vue')
+const Reports = () => import('../views/Reports.vue')
+const AuditLogs = () => import('../views/AuditLogs.vue')
 import { useAuthStore } from '../stores/auth'
-import ForgotPassword from '../views/ForgotPassword.vue'
-import ResetPassword from '../views/ResetPassword.vue'
-import MedicalRecords from '../views/MedicalRecords.vue'
-import UserManagement from '../views/UserManagement.vue'
-import OTPLogin from '../views/OTPLogin.vue'
-import Reports from '../views/Reports.vue'
-import AuditLogs from '../views/AuditLogs.vue'
 import { ROLES, hasPermission } from '../constants/roles'
 
 // Extend RouteMeta interface

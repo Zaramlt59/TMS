@@ -69,17 +69,10 @@ class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('csrf');
 
-    try {
-      // Sync Pinia store if present and redirect
-      const { useAuthStore } = await import('../stores/auth')
-      const store = useAuthStore()
-      store.isAuthenticated = false
-      store.currentUser = null
-      store.token = null
-      store.csrf = null
-      const router = (await import('../router')).default
-      router.push('/login')
-    } catch {}
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+    localStorage.removeItem('csrf');
   }
 
   getAuthStatus(): boolean {

@@ -1,0 +1,2 @@
+const s=["Primary School","Middle School","High School","Higher Secondary School"],a=["Rural","Urban"],l=["City","Town","Village"],C=["ST","SC","OBC","General"],S=["Male","Female","Others"],o=["Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10","Class 11","Class 12"];export{o as C,S as G,a as H,s as S,l as a,C as b};
+//# sourceMappingURL=index-O06-fuvU.js.map

@@ -109,15 +109,12 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout(): Promise<void> {
-      try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }) } catch {}
+      const { authService } = await import('../services/auth')
+      await authService.logout()
       this.isAuthenticated = false
       this.currentUser = null
       this.token = null
       this.csrf = null
-      localStorage.removeItem('isAuthenticated')
-      localStorage.removeItem('currentUser')
-      localStorage.removeItem('token')
-      localStorage.removeItem('csrf')
     }
   }
 })
