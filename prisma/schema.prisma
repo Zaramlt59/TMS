@@ -442,7 +442,7 @@ enum schools_block_office {
   DEO_Saitual             @map("DEO Saitual")
   DEO_Serchhip            @map("DEO Serchhip")
   DEO_Siaha               @map("DEO Siaha")
-  Education_Office_CADC_  @map("Education Office(CADC)")
+  Education_Office_CADC_  @map("Education Office (CADC)")
   Education_Office__LADC_ @map("Education Office (LADC)")
   Education_Office__MADC_ @map("Education Office (MADC)")
   SDEO_Aizawl_East        @map("SDEO Aizawl East")
